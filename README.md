@@ -6,21 +6,20 @@
 特点：
 
 1. 小巧与简单，代码加总也就几百行，内部优化，无多余计算，接近原生SQL。
-2. 带 Type 编译，(依赖  `@sinclair/typebox` )。
+2. 代码即定义，可导出 TypeScript 类型。
 3. 相比其它框架， 写起来极省代码行数。
 4. 内置常用列定义
 5. 支持查询魔法，支持分页查询
 
 
-```bash
-npm install --save 6t
-```
+
 
 ## 使用方法
 
-首先，还是得安装的，本库依赖第三方包 `lodash`, `pg`, `@sinclair/typebox`。
 
-
+```bash
+npm install --save 6t
+```
 
 
 1. 提供数据库
@@ -45,8 +44,9 @@ const FeedBackModel = UType.Table({
     product: UType.String({ maxLength: 64 }),
     createTime: UType.Date({ column: 'create_time', isCreate: true })
 })
-type FeedBack = Static<typeof FeedBackModel>;  // 如果不需要这个 Type 类型, 写成一行足矣
+type FeedBack = Static<typeof FeedBackModel>; // 这一行非必须，通过上下两行简写成一行
 const FeedBack = new BaseTable('feedback', FeedBackModel);
+
 ```
 
 3. 是的，仅需要一个定义，已经全部完成 可以CRUD 了
@@ -83,7 +83,10 @@ console.log(result == 1)
 
 
 // 执行自定义SQL语句
-const result = await FeedBack.sql(`SELECT XXX FROM YYY WHERE ZZZ = $1 ORDER BY $2 $3`,['value','id','DESC']);
+const result = await FeedBack.sql(`SELECT XXX 
+FROM YYY 
+WHERE ZZZ = $1 
+ORDER BY $2 $3`,['value','id','DESC']);
 console.log(result);
 ```
 
@@ -132,7 +135,7 @@ FeedBack.query({
     createDateMin : '2022-01-01',           // createDate > 2022-01-01
     createDateMax : new Date('2022-02-01'), // createDate < 2022-02-01
     titleLike: 'title',                     // title like %title%
-    product: '6t'                           // prodcut = 6t (No Suffix, No Magic )
+    product: '6t'                           // product = 6t (No Suffix, No Magic )
 })
 ```
 

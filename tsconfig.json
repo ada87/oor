@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "moduleResolution": "Node",
+    "module": "CommonJS",
+    "target": "ES6",
+    "outDir": "dist",
+    "declaration": true,
+    "lib": [
+      "ESNext",
+      "dom"
+    ],
+    "downlevelIteration": true,
+    "rootDir": "./src"
+  },
+  "exclude": [
+    "dist",
+    "node_modules",
+    "test.ts",
+    "**/*.test.ts"
+  ],
+  "typeRoots": [
+    "scripts",
+    "node_modules/@types"
+  ]
+}

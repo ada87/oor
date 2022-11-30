@@ -1,23 +1,21 @@
-import { pg, test } from '../test/pg'
-import type { TSchema } from '@sinclair/typebox';
+import { test } from '@japa/runner'
+import { User, UserSchema } from '../test/pg';
 import type { WhereCondition } from './types'
-import { UType, setup } from './Util';
 import { whereByCondition } from './QueryWhere'
-import _ from 'lodash';
-// import { whereByQuery } from './QueryBuilder';
-import { BaseTable } from './BaseTable'
+function sum(a, b) {
+    return a + b
+}
+test('add two numbers', ({ assert }) => {
+    assert.equal(sum(2, 2), 4)
+})
 
-
-setup({ provider: () => pg })
-
-
-test('Test : buildSQL', () => {
+test('Test : buildSQL', ({ assert }) => {
 
     const root: WhereCondition = {
         link: 'AND',
         items: [
             { field: 'a1', operation: '<', value: 'value1' },
-            // { field: 'a2', operation: '<', value: 'value2' },
+            { field: 'a2', operation: '<', value: 'value2' },
 
             {
                 link: 'OR', items: [
@@ -31,36 +29,14 @@ test('Test : buildSQL', () => {
     }
 
     const sql = whereByCondition(root);
-    console.log(sql[0], sql[1])
+    assert.equal(sql[1].length, 5)
+
+    // console.log(sql[0], sql[1])
 });
 
 
-// import { Type, Kind } from '@sinclair/typebox';
-const User = UType.Table({
-    id: UType.Number(),
-    name: UType.String({ maxLength: 64 }),
-    age: UType.Integer({ minimum: 0, maximum: 125 }),
-    sex: UType.Boolean(),
-    create_date: UType.Date({ isCreate: true }),
-    last_modify: UType.Date({ isModify: true }),
 
-    // a: Type.Any(),
-    // b:Type.Array(Type.String()),
-    // c:Type.Never(),
-    // d:Type.Null(),
-    // e:Type.Object(),
-    // f:Type.Promise(),
-    // g:Type.RegEx()
-    // h:Type.Unsafe()
-
-})
-const FIELD_MAP = new Map<string, TSchema>();
-_.keys(User.properties).map(field => {
-    FIELD_MAP.set(field, User.properties[field])
-    // console.log(User.properties[field][Kind])
-});
-
-test('Test : buildQuery', () => {
+test('Test : buildQuery', ({ assert }) => {
     let query = {
         id: 1,
         ageMin: 2,
@@ -69,6 +45,7 @@ test('Test : buildQuery', () => {
         create_dateMin: new Date(),
 
     };
+    // console.log(query)
     // let p = whereByQuery(query, FIELD_MAP, new Map());
 
     // console.log(p);
@@ -79,22 +56,3 @@ test('Test : buildQuery', () => {
 });
 
 
-
-test('Test : insert', async () => {
-
-    let userModel = new BaseTable('ta', User)
-    userModel.insert({
-        name: 'a'
-    })
-
-
-    // id: UType.Number(),
-    // name: UType.String({ maxLength: 64 }),
-    // age: UType.Integer({ minimum: 0, maximum: 125 }),
-    // sex: UType.Boolean(),
-    // create_date: UType.Date({ isCreate: true }),
-    // last_modify: UType.Date({ isModify: true }),
-
-})
-    // .pin()
-    ;

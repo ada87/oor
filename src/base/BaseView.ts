@@ -11,11 +11,6 @@ const DEFAULT_SCHEMA = 'public';
 
 type TableOptions = {
     /**
-     * The Table Schema 
-     * default : 'public'
-    */
-    schema?: string;
-    /**
      * primary key Column Default "id"
      * if not , must specfy key field
     */
@@ -58,6 +53,13 @@ export class BaseView<T extends TObject> extends BaseQuery {
 
     private _QUERY_CACHE = new Map<string, WhereDefine>();
 
+    /**
+     * @param tableName Data table name, "${schemaName}.${tableName}"  
+     *  "${schemaName}." can be ignore with the default search_path.
+     * @param schema The Object Schema, oor will not validate the value
+     * @param options (Table/View) Options
+     * 
+    */
     constructor(tableName: string, schema: T, options?: TableOptions) {
         super();
         let fields = [];
@@ -77,7 +79,6 @@ export class BaseView<T extends TObject> extends BaseQuery {
         this._table = DEFAULT_SCHEMA + '.' + tableName;
         this._CONFIG.query_fields = fields.join(',');
         if (options == null) return;
-        if (options.schema) this._table = options.schema + '.' + tableName;
         if (options.key) {
             this._CONFIG.key = options.key;
             this._CONFIG.order = options.key;

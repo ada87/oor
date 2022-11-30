@@ -5,6 +5,7 @@ test('Test : Basic', async () => {
     const result = await User.all();
     console.log(result);
 })
+    .skip();
 
 
 
@@ -19,4 +20,5 @@ test('Test : Query', async () => {
     console.log(result);
 
 })
+    .skip();
     // .pin();

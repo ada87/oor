@@ -6,18 +6,31 @@ import * as _ from 'lodash';
 
 
 export var pg: Client = new Client({
-    host: process.env.PG_HOST,
+    host: process.env.PG_HOST || 'pgserver',
     port: parseInt(process.env.PG_PORT || '5432'),
-    user: process.env.PG_USER,
-    database: process.env.PG_DB,
+    user: process.env.PG_USER || 'postgres',
+    database: process.env.PG_DB || 'oor',
 });
+setup({ provider: () => pg })
+
+
+
+let pid: any = null;
+
 
 export const test = (title: string, callback: TestExecutor<TestContext, undefined>): Test<undefined> => jtest(title, callback)
     .setup(async () => {
-        await pg.connect()
-        setup({ provider: () => pg })
+
+        clearTimeout(pid);
+        // console.log(pg)
+        // @ts-ignore
+        if(!pg._connected){
+            await pg.connect()
+        }
+
     }).teardown(() => {
-        pg.end();
+        pid = setTimeout(() => pg.end(), 200);
+        // pg.end();
     });
 
 

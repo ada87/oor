@@ -2,10 +2,10 @@ import { expect } from '@japa/expect'
 import { specReporter } from '@japa/spec-reporter'
 import { runFailedTests } from '@japa/run-failed-tests'
 import { configure, run } from '@japa/runner'
-process.env.PG_HOST = '10.10.10.10';
+process.env.PG_HOST = 'pgserver';
 process.env.PG_PORT = '5432';
 process.env.PG_USER = 'postgres';
-process.env.PG_DB = 'boost'
+process.env.PG_DB = '6t'
 
 
 configure({

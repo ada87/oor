@@ -1,6 +1,6 @@
 # 6t
 
-个人开发的 NodeJs ORM 小玩具 , 目前仅支持 `Postgresql` 。 
+个人开发的 NodeJs ORM 工具包 , 目前仅支持 `Postgresql` （<span style="color:red;">个人业余项目，谨慎使用</span>）。 
 
 
 特点：
@@ -43,9 +43,24 @@ const FeedBackModel = UType.Table({
     contact: UType.String({ maxLength: 64 }),
     product: UType.String({ maxLength: 64 }),
     createTime: UType.Date({ column: 'create_time', isCreate: true })
-})
-type FeedBack = Static<typeof FeedBackModel>; // 这一行非必须，通过上下两行简写成一行
-const FeedBack = new BaseTable('feedback', FeedBackModel);
+});                                                             // Line 1
+type FeedBack = Static<typeof FeedBackModel>;                   // Line 2
+const FeedBack = new BaseTable('feedback', FeedBackModel);      // Line 3
+/**
+ * 说明：
+ * Line 1 : 构造出一个 JSON Schema 
+ *          1. 可用于验证，自动赋值等 
+ *          2. 在一些框架中可直接使用，如 fastify 。
+ *          3. 详细可参考 @sinclair/typebox
+ * Line 2 : 定一个 TypeScirpt 的 type
+ *          1. 用于 IDE 编译器 自动提示，代码辅助
+ *          2. 这个 Type 是一直有的，如不需要显示声明 type，这一行可省略不写
+ * Line 3 ： 根据 Schema 构造一个数据表的 ORM 对象
+ *          1. 可通过个这对象访问 ORM 相关API.
+ *          2. 不需要 Line2,也不需要Line1的验证功能时，可写成一行，减少一个命名负担：
+ *              const FeedBack = new BaseTable('feedback', UType.Table({....}));
+ * */ 
+
 
 ```
 
@@ -139,7 +154,7 @@ FeedBack.query({
 })
 ```
 
-如你所见， `属性` + `后辍` =  `自动转换成条件` ， 虽不太严谨，但省事，(说明：无法转换的将被忽略), 所以不要在正式项目中使用本个人级别玩具。
+如代码所示， `属性` + `后辍` =  `自动转换成条件` ， 无法转换的将被忽略 。
 
 目前支持的后辍有：
 
@@ -148,3 +163,11 @@ export type MagicSuffix = 'Min' | 'Mint' | 'Max' | 'Maxt'   // commom  > , >= , 
     | 'MinH' | 'MinD' | 'MinM' | 'MaxH' | 'MaxD' | 'MaxM'   // Only Date Hour / Day / Month
     | 'Like' | 'Likel' | 'Liker';                           // Only String  like leftlike rightlike
 ```
+
+
+
+## 表定义
+
+`UType.Table(schema,options?:TableOptions)` 方法可定义一个表，参数1为列声明，可选参数2可用于表的一些特殊定义。
+
+* key : 为该数据表的 Primary Key , 默认为 `"id"` ,若不是 `"id"` ,必须传一个定义

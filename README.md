@@ -1,4 +1,4 @@
-# 6t
+# OOR
 
 个人开发的 NodeJs ORM 工具包 , 目前仅支持 `Postgresql` （<span style="color:red;">个人业余项目，谨慎使用</span>）。 
 
@@ -18,14 +18,14 @@
 
 
 ```bash
-npm install --save 6t
+npm install --save oor
 ```
 
 
 1. 提供数据库
 
 ```typescript
-import { setup } from '6t';
+import { setup } from 'oor';
 import { Client } from 'pg';
 const pg = new Client({})
 setup({ provider: () => pg })
@@ -35,7 +35,7 @@ setup({ provider: () => pg })
 2. 定义 ORM
 
 ```typescript
-import { BaseTable, UType, Static } from '6t';
+import { BaseTable, UType, Static } from 'oor';
 const FeedBackModel = UType.Table({
     id: UType.Number(),
     title: UType.String(),
@@ -150,7 +150,7 @@ FeedBack.query({
     createDateMin : '2022-01-01',           // createDate > 2022-01-01
     createDateMax : new Date('2022-02-01'), // createDate < 2022-02-01
     titleLike: 'title',                     // title like %title%
-    product: '6t'                           // product = 6t (No Suffix, No Magic )
+    product: 'oor'                          // product = oor (No Suffix, No Magic )
 })
 ```
 

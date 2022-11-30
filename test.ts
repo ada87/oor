@@ -5,7 +5,7 @@ import { configure, run } from '@japa/runner'
 process.env.PG_HOST = 'pgserver';
 process.env.PG_PORT = '5432';
 process.env.PG_USER = 'postgres';
-process.env.PG_DB = '6t'
+process.env.PG_DB = 'oor'
 
 
 configure({
@@ -16,6 +16,6 @@ configure({
     ],
     reporters: [specReporter()],
     importer: (filePath) => import(filePath),
-    timeout: 30000,
+    timeout: 2000,
 });
 run();

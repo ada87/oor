@@ -1,6 +1,6 @@
 {
-  "name": "6t",
-  "version": "0.0.3",
+  "name": "oor",
+  "version": "1.0.1",
   "author": "ada87",
   "keywords": [
     "nodejs",
@@ -8,10 +8,10 @@
     "orm"
   ],
   "description": "An extremly orm utils for node.",
-  "homepage": "https://6t.xdnote.com",
+  "homepage": "https://oor.xdnote.com",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ada87/6t"
+    "url": "https://github.com/ada87/oor"
   },
   "license": "MIT",
   "files": [

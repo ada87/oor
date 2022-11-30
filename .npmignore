@@ -1,6 +1,4 @@
-dist/test
-dist/tool
 src
 test.ts
-tsconfig.json
 test.sql.7z
+tsconfig.json

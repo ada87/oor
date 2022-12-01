@@ -1,4 +1,4 @@
-import { test, User } from './test/pg';
+import { test, User } from './pg';
 
 
 test('Test : Basic', async () => {
@@ -17,7 +17,7 @@ test('Test : Query', async () => {
         nameLike: '陆',
         sex: false
     });
-    console.log(result);
+    // console.log(result);
 
 })
     .skip();

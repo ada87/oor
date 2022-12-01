@@ -1,13 +1,12 @@
 import { test } from '@japa/runner'
 import { User, UserSchema } from '../test/pg';
-import type { WhereCondition } from './types'
-import { whereByCondition } from './QueryWhere'
-function sum(a, b) {
-    return a + b
-}
-test('add two numbers', ({ assert }) => {
-    assert.equal(sum(2, 2), 4)
-})
+import type { WhereCondition, QuerySchema } from './types'
+import { whereByCondition, } from './QueryWhere'
+import { whereByQuery } from './QueryBuilder';
+import { orderByLimit } from './QueryPagition';
+
+//@ts-ignore
+const FIELD_MAP = User._CONFIG.FIELD_MAP as Map<string, USchema>;
 
 test('Test : buildSQL', ({ assert }) => {
 
@@ -37,22 +36,44 @@ test('Test : buildSQL', ({ assert }) => {
 
 
 test('Test : buildQuery', ({ assert }) => {
-    let query = {
-        id: 1,
-        ageMin: 2,
-        sex: true,
-        ageMax: 12,
-        create_dateMin: new Date(),
+    let query: QuerySchema = {
+        start_: 0,
+        count_: 20,
+        order_: 'id',
+        by_: 'desc',
+        idRN: '(1,2]',
+        idMin: 200,                                 // id > 200
+        idNot: 300,                                 // id != 300
+        registerDateMin: '2022-01-01',              // registerDate > 2022-01-01
+        registerDateMax: new Date('2022-02-01'),    // registerDate < 2022-02-01
+        lastModifyRD: '2022-01-01',                 //
+        lastModifyRM: '2022-01',                    //
+        lastModifyRY: '2022',                       //
+        nameLike: 'name',                           // name like %name%
+        name: 'oor',                                // name = oor (No Suffix, No Magic )
+        namea: 'oor',                               // will be ignored because field "namea" not exists
+
+
 
     };
-    // console.log(query)
-    // let p = whereByQuery(query, FIELD_MAP, new Map());
 
-    // console.log(p);
+    let [SQL, PARAM] = whereByQuery(query, FIELD_MAP, new Map());
+    let [ORDERBY, LIMIT] = orderByLimit(FIELD_MAP, query);
+    
+
+    // console.log('SQL        : ', SQL);
+    // console.log('PARAM      : ', PARAM,PARAM.length);
+    // console.log('ORDERBY    : ', ORDERBY);
+    // console.log('LIMIT      : ', LIMIT);
+
+    console.log(`${SQL} ${ORDERBY} ${LIMIT}`)
 
 
 
     // buildQuery({ a: '1' })
-});
+})
+    .pin()
+
+    ;
 
 

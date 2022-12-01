@@ -1,4 +1,5 @@
 src
 test.ts
+test.d.ts
 test.sql.7z
 tsconfig.json

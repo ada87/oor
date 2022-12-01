@@ -9,20 +9,20 @@ type QueryPos = {
 
 
 const ItemToWhere = (item: WhereItem, pos: QueryPos) => {
-    if (item.fn) {
+    // if (item.fn) {
         
-    }
-    switch (item.operation) {
+    // }
+    switch (item.condition) {
         case '<':
         case '<=':
         case '>':
         case '>=':
         case '=':
-            pos.SQL.push(`${item.field} ${item.operation} $${pos.NUM}`);
+            pos.SQL.push(`${item.field} ${item.condition} $${pos.NUM}`);
             pos.PARAM.push(item.value)
             pos.NUM++;
             break
-        case 'LIKE':
+        case 'Like':
             pos.SQL.push(`${item.field} LIKE '%$${pos.NUM}%'`);
             pos.PARAM.push(item.value)
             pos.NUM++;

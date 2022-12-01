@@ -1,24 +1,50 @@
 import type { SchemaOptions } from '@sinclair/typebox';
+
 /**
  * Where 判断条件
 */
-export type WhereOperaction = '>' | '>=' | '<' | '<=' | '=' | 'LIKE' | 'NOT';
+// export type WhereOperaction = '>' | '>=' | '<' | '<=' | '=' | 'LIKE' | 'NOT';
 export type FieldType = 'string' | 'number' | 'boolean' | 'date';
-export type FieldFunction = 'h' | 'd' | 'm' | 'floor' | 'ceil' | 'lower' | 'upper';
+
+
+export const SUFFIX = [
+    'Min', 'MinThan', 'Max', 'MaxThan',                 // commom  > , >= , <  ,  <=
+    'MinH', 'MinD', 'MinM', 'MaxH', 'MaxD', 'MaxM',     // Only Date Hour / Day / Month
+    'Like', 'Likel', 'Liker',                           // Only String  like leftlike rightlike
+    'Not',                                              // Not
+    'RN', 'RY', 'RM', 'RD'                              // RN support Number/Date ,'RY', 'RM', 'RD' Only  Spport Date
+] as const;
+export type MagicSuffix = (typeof SUFFIX)[number];
+
+
 export type WhereDefine = {
-    type?: FieldType,
+    /**
+     * 名称
+    */
+    type?:FieldType
+    /**
+     * 数据库字段名称
+    */
     field: string,
+    /**
+     * 字段名称
+    */
+    property?: string,
+    /**
+     * 条件，支持后缀
+    */
+    condition?: MagicSuffix | '>' | '>=' | '<' | '<=' | '=',
     /**
      * 对比判断条件
     */
-    operation: WhereOperaction;
+    // operation: WhereOperaction;
     /**
      * 调用函数
      * h / d / m = Hour / Day  / Month  仅对日期类型有效
      * ceil / floor / 仅对 Number 有效
      * 'lower' / 'upper' = '小写' '大写' 仅对 String 有效
     */
-    fn?: FieldFunction;
+    // fn?: FieldFunction;
 
 }
 
@@ -29,10 +55,8 @@ export type WhereItem = WhereDefine & {
 export type WhereCondition = { link: 'AND' | 'OR' | 'NOT', items: (WhereItem | WhereCondition)[] }
 
 
-export type MagicSuffix = 'Min' | 'Mint' | 'Max' | 'Maxt'   // commom  > , >= , <  ,  <=
-    | 'MinH' | 'MinD' | 'MinM' | 'MaxH' | 'MaxD' | 'MaxM'   // Only Date Hour / Day / Month
-    | 'Like' | 'Likel' | 'Liker';                           // Only String  like leftlike rightlike
-export const SUFFIX: MagicSuffix[] = ['Min', 'Max', 'MinH', 'MinD', 'MinM', 'MaxH', 'MaxD', 'MaxM']
+
+
 
 export type QuerySchema = {
 

@@ -7,21 +7,27 @@ import type { SchemaOptions } from '@sinclair/typebox';
 export type FieldType = 'string' | 'number' | 'boolean' | 'date';
 
 
+// https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP
+
 export const SUFFIX = [
     'Min', 'MinThan', 'Max', 'MaxThan',                 // commom  > , >= , <  ,  <=
     'MinH', 'MinD', 'MinM', 'MaxH', 'MaxD', 'MaxM',     // Only Date Hour / Day / Month
     'Like', 'Likel', 'Liker',                           // Only String  like leftlike rightlike
-    'Not',                                              // Not
-    'RN', 'RY', 'RM', 'RD'                              // RN support Number/Date ,'RY', 'RM', 'RD' Only  Spport Date
+    'Bt', 'BtD', 'BtY', 'BtM',                          // BETWEEN, support Number/Date ,'BtY', 'BtM', 'BtD' Only  Spport Date
+    'Not',                                              // != or <>
+    'IsNull', 'NotNull',                                // isNull or Not NULL           This Suffix will avoid value
+    'IsDistinct', 'NotDistinct',                        // isDistinct or Not Distinct   This Suffix will avoid value
+    '>', '>=', '<', '<=', '=', '!=', '<>'               // Comparison Functions,  https://www.postgresql.org/docs/current/functions-comparison.html
 ] as const;
 export type MagicSuffix = (typeof SUFFIX)[number];
 
+console.log(SUFFIX.length)
 
 export type WhereDefine = {
     /**
      * 名称
     */
-    type?:FieldType
+    type?: FieldType
     /**
      * 数据库字段名称
     */
@@ -33,7 +39,7 @@ export type WhereDefine = {
     /**
      * 条件，支持后缀
     */
-    condition?: MagicSuffix | '>' | '>=' | '<' | '<=' | '=',
+    condition?: MagicSuffix,
     /**
      * 对比判断条件
     */

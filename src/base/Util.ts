@@ -3,46 +3,24 @@
 import type { ClientBase } from 'pg';
 import type { USchema } from './types';
 import { Type } from '@sinclair/typebox';
+import type { TProperties, TPartial, TObject, StringOptions, StringFormatOption, DateOptions, NumericOptions } from '@sinclair/typebox';
 
 type Settings = {
     provider?: () => ClientBase,
     pageSize?: number,
-    /**
-     * 所以错误直接 throw 出，如果需要自定义错误类型，可以在此传个 Error 子类
-    */
-    err?: typeof Error  ,
-}
-
-const GLOBAL: Settings = {
-    provider: null,
-    pageSize: 10,
-
-    // err:Error,
-    // mode: 'pg',
-    // strict: true
-}
-
-
-export const getDB = (): ClientBase => {
-    if (GLOBAL.provider == null) {
-        throw new Error();
-    }
-    return GLOBAL.provider();
+    strict?: boolean,
 
 }
 
-import type { TProperties, TPartial, TObject, StringOptions, StringFormatOption, DateOptions, NumericOptions } from '@sinclair/typebox';
 
-
-
-type UStringOptions<Format extends string> = USchema &StringOptions<Format> &  {
+type UStringOptions<Format extends string> = USchema & StringOptions<Format> & {
     /**
      * The Funtion default call on this filed
     */
     fn?: 'lower' | 'upper'
 }
-type UNumericOptions = USchema & NumericOptions; 
-type UDateOptions =USchema &  DateOptions  &  {
+type UNumericOptions = USchema & NumericOptions;
+type UDateOptions = USchema & DateOptions & {
     /**
      * 1. Create Time can not be modify
      * 2. It will be auto fill with Current Time while INSERT
@@ -56,12 +34,18 @@ type UDateOptions =USchema &  DateOptions  &  {
     isModify?: boolean;
 }
 
+export var STRICT = false;
+export var getDB = (): ClientBase => { throw new Error('Must specfy a DataBase provider') };
+export var PAGE_SIZE = 10;
+
 
 
 export const setup = (settings: Settings) => {
-    if (settings.provider) {
-        GLOBAL.provider = settings.provider;
-    }
+    if (settings.provider) getDB = settings.provider;
+    if (settings.strict) STRICT = true;;
+
+    if (settings.pageSize) PAGE_SIZE = settings.pageSize;
+
 }
 
 export const UType = {

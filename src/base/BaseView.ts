@@ -1,9 +1,10 @@
 import _ from 'lodash';
 import { selectById, selectAll } from '../sql';
+import { PAGE_SIZE } from './Util';
 import type { TObject, Static, TSchema } from '@sinclair/typebox';
 import type { QuerySchema, WhereCondition, WhereDefine, USchema, WhereItem } from './types';
 import { BaseQuery } from './BaseQuery'
-import { orderByLimit, DEFAULT_PAGE_SIZE } from './QueryPagition';
+import { orderByLimit } from './QueryPagition';
 import { whereByCondition } from './QueryWhere';
 import { whereByQuery } from './QueryBuilder';
 
@@ -46,7 +47,7 @@ export class BaseView<T extends TObject> extends BaseQuery {
         order: 'id',
         by: 'desc',
         query_fields: '*',
-        pageSize: DEFAULT_PAGE_SIZE,
+        pageSize: PAGE_SIZE,
         FIELD_MAP: new Map<string, USchema>(),
         globalCondition: []
     }

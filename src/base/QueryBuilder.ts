@@ -1,6 +1,7 @@
 import { WhereItem, WhereCondition, QuerySchema, WhereDefine, FieldType, SUFFIX, USchema, MagicSuffix } from './types';
 import { Kind } from '@sinclair/typebox';
 import { whereByCondition } from './QueryWhere';
+import { STRICT } from './Util';
 import _ from 'lodash';
 
 const DEFAULT_QUERY_KEY = new Set<string>(['start_', 'count_', 'order_', 'by_', 'keyword_']);
@@ -100,9 +101,9 @@ const queryToCondition = (query: QuerySchema, FIELD_MAP: Map<string, USchema>, F
     });
 
     if (err.length) {
-        // if (true) {
-        //     throw new Error('Query Field Not Validate [' + err.join(' , ') + ']');
-        // }
+        if (STRICT) {
+            throw new Error('Some SQL Error Occur', { cause: err })
+        }
         console.log('----------Some Error of Query:--------')
         console.error('Query Field Not Validate [', err.join(' , '), ']');
         console.log('--------------------------------------')
@@ -116,5 +117,6 @@ const queryToCondition = (query: QuerySchema, FIELD_MAP: Map<string, USchema>, F
 */
 export const whereByQuery = (query: QuerySchema, FIELD_MAP: Map<string, USchema>, FIELD_CACHE: Map<string, WhereDefine>, startIdx = 1): [string, any[]] => {
     const condition = queryToCondition(query, FIELD_MAP, FIELD_CACHE);
-    return whereByCondition(condition, startIdx)
+    return whereByCondition(condition, startIdx);
+    // return whereByCondition(condition, startIdx)
 }

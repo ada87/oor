@@ -1,4 +1,5 @@
 import { test as jtest, Test, TestContext } from '@japa/runner';
+import { assert } from '@japa/assert'
 import { Client } from 'pg';
 import { TestExecutor } from '@japa/core';
 import { setup, BaseTable, UType, Static } from '../index';
@@ -11,7 +12,10 @@ export var pg: Client = new Client({
     user: process.env.PG_USER || 'postgres',
     database: process.env.PG_DB || 'oor',
 });
-setup({ provider: () => pg })
+setup({
+    provider: () => pg,
+    // strict: true
+})
 
 
 
@@ -24,7 +28,7 @@ export const test = (title: string, callback: TestExecutor<TestContext, undefine
         clearTimeout(pid);
         // console.log(pg)
         // @ts-ignore
-        if(!pg._connected){
+        if (!pg._connected) {
             await pg.connect()
         }
 
@@ -48,3 +52,6 @@ export const UserSchema = UType.Table({
 });                                                        // Line 1
 export type User = Static<typeof UserSchema>;              // Line 2
 export const User = new BaseTable('user', UserSchema);     // Line 3
+
+// @ts-ignore
+export const FIELD_MAP = User._CONFIG.FIELD_MAP as Map<string, USchema>;

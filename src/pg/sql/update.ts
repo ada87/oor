@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import type { ClientBase } from 'pg';
+import { SqlUpdate } from '../../base/sql';
 
-const _updateById = (table: string, obj: any, key: string = 'id'): [string, any[]] => {
+export default (table: string, obj: any, key: string = 'id'): [string, any[]] => {
     const fields = _.keys(obj);
     if (fields.length == 0) {
         throw new Error();
@@ -27,8 +27,5 @@ const _updateById = (table: string, obj: any, key: string = 'id'): [string, any[
     return [`UPDATE  ${table} SET ${query.join(',')} WHERE ${key} = $${query.length + 1}`, param];
 }
 
-export const update = async (pg: ClientBase, table: string, obj: any, key: string = 'id'): Promise<number> => {
-    const [SQL, PARAM] = _updateById(table, obj, key);
-    const result = await pg.query(SQL, PARAM);
-    return result.rowCount;
-}
+
+

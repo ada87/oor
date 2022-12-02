@@ -18,7 +18,9 @@
 
 
 ```bash
-npm install --save oor
+npm install --save oor pg                           # for PostgreSql
+# npm install --save oor mysql2                     # for MySql
+# npm install --save oor @elastic/elasticsearch     # for ElasticSearch 
 ```
 
 

@@ -1,35 +1,30 @@
+import _ from 'lodash';
 import { test } from '@japa/runner'
 import { FIELD_MAP } from '../test/pg';
 import type { WhereCondition, QuerySchema } from './types'
-import { whereByCondition, } from './QueryWhere'
-import { whereByQuery } from './QueryBuilder';
-import { orderByLimit } from './QueryPagition';
+// import { whereByCondition, } from './QueryWhere'
+import { queryToCondition } from './QueryBuilder';
+import { orderByLimit } from '../pg/sql/QueryPagition';
+import { SUFFIX } from './types';
 
-
-test('Test : buildSQL', ({ assert }) => {
-
-    const root: WhereCondition = {
-        link: 'AND',
-        items: [
-            { field: 'a1', condition: '<', value: 'value1' },
-            { field: 'a2', condition: '<', value: 'value2' },
-
-            {
-                link: 'OR', items: [
-                    { field: 'b1', condition: 'Like', value: 'value3' },
-                    { field: 'b2', condition: '>=', value: 'value4' },
-                ]
-            },
-            { field: 'a3', condition: '<', value: 'value1' },
-
-        ]
+test('Test : Suffix Cover', ({ assert }) => {
+    let query: any = {};
+    for (let suffix of SUFFIX) {
+        query['age' + suffix] = _.random(12, 100);
+        // query['name' + suffix] = 'abc';
     }
+    // console.log(query)
 
-    const sql = whereByCondition(root);
-    assert.equal(sql[1].length, 5)
 
-    // console.log(sql[0], sql[1])
-});
+    let condition = queryToCondition(query, FIELD_MAP, new Map());
+    console.log(condition)
+    // let [ORDERBY, LIMIT] = orderByLimit(FIELD_MAP, query);
+
+})
+    .pin()
+    ;
+
+
 
 
 
@@ -53,8 +48,8 @@ test('Test : buildQuery', ({ assert }) => {
         namea: 'oor',                               // will be ignored because field "namea" not exists
     };
 
-    let [SQL, PARAM] = whereByQuery(query, FIELD_MAP, new Map());
-    let [ORDERBY, LIMIT] = orderByLimit(FIELD_MAP, query);
+    let condition = queryToCondition(query, FIELD_MAP, new Map());
+    // let [ORDERBY, LIMIT] = orderByLimit(FIELD_MAP, query);
 
 
     // console.log('SQL        : ', SQL);
@@ -63,8 +58,8 @@ test('Test : buildQuery', ({ assert }) => {
     // console.log('LIMIT      : ', LIMIT);
 
     // console.log(`${SQL} ${ORDERBY} ${LIMIT}`)
-    console.log(`${SQL}`)
-    console.log(PARAM)
+    // console.log(`${SQL}`)
+    // console.log(PARAM)
 
 
     // buildQuery({ a: '1' })

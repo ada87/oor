@@ -1,5 +1,3 @@
-// pg 版本
-
 import type { ClientBase } from 'pg';
 import type { USchema } from './types';
 import { Type } from '@sinclair/typebox';
@@ -9,7 +7,6 @@ type Settings = {
     provider?: () => ClientBase,
     pageSize?: number,
     strict?: boolean,
-
 }
 
 
@@ -34,18 +31,14 @@ type UDateOptions = USchema & DateOptions & {
     isModify?: boolean;
 }
 
-export var STRICT = false;
+var STRICT = false;
 export var getDB = (): ClientBase => { throw new Error('Must specfy a DataBase provider') };
 export var PAGE_SIZE = 10;
 
-
-
 export const setup = (settings: Settings) => {
     if (settings.provider) getDB = settings.provider;
-    if (settings.strict) STRICT = true;;
-
+    if (settings.strict) STRICT = true;
     if (settings.pageSize) PAGE_SIZE = settings.pageSize;
-
 }
 
 export const UType = {
@@ -55,8 +48,14 @@ export const UType = {
     Date: (options?: UDateOptions) => Type.Date(options),
     Boolean: (options?: USchema) => Type.Boolean(options),
     Integer: (options?: UNumericOptions) => Type.Integer(options),
-    // Required: Type.Required
 }
 
-
+export const throwErr = (err: string[], message?: string) => {
+    if (err.length == 0) return;
+    if (!STRICT) {
+        console.error(message+'\n      ' + err.join('\n      '));
+        return;
+    }
+    throw new Error(message ? message : err[0], { cause: err.join('\n') })
+}
 

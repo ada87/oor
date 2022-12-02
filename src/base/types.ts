@@ -21,7 +21,7 @@ export const SUFFIX = [
 ] as const;
 export type MagicSuffix = (typeof SUFFIX)[number];
 
-console.log(SUFFIX.length)
+// console.log(SUFFIX.length)
 
 export type WhereDefine = {
     /**

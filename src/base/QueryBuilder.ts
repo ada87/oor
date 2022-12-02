@@ -1,8 +1,9 @@
+import _ from 'lodash';
 import { WhereItem, WhereCondition, QuerySchema, WhereDefine, FieldType, SUFFIX, USchema, MagicSuffix } from './types';
 import { Kind } from '@sinclair/typebox';
-import { whereByCondition } from './QueryWhere';
-import { STRICT } from './Util';
-import _ from 'lodash';
+// import { whereByCondition } from './QueryWhere';
+import { throwErr } from './Util';
+
 
 const DEFAULT_QUERY_KEY = new Set<string>(['start_', 'count_', 'order_', 'by_', 'keyword_']);
 
@@ -71,7 +72,7 @@ const defineToItem = (def: WhereDefine, schema: USchema, value: string | boolean
 
 }
 
-const queryToCondition = (query: QuerySchema, FIELD_MAP: Map<string, USchema>, FIELD_CACHE: Map<string, WhereDefine>): WhereCondition => {
+export const queryToCondition = (query: QuerySchema, FIELD_MAP: Map<string, USchema>, FIELD_CACHE: Map<string, WhereDefine>): WhereCondition => {
     const err: string[] = [];
     const ROOT: WhereCondition = { link: 'AND', items: [] }
     _.keys(query).map(key => {
@@ -99,24 +100,16 @@ const queryToCondition = (query: QuerySchema, FIELD_MAP: Map<string, USchema>, F
         }
         ROOT.items.push(queryItem);
     });
-
-    if (err.length) {
-        if (STRICT) {
-            throw new Error('Some SQL Error Occur', { cause: err })
-        }
-        console.log('----------Some Error of Query:--------')
-        console.error('Query Field Not Validate [', err.join(' , '), ']');
-        console.log('--------------------------------------')
-    }
+    throwErr(err, 'Some SQL Error Occur')
     return ROOT;
 }
 
-/**
- * @see QuerySchema
- * Build Query Where By QuerySchema
-*/
-export const whereByQuery = (query: QuerySchema, FIELD_MAP: Map<string, USchema>, FIELD_CACHE: Map<string, WhereDefine>, startIdx = 1): [string, any[]] => {
-    const condition = queryToCondition(query, FIELD_MAP, FIELD_CACHE);
-    return whereByCondition(condition, startIdx);
-    // return whereByCondition(condition, startIdx)
-}
+// /**
+//  * @see QuerySchema
+//  * Build Query Where By QuerySchema
+// */
+// export const conditionByQuery = (query: QuerySchema, FIELD_MAP: Map<string, USchema>, FIELD_CACHE: Map<string, WhereDefine>): [string, any[]] => {
+//     const condition = queryToCondition(query, FIELD_MAP, FIELD_CACHE);
+
+//     // return whereByCondition(condition, startIdx)
+// }

@@ -1,9 +1,9 @@
 import { test } from '@japa/runner'
-import { FIELD_MAP } from '../test/pg';
-import type { WhereCondition, QuerySchema } from './types'
+// import { FIELD_MAP } from '../test/pg';
+import type { WhereCondition, QuerySchema } from '../../base/types'
 import { whereByCondition, getRange, getNumberRange, getDateRange } from './QueryWhere'
-import { whereByQuery } from './QueryBuilder';
-import { orderByLimit } from './QueryPagition';
+// import { whereByQuery } from './QueryBuilder';
+// import { orderByLimit } from './QueryPagition';
 
 
 test('Test : Range Number', ({ assert }, txt) => {
@@ -30,7 +30,7 @@ test('Test : Range Date', ({ assert }, txt) => {
     '',
     '2000-01-01,20110101',
 ])
-    .pin()
+    // .pin()
     ;
 
 
@@ -64,3 +64,28 @@ test('Test : WhereToSql', ({ assert }) => {
     ;
 
 
+
+test('Test : buildSQL', ({ assert }) => {
+
+    const root: WhereCondition = {
+        link: 'AND',
+        items: [
+            { field: 'a1', condition: '<', value: 'value1' },
+            { field: 'a2', condition: '<', value: 'value2' },
+
+            {
+                link: 'OR', items: [
+                    { field: 'b1', condition: 'Like', value: 'value3' },
+                    { field: 'b2', condition: '>=', value: 'value4' },
+                ]
+            },
+            { field: 'a3', condition: '<', value: 'value1' },
+
+        ]
+    }
+
+    // const sql = whereByCondition(root);
+    // assert.equal(sql[1].length, 5)
+
+    // console.log(sql[0], sql[1])
+});

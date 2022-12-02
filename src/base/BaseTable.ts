@@ -1,11 +1,10 @@
 import _ from 'lodash';
-import { deleteById, update, insert } from '../sql';
 import type { TObject, Static } from '@sinclair/typebox';
 import { BaseView } from './BaseView'
 import { getFieldType } from './QueryBuilder';
 
 
-export class BaseTable<T extends TObject> extends BaseView<T> {
+export abstract class BaseTable<T extends TObject> extends BaseView<T> {
 
     /**
      * check row data while insert or update
@@ -38,19 +37,19 @@ export class BaseTable<T extends TObject> extends BaseView<T> {
         return clone;
     }
 
-    deleteById(id: number | string): Promise<number> {
-        return deleteById(this.db(), this._table, id, this._CONFIG.key)
-    }
+    // deleteById(id: number | string): Promise<number> {
+    //     return deleteById(this.db(), this._table, id, this._CONFIG.key)
+    // }
 
-    update(object: Static<T>): Promise<number> {
-        let entity = this.checkEntity(object, false);
-        return update(this.db(), this._table, entity, this._CONFIG.key)
-    }
+    // update(object: Static<T>): Promise<number> {
+    //     let entity = this.checkEntity(object, false);
+    //     return update(this.db(), this._table, entity, this._CONFIG.key)
+    // }
 
-    insert(object: Static<T>): Promise<Static<T>> {
-        let entity = this.checkEntity(object, true);
-        return insert(this.db(), this._table, entity)
-    }
+    // insert(object: Static<T>): Promise<Static<T>> {
+    //     let entity = this.checkEntity(object, true);
+    //     return insert(this.db(), this._table, entity)
+    // }
 }
 
 

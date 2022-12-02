@@ -1,6 +1,6 @@
-import _, { min } from 'lodash';
-import { WhereItem, WhereCondition, MagicSuffix } from './types';
-import { STRICT } from './Util';
+import _ from 'lodash';
+import { WhereItem, WhereCondition, MagicSuffix } from '../../base/types';
+import { throwErr } from '../../base/Util';
 import dayjs from 'dayjs';
 
 type QueryPos = { SQL: string[]; PARAM: any[], NUM: number; }
@@ -126,6 +126,12 @@ const whereText = (item: WhereItem, pos: QueryPos, err: string[]) => {
         case 'NotNull':
             pos.SQL.push(`${item.field} IS NOT NULL`);
             break;
+        case 'IsDistinct':
+            pos.SQL.push(`${item.field} IS DISTINCT`);
+            break;
+        case 'NotDistinct':
+            pos.SQL.push(`${item.field} IS NOT DISTINCT`);
+            break;
         default:
             err.push(`${item.field}/ type : String not support method ${item.condition}`)
             return;
@@ -165,6 +171,8 @@ const whereNumber = (item: WhereItem, pos: QueryPos, err: string[]) => {
         }
         return;
     }
+    err.push(`${item.field}/ type : Number not support method ${item.condition}`)
+
 }
 
 const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
@@ -305,12 +313,7 @@ export const whereByCondition = (condition: (WhereCondition) | (WhereItem[]), st
     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
     let err: string[] = [];
     ConditionToWhere(root, pos, err);
-    if (err.length) {
-        if (STRICT) {
-            throw new Error('Some SQL Error Occur', { cause: err })
-        }
-        // console.log(err)
-    }
+    throwErr(err, 'Some SQL Error Occur');
     if (pos.PARAM.length == 0) return ['', []];
     return ['WHERE ' + pos.SQL.join(" " + root.link + " "), pos.PARAM]
 }

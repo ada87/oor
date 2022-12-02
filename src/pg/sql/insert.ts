@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import type { ClientBase } from 'pg';
+// import { SqlInsert } from '../../base/sql';
 
-const _insert = (table: string, obj: any): [string, any[]] => {
+export default (table: string, obj: any): [string, any[]] => {
     const fields = _.keys(obj);
     if (fields.length == 0) {
         throw new Error();
@@ -21,21 +21,3 @@ const _insert = (table: string, obj: any): [string, any[]] => {
     })
     return [`INSERT INTO ${table} (${query.join(',')}) VALUES (${idx.join(',')}) RETURNING *`, param];
 }
-
-
-
-
-export const insert = async (pg: ClientBase, table: string, obj: any): Promise<any> => {
-    const [SQL, PARAM] = _insert(table, obj);
-    const result = await pg.query(SQL, PARAM);
-    if (result.rowCount == 1) {
-        return result.rows[0];
-
-    }
-    throw new Error();
-}
-
-
-// export const insertBatch = async (pg: ClientBase, table: string, obj: any[]) => {
-
-// }

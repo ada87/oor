@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import type { QuerySchema } from './types';
-import { PAGE_SIZE } from './Util';
+import type { QuerySchema } from '../../base/types';
+import { PAGE_SIZE } from '../../base/Util';
 
 const BY_SET = new Set<string>(['asc', 'desc']);
 

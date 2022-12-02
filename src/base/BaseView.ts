@@ -1,12 +1,13 @@
 import _ from 'lodash';
-import { selectById, selectAll } from '../sql';
+// import { selectById, selectAll } from '../sql';
 import { PAGE_SIZE } from './Util';
 import type { TObject, Static, TSchema } from '@sinclair/typebox';
 import type { QuerySchema, WhereCondition, WhereDefine, USchema, WhereItem } from './types';
 import { BaseQuery } from './BaseQuery'
-import { orderByLimit } from './QueryPagition';
-import { whereByCondition } from './QueryWhere';
-import { whereByQuery } from './QueryBuilder';
+import { orderByLimit } from '../pg/sql/QueryPagition';
+// import { whereByCondition } from './QueryWhere';
+import { queryToCondition } from './QueryBuilder';
+import type { SqlCrud, SqlExecuter } from './sql'
 
 const DEFAULT_SCHEMA = 'public';
 
@@ -38,9 +39,14 @@ type TableOptions = {
 
 
 
-export class BaseView<T extends TObject> extends BaseQuery {
+export abstract class BaseView<T extends TObject> extends BaseQuery {
 
     protected _table: string;
+
+    protected abstract _sql: SqlCrud;
+
+    protected abstract _exec: SqlExecuter;
+
 
     protected _CONFIG = {
         key: 'id',
@@ -107,7 +113,7 @@ ${WHERE} ${ORDER_BY} ${LIMIT}`;
     */
     queryByCondition(condition?: WhereCondition) {
         // TODO check condition
-        const [WHERE, PARAM] = whereByCondition(condition);
+        const [WHERE, PARAM] = this._sql.whereByCondition(condition);
         return this._query(WHERE, PARAM);
     }
 
@@ -118,7 +124,8 @@ ${WHERE} ${ORDER_BY} ${LIMIT}`;
     */
     query(query?: QuerySchema): Promise<Static<T>[]> {
         const { FIELD_MAP, order, by, pageSize } = this._CONFIG;
-        const [WHERE, PARAM] = whereByQuery(query, FIELD_MAP, this._QUERY_CACHE);
+        const condition = queryToCondition(query, FIELD_MAP, this._QUERY_CACHE);
+        const [WHERE, PARAM] = this._sql.whereByCondition(condition, 1);
         const [ORDER_BY, LIMIT] = orderByLimit(FIELD_MAP, query, pageSize, order, by);
         console.log(WHERE, PARAM, ORDER_BY, LIMIT)
         return this._query(WHERE, PARAM, ORDER_BY, LIMIT);
@@ -132,7 +139,8 @@ ${WHERE} ${ORDER_BY} ${LIMIT}`;
     async queryPager(query?: QuerySchema): Promise<{ total: number, list: Static<T>[] }> {
         let total = 0;
         const { key, order, by, pageSize, FIELD_MAP } = this._CONFIG;
-        const [WHERE, PARAM] = whereByQuery(query, FIELD_MAP, this._QUERY_CACHE);
+        const condition = queryToCondition(query, FIELD_MAP, this._QUERY_CACHE);
+        const [WHERE, PARAM] = this._sql.whereByCondition(condition, 1);
         if (_.has(query, 'total_') && _.isNumber(query.total_)) {
             total = query.total_;
         } else {
@@ -154,16 +162,18 @@ ${WHERE} ${ORDER_BY} ${LIMIT}`;
     /**
      * Fetch All Records form the Table / View
     */
-    all(): Promise<Static<T>[]> {
-        return selectAll(this.db(), this._table, this._CONFIG.query_fields);
-    }
+    // all(): Promise<Static<T>[]> {
+    //     // const [sql,param] = this._sql.selectById
+    //     return selectAll(this.db(), this._table, this._CONFIG.query_fields);
+    // }
 
     /**
      * Get A record form Table / View By Specify key.
      * This method will return All column. Even if the IGNORE column.
     */
     getById(id: number | string): Promise<Static<T>> {
-        return selectById(this.db(), this._table, id, [], this._CONFIG.key);
+        const [SQL, PARAM] = this._sql.selectById(this._table, id, [], this._CONFIG.key)
+        return this._exec.selectById(this.db(), SQL, PARAM);
     }
 
 

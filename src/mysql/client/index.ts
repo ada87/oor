@@ -1,6 +1,6 @@
 import type { Connection } from 'mysql2/promise';
 
-
+// TODO
 export const insert = async (conn: Connection, table: string, obj: any): Promise<any> => {
     // const [SQL, PARAM] = PG.insert(table, obj);
     // const result = await pg.query(SQL, PARAM);

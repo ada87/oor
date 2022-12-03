@@ -47,6 +47,7 @@ export abstract class BaseView<T extends TObject> extends BaseQuery {
         order: 'id',
         by: 'desc',
         query_fields: '*',
+        get_fields: '*',
         pageSize: PAGE_SIZE,
         FIELD_MAP: new Map<string, USchema>(),
         globalCondition: []
@@ -64,21 +65,28 @@ export abstract class BaseView<T extends TObject> extends BaseQuery {
     constructor(tableName: string, schema: T, options?: TableOptions) {
         super();
         let fields = [];
+        let fields_all = [];
         this._CONFIG.FIELD_MAP = new Map<string, TSchema>();
         _.keys(schema.properties).map(field => {
             let properties = schema.properties[field];
             this._CONFIG.FIELD_MAP.set(field, properties);
-            if (properties.ignore === true) {
-                return;
-            }
             if (properties.column) {
+                fields_all.push(`"${properties.column}" AS "${field}"`);
+                if (properties.ignore === true) {
+                    return;
+                }
                 fields.push(`"${properties.column}" AS "${field}"`);
             } else {
+                fields_all.push('"' + field + '"');
+                if (properties.ignore === true) {
+                    return;
+                }
                 fields.push('"' + field + '"');
             }
         });
         this._table = DEFAULT_SCHEMA + '.' + tableName;
         this._CONFIG.query_fields = fields.join(',');
+        this._CONFIG.get_fields = fields_all.join(',')
         if (options == null) return;
         if (options.key) {
             this._CONFIG.key = options.key;
@@ -91,13 +99,15 @@ export abstract class BaseView<T extends TObject> extends BaseQuery {
     }
 
     private async _query(WHERE, PARAM: string[] = [], ORDER_BY = '', LIMIT = ''): Promise<Static<T>[]> {
-        const SQL_QUERY = `SELECT ${this._CONFIG.query_fields}  
-FROM ${this._table} 
-${WHERE} ${ORDER_BY} ${LIMIT}`;
-        console.log(SQL_QUERY, PARAM)
-        const queryResult = await this.sql(SQL_QUERY, PARAM);
-
-        return queryResult.rows;
+        const { _BUILDER, _EXECUTOR, _table, _CONFIG: { query_fields } } = this;
+        const SQL_QUERY = _BUILDER.select(_table, query_fields);
+        const SQL = `${SQL_QUERY}
+${WHERE} 
+${ORDER_BY} 
+${LIMIT}`;
+        console.log(SQL, PARAM)
+        const result = _EXECUTOR.query(this.db(), SQL, PARAM)
+        return result;
     }
 
 
@@ -131,21 +141,22 @@ ${WHERE} ${ORDER_BY} ${LIMIT}`;
     */
     async queryPager(query?: QuerySchema): Promise<{ total: number, list: Static<T>[] }> {
         let total = 0;
-        const { _table, _BUILDER, _QUERY_CACHE, _CONFIG: { key, FIELD_MAP } } = this;
+
+        const { _table, _BUILDER, _EXECUTOR, _QUERY_CACHE, _CONFIG: { key, FIELD_MAP } } = this;
         const condition = queryToCondition(query, FIELD_MAP, _QUERY_CACHE);
         const [WHERE, PARAM] = _BUILDER.where(condition, 1);
         if (_.has(query, 'total_') && _.isNumber(query.total_)) {
             total = query.total_;
         } else {
-            const SQL_COUNT = `SELECT COUNT(${key}) AS total FROM ${_table} ${WHERE}`;
-            const countResult = await this.sql(SQL_COUNT, PARAM);
-            if (countResult.rowCount != 1) {
+            const SQL_COUNT = `${_BUILDER.count(_table, key)} ${WHERE}`;
+            const countResult = await _EXECUTOR.get(this.db(), SQL_COUNT, PARAM);
+            if (countResult == null) {
                 return {
                     total: 0,
                     list: [],
                 }
             }
-            total = parseInt(countResult.rows[0].total);
+            total = parseInt(countResult.total);
         }
         const [ORDER_BY, LIMIT] = this.orderByLimit(query);
         const list = await this._query(WHERE, PARAM, ORDER_BY, LIMIT)
@@ -170,8 +181,9 @@ ${WHERE} ${ORDER_BY} ${LIMIT}`;
      * This method will return All column. Even if the IGNORE column.
     */
     getById(id: number | string): Promise<Static<T>> {
-        const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
-        const SQL = _BUILDER.select(_table);
+        const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key, get_fields } } = this;
+        console.log(get_fields)
+        const SQL = _BUILDER.select(_table, get_fields);
         const [WHERE, PARAM] = _BUILDER.byId(id, key);
         return _EXECUTOR.get(this.db(), `${SQL} ${WHERE}`, PARAM);
     }

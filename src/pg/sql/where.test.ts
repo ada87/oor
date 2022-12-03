@@ -1,6 +1,6 @@
 import { test } from '@japa/runner'
 // import { FIELD_MAP } from '../test/pg';
-import type { WhereCondition, QuerySchema } from '../../base/types'
+import { WhereCondition, QuerySchema, SUFFIX } from '../../base/types'
 import { where, getRange, getNumberRange, getDateRange } from './where'
 // import { whereByQuery } from './QueryBuilder';
 // import { orderByLimit } from './QueryPagition';
@@ -89,3 +89,22 @@ test('Test : buildSQL', ({ assert }) => {
 
     // console.log(sql[0], sql[1])
 });
+
+
+
+test('Test : Where', ({ assert }, txt) => {
+    const condition: WhereCondition = {
+        link: 'AND', items: [
+            {
+                type: 'boolean',
+                field: 'age',
+                // @ts-ignore
+                "condition": txt,
+                value: false
+            }
+        ]
+    }
+    console.log(txt, where(condition, 1))
+    // console.log(txt, getDateRange(txt as any))
+}).with(SUFFIX as any)
+    // .pin();

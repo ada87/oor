@@ -15,11 +15,11 @@ test('Test : Suffix Cover', ({ assert }) => {
 
 
     let condition = queryToCondition(query, FIELD_MAP, new Map());
-    console.log(condition)
+    console.log(condition.items.length)
     // let [ORDERBY, LIMIT] = orderByLimit(FIELD_MAP, query);
 
 })
-    .pin()
+    // .pin()
     ;
 
 

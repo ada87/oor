@@ -5,7 +5,6 @@ import { getFieldType } from './QueryBuilder';
 import { SqlExecutor } from './sql';
 import { QuerySchema } from './types';
 
-
 export abstract class BaseTable<T extends TObject> extends BaseView<T> {
     protected abstract _EXECUTOR: SqlExecutor<T>;
 
@@ -50,12 +49,15 @@ export abstract class BaseTable<T extends TObject> extends BaseView<T> {
 
     deleteById(id: number | string): Promise<number> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
-        const SQL = _BUILDER.select(_table);
+        const SQL = _BUILDER.delete(_table);
         const [WHERE, PARAM] = _BUILDER.byId(id, key);
         return _EXECUTOR.execute(this.db(), `${SQL} ${WHERE}`, PARAM);
 
     }
 
+    /**
+     * Update a record, By Id
+    */
     update(object: Static<T>): Promise<number> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
         let entity = this.checkEntity(object, false);
@@ -63,6 +65,13 @@ export abstract class BaseTable<T extends TObject> extends BaseView<T> {
         return _EXECUTOR.execute(this.db(), `${SQL}`, PARAM);
     }
 
+    updateByQuery(properties: Static<T>, query: QuerySchema) {
+
+    }
+
+    /**
+     * Insert a record
+    */
     insert(object: Static<T>): Promise<Static<T>> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
         let entity = this.checkEntity(object, true);

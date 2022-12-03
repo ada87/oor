@@ -7,6 +7,7 @@ export type SqlSelect = (table: string, fields?: string) => string;
 export type SqlInsert = (table: string, row: PlainObject) => [string, any];
 export type SqlUpdate = (table: string, obj: PlainObject, key?: string) => [string, any[]];
 export type SqlDelete = (table: string) => string;
+export type SqlCount = (table: string, field?: string) => string;
 
 export type SqlById = (idValue: string | number, idKey?: string) => [string, any[]];
 export type SqlWhere = (condition: (WhereCondition) | (WhereItem[]), startIdx?: number) => [string, any[]];
@@ -19,8 +20,10 @@ export type SqlLimit = (query?: QuerySchema, pageSize?: number) => string;
 export type SqlBuilder = {
     insert: SqlInsert,
     select: SqlSelect,
+    count: SqlCount,
     update: SqlUpdate,
     delete: SqlDelete,
+
     byId: SqlById,
     where: SqlWhere,
     orderBy: SqlOrderBy,

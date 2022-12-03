@@ -17,8 +17,8 @@ export abstract class BaseQuery {
     /**
      * Exec A SQL Senctence
     */
-    async sql(sql: string, params?: (string | number | boolean)[]): Promise<any> {
-        return await this._EXECUTOR.query(getDB(), sql, params)
+    sql(sql: string, params?: (string | number | boolean)[]): Promise<any> {
+        return this._EXECUTOR.query(getDB(), sql, params)
     }
 
 

@@ -50,6 +50,7 @@ test('Test : Query With Pagition', async () => {
 
 
 test('Test : CRUD', async () => {
+    // Insert
     const insertResult = await User.insert({
         name: 'test',
         age: 23,
@@ -58,13 +59,13 @@ test('Test : CRUD', async () => {
         salary: 1221.2,
     });
     console.log('Insert Result', insertResult)
-
     let userId = insertResult.id as number;
 
 
     const afterInsert = await User.getById(userId);
     console.log('After Insert', afterInsert)
 
+    // Update
     await new Promise(r => setTimeout(r, 1200)); // wait , notice last_update value
     let isUpdate = await User.update({ id: userId, age: 60, });    // change Age
     console.log('Update is Success ? : ', isUpdate == 1);
@@ -72,6 +73,7 @@ test('Test : CRUD', async () => {
     const afterUpdate = await User.getById(userId);
     console.log('After Update', afterUpdate)
 
+    // Delete
     let isDelete = await User.deleteById(userId);
     console.log('Delete is Success ? : ', isDelete == 1);
 

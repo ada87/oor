@@ -63,37 +63,43 @@ export const User = new Table('user', UserSchema);
 
 
 ```typescript
-// 查询所有 Feedback
-const result = await FeedBack.all();
+// 查询所有 User
+const result = await User.all();
 console.log(result);
 
-// INSERT
-const feedback:FeedBack = {
-    title: 'I Have a feedback',
-    contact: 'a@b.c',
-    content: 't6 is amsome',
-    product: 'orm'
-}
-const result = await FeedBack.insert(feedback);
-console.log(result)
-
-// UPDATE
-const id = 4;
-await FeedBack.update({...feedback,id});
-console.log(result == 1)
-
-// GET BY ID
-const result = await FeedBack.getById(id);
-console.log(result)
-
-// DELETE
-const result = await FeedBack.deleteById(2);
-console.log(result == 1)
+// Insert
+const insertResult = await User.insert({
+    name: 'test',
+    age: 23,
+    sex: false,
+    address: 'randmo',
+    salary: 1221.2,
+});
+console.log('Insert Result', insertResult)
+let userId = insertResult.id as number;
 
 
+const afterInsert = await User.getById(userId);
+console.log('After Insert', afterInsert)
+
+// Update
+await new Promise(r => setTimeout(r, 1200)); // wait , notice last_update value
+let isUpdate = await User.update({ id: userId, age: 60, });    // change Age
+console.log('Update is Success ? : ', isUpdate == 1);
+
+const afterUpdate = await User.getById(userId);
+console.log('After Update', afterUpdate)
+
+// Delete
+let isDelete = await User.deleteById(userId);
+console.log('Delete is Success ? : ', isDelete == 1);
+
+await setTimeout(r => r, 1000); // wait , notice last_update value
+const afterDelete = await User.getById(userId);
+console.log('After Delete', afterDelete)
 
 // 执行自定义SQL语句
-const result = await FeedBack.sql(`SELECT XXX 
+const result = await User.sql(`SELECT XXX 
 FROM YYY 
 WHERE ZZZ = $1 
 ORDER BY $2 $3`,['value','id','DESC']);
@@ -135,17 +141,17 @@ console.log(result);
 先看个示例：
 
 ```typescript
-FeedBack.query({
+User.query({
     start_: 0,
     count_: 20,
     order_: 'id',
     by_: 'desc',
-    idMin: 200,                             // id > 200
-    idNot: 300,                             // id != 300
-    createDateMin : '2022-01-01',           // createDate > 2022-01-01
-    createDateMax : new Date('2022-02-01'), // createDate < 2022-02-01
-    titleLike: 'title',                     // title like %title%
-    product: 'oor'                          // product = oor (No Suffix, No Magic )
+    idMin: 200,                                 // id > 200
+    idNot: 300,                                 // id != 300
+    createDateMin : '2022-01-01',               // createDate > 2022-01-01
+    createDateMax : new Date('2022-02-01'),     // createDate < 2022-02-01
+    nameLike: 'title',                          // name like %title%
+    name: 'oor'                                 // product = oor (No Suffix, No Magic )
 })
 ```
 
@@ -154,9 +160,14 @@ FeedBack.query({
 目前支持的后辍有：
 
 ```typescript
-export type MagicSuffix = 'Min' | 'Mint' | 'Max' | 'Maxt'   // commom  > , >= , <  ,  <=
-    | 'MinH' | 'MinD' | 'MinM' | 'MaxH' | 'MaxD' | 'MaxM'   // Only Date Hour / Day / Month
-    | 'Like' | 'Likel' | 'Liker';                           // Only String  like leftlike rightlike
+'Min', 'MinThan', 'Max', 'MaxThan',                 // commom  > , >= , <  ,  <=
+'MinH', 'MinD', 'MinM', 'MaxH', 'MaxD', 'MaxM',     // Only Date Hour / Day / Month
+'Like', 'Likel', 'Liker',                           // Only String  like leftlike rightlike
+'Bt', 'BtD', 'BtY', 'BtM',                          // BETWEEN, support Number/Date ,'BtY', 'BtM', 'BtD' Only  Spport Date
+'Not',                                              // != or <>
+'IsNull', 'NotNull',                                // isNull or Not NULL           This Suffix will avoid value
+'IsDistinct', 'NotDistinct',                        // isDistinct or Not Distinct   This Suffix will avoid value
+'>', '>=', '<', '<=', '=', '!=', '<>'               // Comparison Functions,
 ```
 
 

@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import { WhereItem, WhereCondition, QuerySchema, WhereDefine, FieldType, SUFFIX, USchema, MagicSuffix } from './types';
 import { Kind } from '@sinclair/typebox';
-// import { whereByCondition } from './QueryWhere';
 import { throwErr } from './Util';
 
 

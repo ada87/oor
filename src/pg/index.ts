@@ -1,16 +1,19 @@
-import { BaseView as _BaseView } from '../base/BaseView';
-import { BaseTable as _BaseTable } from '../base/BaseTable';
+import { BaseView } from '../base/BaseView';
+import { BaseTable } from '../base/BaseTable';
 import type { TObject } from '@sinclair/typebox';
-import { SqlCrud, SqlExecuter } from '../base/sql';
+import { SqlBuilder, SqlExecutor } from '../base/sql';
 import { PG, executor } from './sql'
 
-export class BaseView<T extends TObject> extends _BaseView<T> {
-    protected _sql: SqlCrud = PG;
-    protected _exec: SqlExecuter = executor;
-
+export class View<T extends TObject> extends BaseView<T> {
+    protected _BUILDER: SqlBuilder = PG;
+    protected _EXECUTOR: SqlExecutor<T> = executor;
 }
 
-export class BaseTable<T extends TObject> extends _BaseTable<T> {
-    protected _sql: SqlCrud = PG;
-    protected _exec: SqlExecuter = executor;
+export class Table<T extends TObject> extends BaseTable<T> {
+    protected _BUILDER: SqlBuilder = PG;
+    protected _EXECUTOR: SqlExecutor<T> = executor;
 }
+
+export { setup, UType } from '../base/Util';
+export * from '../base/types';
+export type { Static } from '@sinclair/typebox';

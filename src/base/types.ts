@@ -3,9 +3,7 @@ import type { SchemaOptions } from '@sinclair/typebox';
 /**
  * Where 判断条件
 */
-// export type WhereOperaction = '>' | '>=' | '<' | '<=' | '=' | 'LIKE' | 'NOT';
 export type FieldType = 'string' | 'number' | 'boolean' | 'date';
-
 
 // https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP
 
@@ -20,8 +18,6 @@ export const SUFFIX = [
     '>', '>=', '<', '<=', '=', '!=', '<>'               // Comparison Functions,  https://www.postgresql.org/docs/current/functions-comparison.html
 ] as const;
 export type MagicSuffix = (typeof SUFFIX)[number];
-
-// console.log(SUFFIX.length)
 
 export type WhereDefine = {
     /**
@@ -59,9 +55,6 @@ export type WhereItem = WhereDefine & {
 }
 
 export type WhereCondition = { link: 'AND' | 'OR' | 'NOT', items: (WhereItem | WhereCondition)[] }
-
-
-
 
 
 export type QuerySchema = {

@@ -1,11 +1,9 @@
 import _ from 'lodash';
 import { test } from '@japa/runner'
 import { FIELD_MAP } from '../test/pg';
-import type { WhereCondition, QuerySchema } from './types'
-// import { whereByCondition, } from './QueryWhere'
 import { queryToCondition } from './QueryBuilder';
-import { orderByLimit } from '../pg/sql/QueryPagition';
 import { SUFFIX } from './types';
+import type { QuerySchema } from './types'
 
 test('Test : Suffix Cover', ({ assert }) => {
     let query: any = {};

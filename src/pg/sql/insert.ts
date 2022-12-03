@@ -1,7 +1,7 @@
 import _ from 'lodash';
-// import { SqlInsert } from '../../base/sql';
+import { SqlInsert } from '../../base/sql';
 
-export default (table: string, obj: any): [string, any[]] => {
+export const insert: SqlInsert = (table: string, obj: any): [string, any[]] => {
     const fields = _.keys(obj);
     if (fields.length == 0) {
         throw new Error();

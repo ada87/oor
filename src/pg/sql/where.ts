@@ -308,7 +308,7 @@ const ConditionToWhere = (condition: WhereCondition, pos: QueryPos, err: string[
 };
 
 
-export const whereByCondition = (condition: (WhereCondition) | (WhereItem[]), startIdx = 1): [string, any[]] => {
+export const where = (condition: (WhereCondition) | (WhereItem[]), startIdx = 1): [string, any[]] => {
     const pos: QueryPos = { SQL: [], PARAM: [], NUM: startIdx };
     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
     let err: string[] = [];

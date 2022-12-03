@@ -1,7 +1,7 @@
 import { test } from '@japa/runner'
 // import { FIELD_MAP } from '../test/pg';
 import type { WhereCondition, QuerySchema } from '../../base/types'
-import { whereByCondition, getRange, getNumberRange, getDateRange } from './QueryWhere'
+import { where, getRange, getNumberRange, getDateRange } from './where'
 // import { whereByQuery } from './QueryBuilder';
 // import { orderByLimit } from './QueryPagition';
 
@@ -36,13 +36,13 @@ test('Test : Range Date', ({ assert }, txt) => {
 
 
 test('Test : WhereToSql', ({ assert }) => {
-    assert.throws(() => whereByCondition({
+    assert.throws(() => where({
         // string not support MaxD will throw a error
         link: 'AND', items: [{ field: 'name', type: 'string', value: 'a', condition: 'MaxD' }]
     }), 'Some SQL Error Occur');
 
 
-    const [SQL, PARAM] = whereByCondition({
+    const [SQL, PARAM] = where({
         // string not support MaxD will throw a error
         link: 'AND', items: [
             { field: 'name', type: 'string', value: 'a', condition: 'Like' },

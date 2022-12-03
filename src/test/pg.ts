@@ -2,7 +2,7 @@ import { test as jtest, Test, TestContext } from '@japa/runner';
 import { assert } from '@japa/assert'
 import { Client } from 'pg';
 import { TestExecutor } from '@japa/core';
-import { setup, BaseTable, UType, Static } from '../index';
+import { setup, Table, UType, Static } from '../index';
 import * as _ from 'lodash';
 
 
@@ -38,7 +38,9 @@ export const test = (title: string, callback: TestExecutor<TestContext, undefine
     });
 
 
-
+// Line 2 : Build a Schema , 
+//          Schema can be used for validate、check, @see @sinclair/typebox
+//          Some FrameWork support this schema derectly , like fastify 
 export const UserSchema = UType.Table({
     id: UType.Number(),
     name: UType.String({ maxLength: 32 }),
@@ -49,9 +51,14 @@ export const UserSchema = UType.Table({
     salary: UType.Number(),
     registerDate: UType.Date({ column: 'register_date', isCreate: true }),
     lastModify: UType.Date({ column: 'last_modify', isModify: true })
-});                                                        // Line 1
-export type User = Static<typeof UserSchema>;              // Line 2
-export const User = new BaseTable('user', UserSchema);     // Line 3
+});
+
+// Line 3 : Define a Type, you can avoid if not need this type.
+export type User = Static<typeof UserSchema>;
+
+// Line 4 : Build a Table, it's ok for all
+export const User = new Table('user', UserSchema);
 
 // @ts-ignore
 export const FIELD_MAP = User._CONFIG.FIELD_MAP as Map<string, USchema>;
+

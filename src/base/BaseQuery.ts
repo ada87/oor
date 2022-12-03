@@ -1,7 +1,11 @@
-import type { QueryResult } from 'pg';
 import { getDB } from './Util'
+import type { SqlBuilder, BaseSqlExecutor } from './sql'
 
 export abstract class BaseQuery {
+
+    protected abstract _BUILDER: SqlBuilder;
+
+    protected abstract _EXECUTOR: BaseSqlExecutor;
 
     /**
      * Get Database connection form provider
@@ -11,10 +15,11 @@ export abstract class BaseQuery {
     }
 
     /**
-     * Exec
+     * Exec A SQL Senctence
     */
-    sql(sql: string, params?: (string | number | boolean)[]): Promise<QueryResult> {
-        return this.db().query(sql, params)
+    async sql(sql: string, params?: (string | number | boolean)[]): Promise<any> {
+        return await this._EXECUTOR.query(getDB(), sql, params)
     }
+
 
 }

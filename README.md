@@ -1,7 +1,6 @@
 # OOR
 
-个人开发的 NodeJs ORM 工具包 , 目前仅支持 `Postgresql` （<span style="color:red;">个人业余项目，谨慎使用</span>）。 
-
+NodeJs ORM 工具包 , 目前仅支持 `Postgresql` （***加粗说明 ： 个人业余项目，谨慎使用***）。 
 
 特点：
 
@@ -9,9 +8,7 @@
 2. 代码即定义，可导出 TypeScript 类型。
 3. 相比其它框架， 写起来极省代码行数。
 4. 内置常用列定义
-5. 支持查询魔法，支持分页查询
-
-
+5. 支持查询魔法，分页查询
 
 
 ## 使用方法
@@ -19,8 +16,8 @@
 
 ```bash
 npm install --save oor pg                           # for PostgreSql
-# npm install --save oor mysql2                     # for MySql
-# npm install --save oor @elastic/elasticsearch     # for ElasticSearch 
+# npm install --save oor mysql2                     # (Coming) for MySql 
+# npm install --save oor @elastic/elasticsearch     # (Coming) for ElasticSearch 
 ```
 
 
@@ -37,33 +34,29 @@ setup({ provider: () => pg })
 2. 定义 ORM
 
 ```typescript
-import { BaseTable, UType, Static } from 'oor';
-const FeedBackModel = UType.Table({
+// Line 1 : import oor
+import { Table, UType, Static } from 'oor';
+
+// Line 2 : Build a Schema
+//          Schema can be used for validate、check, @see @sinclair/typebox
+//          Some web framework support this schema, like fastify 
+export const UserSchema = UType.Table({
     id: UType.Number(),
-    title: UType.String(),
-    content: UType.String({ maxLength: 256, ignore: true }),
-    contact: UType.String({ maxLength: 64 }),
-    product: UType.String({ maxLength: 64 }),
-    createTime: UType.Date({ column: 'create_time', isCreate: true })
-});                                                             // Line 1
-type FeedBack = Static<typeof FeedBackModel>;                   // Line 2
-const FeedBack = new BaseTable('feedback', FeedBackModel);      // Line 3
-/**
- * 说明：
- * Line 1 : 构造出一个 JSON Schema 
- *          1. 可用于验证，自动赋值等 
- *          2. 在一些框架中可直接使用，如 fastify 。
- *          3. 详细可参考 @sinclair/typebox
- * Line 2 : 定一个 TypeScirpt 的 type
- *          1. 用于 IDE 编译器 自动提示，代码辅助
- *          2. 这个 Type 是一直有的，如不需要显示声明 type，这一行可省略不写
- * Line 3 ： 根据 Schema 构造一个数据表的 ORM 对象
- *          1. 可通过个这对象访问 ORM 相关API.
- *          2. 不需要 Line2,也不需要Line1的验证功能时，可写成一行，减少一个命名负担：
- *              const FeedBack = new BaseTable('feedback', UType.Table({....}));
- * */ 
+    name: UType.String({ maxLength: 32 }),
+    age: UType.Number({ minimum: 0, maximum: 128 }),
+    sex: UType.Boolean(),
+    profile: UType.String({ ignore: true }),
+    address: UType.String({ maxLength: 128 }),
+    salary: UType.Number(),
+    registerDate: UType.Date({ column: 'register_date', isCreate: true }),
+    lastModify: UType.Date({ column: 'last_modify', isModify: true })
+});
 
+// Line 3 : Define a Type, you can avoid if not need this type.
+export type User = Static<typeof UserSchema>;
 
+// Line 4 : Build a Table, it's ok for all
+export const User = new Table('user', UserSchema);
 ```
 
 3. 是的，仅需要一个定义，已经全部完成 可以CRUD 了

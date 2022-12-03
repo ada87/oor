@@ -1,56 +1,30 @@
 import _ from 'lodash';
-import { PG } from '.'
 import type { ClientBase } from 'pg';
-import { SqlExecuter } from '../../base/sql';
-export const executor: SqlExecuter = {
+import { SqlExecutor } from '../../base/sql';
 
-    insert: (conn, sql: string, param: any): Promise<any> => {
+export const executor: SqlExecutor<any> = {
+
+    add: async (conn: ClientBase, SQL: string, PARAM: any): Promise<any> => {
+        const result = await conn.query(SQL, PARAM);
+        if (result.rowCount == 1) {
+            return result.rows[0];
+        }
+        throw new Error();
+    },
+    get: async (conn: ClientBase, SQL: string, PARAM: any): Promise<any> => {
+        const result = await conn.query(SQL, PARAM);
+        if (result.rowCount == 1) {
+            return result.rows[0]
+        }
         return null;
     },
-    select: (conn, sql: string, param: any): Promise<any[]> => {
-        return null;
+    query: async (conn: ClientBase, SQL: string, PARAM: any): Promise<any[]> => {
+        const result = await conn.query(SQL, PARAM);
+        return result.rows;
     },
-    exec: (conn, sql: string, param: any): Promise<number> => {
-        return null;
+    execute: async (conn: ClientBase, SQL: string, PARAM: any): Promise<number> => {
+
+        const result = await conn.query(SQL, PARAM);
+        return result.rowCount;
     },
-}
-
-export const insert = async (pg: ClientBase, table: string, obj: any): Promise<any> => {
-    const [SQL, PARAM] = PG.insert(table, obj);
-    const result = await pg.query(SQL, PARAM);
-    if (result.rowCount == 1) {
-        return result.rows[0];
-
-    }
-    throw new Error();
-}
-
-
-export const deleteById = async (pg: ClientBase, table: string, id: string | number, key: string = 'id'): Promise<number> => {
-    const [SQL, PARAM] = PG.deleteById(table, id, key);
-    const result = await pg.query(SQL, PARAM);
-    return result.rowCount;
-}
-
-
-export const update = async (pg: ClientBase, table: string, obj: any, key: string = 'id'): Promise<number> => {
-    const [SQL, PARAM] = PG.updateById(table, obj, key);
-    const result = await pg.query(SQL, PARAM);
-    return result.rowCount;
-}
-
-
-export const selectById = async (pg: ClientBase, table: string, id: string | number, fields?: string[], key: string = 'id'): Promise<any> => {
-    const [SQL, PARAM] = PG.selectById(table, id, fields, key);
-    const result = await pg.query(SQL, PARAM);
-    if (result.rowCount == 1) {
-        return result.rows[0]
-    }
-    return null;
-}
-
-
-export const selectAll = async (pg: ClientBase, table: string, fields: string = '*'): Promise<any[]> => {
-    const result = await pg.query(`SELECT ${fields} FROM ${table}`);
-    return result.rows;
 }

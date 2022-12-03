@@ -1,32 +1,38 @@
-import type { WhereCondition, WhereItem } from './types';
+import type { WhereCondition, WhereItem, QuerySchema } from './types';
 
 type Primitive = string | number | boolean | Date | null | undefined;
 type PlainObject = Record<string, Primitive>;
 
+export type SqlSelect = (table: string, fields?: string) => string;
 export type SqlInsert = (table: string, row: PlainObject) => [string, any];
-
-
 export type SqlUpdate = (table: string, obj: PlainObject, key?: string) => [string, any[]];
+export type SqlDelete = (table: string) => string;
 
+export type SqlById = (idValue: string | number, idKey?: string) => [string, any[]];
+export type SqlWhere = (condition: (WhereCondition) | (WhereItem[]), startIdx?: number) => [string, any[]];
+export type SqlOrderBy = (fieldSet: Map<string, any>, query?: QuerySchema, default_order?: string, default_by?: string) => string;
+export type SqlLimit = (query?: QuerySchema, pageSize?: number) => string;
 
-export type SqlDelete = (table: string, id: string | number, key?: string) => [string, any[]];
-
-
-export type SqlSelect = (table: string, id: string | number, fields?: string[], key?: string) => [string, any[]];
-
-
-export type SqlCrud = {
+/**
+ * SqlBuilder
+*/
+export type SqlBuilder = {
     insert: SqlInsert,
-    selectById: SqlSelect,
-    updateById: SqlUpdate,
-    deleteById: SqlDelete,
-    whereByCondition: (condition: (WhereCondition) | (WhereItem[]), startIdx?: number) => [string, any[]],
+    select: SqlSelect,
+    update: SqlUpdate,
+    delete: SqlDelete,
+    byId: SqlById,
+    where: SqlWhere,
+    orderBy: SqlOrderBy,
+    limit: SqlLimit,
 }
 
-export type SqlExecuter = {
-    insert: (conn, sql: string, param: any) => Promise<any>,
-    select: (conn, sql: string, param: any) => Promise<any[]>,
-    selectById: (conn, sql: string, param: any) => Promise<any>,
-    exec: (conn, sql: string, param: any) => Promise<number>,
-    // deleteById: (conn, sql: string, param: any) => Promise<number>,
+export type BaseSqlExecutor = {
+    query: (conn, sql: string, param?: any) => Promise<any[]>,
+    get: (conn, sql: string, param?: any) => Promise<any>,
+}
+
+export type SqlExecutor<T> = BaseSqlExecutor & {
+    add: (conn, sql: string, param: any) => Promise<T>,
+    execute: (conn, sql: string, param?: any) => Promise<number>,
 }

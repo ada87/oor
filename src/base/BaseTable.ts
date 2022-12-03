@@ -2,9 +2,12 @@ import _ from 'lodash';
 import type { TObject, Static } from '@sinclair/typebox';
 import { BaseView } from './BaseView'
 import { getFieldType } from './QueryBuilder';
+import { SqlExecutor } from './sql';
+import { QuerySchema } from './types';
 
 
 export abstract class BaseTable<T extends TObject> extends BaseView<T> {
+    protected abstract _EXECUTOR: SqlExecutor<T>;
 
     /**
      * check row data while insert or update
@@ -37,19 +40,35 @@ export abstract class BaseTable<T extends TObject> extends BaseView<T> {
         return clone;
     }
 
-    // deleteById(id: number | string): Promise<number> {
-    //     return deleteById(this.db(), this._table, id, this._CONFIG.key)
-    // }
+    deleteByQuery(query: QuerySchema): Promise<number> {
+        const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
+        const SQL = _BUILDER.delete(_table);
+        const [WHERE, PARAM] = this.whereByQuery(query);
+        return _EXECUTOR.execute(this.db(), `${SQL} ${WHERE}`, PARAM);
+    }
 
-    // update(object: Static<T>): Promise<number> {
-    //     let entity = this.checkEntity(object, false);
-    //     return update(this.db(), this._table, entity, this._CONFIG.key)
-    // }
 
-    // insert(object: Static<T>): Promise<Static<T>> {
-    //     let entity = this.checkEntity(object, true);
-    //     return insert(this.db(), this._table, entity)
-    // }
+    deleteById(id: number | string): Promise<number> {
+        const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
+        const SQL = _BUILDER.select(_table);
+        const [WHERE, PARAM] = _BUILDER.byId(id, key);
+        return _EXECUTOR.execute(this.db(), `${SQL} ${WHERE}`, PARAM);
+
+    }
+
+    update(object: Static<T>): Promise<number> {
+        const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
+        let entity = this.checkEntity(object, false);
+        const [SQL, PARAM] = _BUILDER.update(_table, entity, key);
+        return _EXECUTOR.execute(this.db(), `${SQL}`, PARAM);
+    }
+
+    insert(object: Static<T>): Promise<Static<T>> {
+        const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
+        let entity = this.checkEntity(object, true);
+        const [SQL, PARAM] = _BUILDER.insert(_table, entity);
+        return _EXECUTOR.add(this.db(), `${SQL}`, PARAM);
+    }
 }
 
 

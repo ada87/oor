@@ -1,11 +1,10 @@
 import _ from 'lodash';
 import type { QuerySchema } from '../../base/types';
+import type { SqlOrderBy, SqlLimit } from '../../base/sql';
 import { PAGE_SIZE } from '../../base/Util';
-
 const BY_SET = new Set<string>(['asc', 'desc']);
 
-
-const orderBy = (fieldSet: Map<string, any>, query?: QuerySchema, default_order = 'id', default_by = 'desc') => {
+export const orderBy: SqlOrderBy = (fieldSet: Map<string, any>, query?: QuerySchema, default_order = 'id', default_by = 'desc') => {
     if (!_.has(query, 'order_')) {
         if (fieldSet.has(default_order)) {
             return `ORDER BY ${default_order} ${default_by}`
@@ -25,14 +24,8 @@ const orderBy = (fieldSet: Map<string, any>, query?: QuerySchema, default_order 
 
 }
 
-
-const limit = (query?: QuerySchema, pageSize: number = PAGE_SIZE) => {
+export const limit: SqlLimit = (query?: QuerySchema, pageSize: number = PAGE_SIZE) => {
     let start = _.has(query, 'start_') ? query.start_ : 0;
     let count = _.has(query, 'count_') ? query.count_ : pageSize;
     return `LIMIT ${count} OFFSET ${start}`
 }
-
-
-export const orderByLimit = (fieldSet: Map<string, any>, query?: QuerySchema, pageSize: number = PAGE_SIZE, default_order = 'id', default_by = 'desc'): [string, string] => [
-    orderBy(fieldSet, query, default_order, default_by), limit(query, pageSize)
-]

@@ -9,7 +9,6 @@ type Settings = {
     strict?: boolean,
 }
 
-
 type UStringOptions<Format extends string> = USchema & StringOptions<Format> & {
     /**
      * The Funtion default call on this filed

@@ -39,16 +39,23 @@ export abstract class BaseTable<T extends TObject> extends BaseView<T> {
         return clone;
     }
 
-    deleteByQuery(query: QuerySchema): Promise<number> {
-        const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
-        const SQL = _BUILDER.delete(_table);
-        const [WHERE, PARAM] = this.whereByQuery(query);
-        return _EXECUTOR.execute(this.db(), `${SQL} ${WHERE}`, PARAM);
-    }
+    // deleteByQuery(query: QuerySchema): Promise<number> {
+    //     const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
+    //     const SQL = _BUILDER.delete(_table);
+    //     const [WHERE, PARAM] = this.whereByQuery(query);
+    //     return _EXECUTOR.execute(this.db(), `${SQL} ${WHERE}`, PARAM);
+    // }
 
 
     deleteById(id: number | string): Promise<number> {
-        const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
+        const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key, mark } } = this;
+        if (mark.length) {
+            // update mark as delete
+            const SQL = _BUILDER.update(_table, { [key]: id, [mark[0]]: mark[1] });
+            const [WHERE, PARAM] = _BUILDER.byId(id, key);
+            return _EXECUTOR.execute(this.db(), `${SQL} ${WHERE}`, PARAM);
+        }
+
         const SQL = _BUILDER.delete(_table);
         const [WHERE, PARAM] = _BUILDER.byId(id, key);
         return _EXECUTOR.execute(this.db(), `${SQL} ${WHERE}`, PARAM);
@@ -65,9 +72,9 @@ export abstract class BaseTable<T extends TObject> extends BaseView<T> {
         return _EXECUTOR.execute(this.db(), `${SQL}`, PARAM);
     }
 
-    updateByQuery(properties: Static<T>, query: QuerySchema) {
+    // updateByQuery(properties: Static<T>, query: QuerySchema) {
 
-    }
+    // }
 
     /**
      * Insert a record

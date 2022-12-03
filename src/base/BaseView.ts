@@ -40,17 +40,16 @@ export abstract class BaseView<T extends TObject> extends BaseQuery {
 
     protected _table: string;
 
-
-
     protected _CONFIG = {
         key: 'id',
         order: 'id',
         by: 'desc',
-        query_fields: '*',
-        get_fields: '*',
+        fields_query: '*',
+        fields_get: '*',
+        mark: null as [string, string | number],
         pageSize: PAGE_SIZE,
         FIELD_MAP: new Map<string, USchema>(),
-        globalCondition: []
+        globalCondition: [] as WhereItem[]
     }
 
     private _QUERY_CACHE = new Map<string, WhereDefine>();
@@ -64,48 +63,55 @@ export abstract class BaseView<T extends TObject> extends BaseQuery {
     */
     constructor(tableName: string, schema: T, options?: TableOptions) {
         super();
-        let fields = [];
-        let fields_all = [];
+        if (options.sortOrder) this._CONFIG.order = options.sortOrder;
+        if (options.sortBy) this._CONFIG.by = options.sortBy;
+        if (options.pageSize) this._CONFIG.pageSize = options.pageSize;
+        if (options.globalCondition && options.globalCondition.length) this._CONFIG.globalCondition = options.globalCondition;
+
+        let fields_query = [];
+        let fields_get = [];
         this._CONFIG.FIELD_MAP = new Map<string, TSchema>();
         _.keys(schema.properties).map(field => {
             let properties = schema.properties[field];
             this._CONFIG.FIELD_MAP.set(field, properties);
+            if (_.has(properties, 'delMark') && properties.delMark != null) {
+                let column = properties.column || field;
+                this._CONFIG.mark = [column, properties.delMark]
+                this._CONFIG.globalCondition.push({ field: column, value: properties.delMark, condition: '!=' });
+            }
             if (properties.column) {
-                fields_all.push(`"${properties.column}" AS "${field}"`);
+                fields_get.push(`"${properties.column}" AS "${field}"`);
                 if (properties.ignore === true) {
                     return;
                 }
-                fields.push(`"${properties.column}" AS "${field}"`);
+                fields_query.push(`"${properties.column}" AS "${field}"`);
             } else {
-                fields_all.push('"' + field + '"');
+                fields_get.push('"' + field + '"');
                 if (properties.ignore === true) {
                     return;
                 }
-                fields.push('"' + field + '"');
+                fields_query.push('"' + field + '"');
             }
         });
         this._table = DEFAULT_SCHEMA + '.' + tableName;
-        this._CONFIG.query_fields = fields.join(',');
-        this._CONFIG.get_fields = fields_all.join(',')
+        this._CONFIG.fields_query = fields_query.join(',');
+        this._CONFIG.fields_get = fields_get.join(',')
         if (options == null) return;
         if (options.key) {
             this._CONFIG.key = options.key;
             this._CONFIG.order = options.key;
         }
-        if (options.sortOrder) this._CONFIG.order = options.sortOrder;
-        if (options.sortBy) this._CONFIG.by = options.sortBy;
-        if (options.pageSize) this._CONFIG.pageSize = options.pageSize;
-        if (options.globalCondition && options.globalCondition.length) this._CONFIG.globalCondition = options.globalCondition;
+
     }
 
     private async _query(WHERE, PARAM: string[] = [], ORDER_BY = '', LIMIT = ''): Promise<Static<T>[]> {
-        const { _BUILDER, _EXECUTOR, _table, _CONFIG: { query_fields } } = this;
-        const SQL_QUERY = _BUILDER.select(_table, query_fields);
+        const { _BUILDER, _EXECUTOR, _table, _CONFIG: { fields_query } } = this;
+        const SQL_QUERY = _BUILDER.select(_table, fields_query);
         const SQL = `${SQL_QUERY}
 ${WHERE} 
 ${ORDER_BY} 
 ${LIMIT}`;
-        console.log(SQL, PARAM)
+        // console.log(SQL, PARAM)
         const result = _EXECUTOR.query(this.db(), SQL, PARAM)
         return result;
     }
@@ -167,8 +173,8 @@ ${LIMIT}`;
      * Fetch All Records form the Table / View
     */
     all(): Promise<Static<T>[]> {
-        const { _table, _BUILDER, _EXECUTOR, _CONFIG: { query_fields, globalCondition } } = this;
-        const SQL = _BUILDER.select(_table, query_fields);
+        const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_query, globalCondition } } = this;
+        const SQL = _BUILDER.select(_table, fields_query);
         if (globalCondition.length) {
             const [WHERE, PARAM] = _BUILDER.where(globalCondition);
             return _EXECUTOR.query(this.db(), `${SQL} ${WHERE}`, PARAM);
@@ -181,9 +187,8 @@ ${LIMIT}`;
      * This method will return All column. Even if the IGNORE column.
     */
     getById(id: number | string): Promise<Static<T>> {
-        const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key, get_fields } } = this;
-        console.log(get_fields)
-        const SQL = _BUILDER.select(_table, get_fields);
+        const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key, fields_get } } = this;
+        const SQL = _BUILDER.select(_table, fields_get);
         const [WHERE, PARAM] = _BUILDER.byId(id, key);
         return _EXECUTOR.get(this.db(), `${SQL} ${WHERE}`, PARAM);
     }

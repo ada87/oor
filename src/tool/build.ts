@@ -53,12 +53,12 @@ export const build = async (pg: Client, schema: string, table: string | string[]
 
 
     pg.on('notification', (msg) => {
-        console.log(msg)
+        // console.log(msg)
         // console.log(msg.channel, msg.payload) // foo
         // console.log() // bar!
     });
 
-    
+
 
     await pg.query('LISTEN foo')
     await pg.query(`NOTIFY foo, 'bar!'`)

@@ -11,11 +11,22 @@ type Settings = {
 
 type UStringOptions<Format extends string> = USchema & StringOptions<Format> & {
     /**
-     * The Funtion default call on this filed
+     * Defind a mark: 
+     *      1. Delete action will update this filed to mark 
+     *      2. Query  action will add conditon with != ${delMark}
+     *      3. Note : A table can only hava ONE delMark.
     */
-    fn?: 'lower' | 'upper'
+    delMark?: string;
 }
-type UNumericOptions = USchema & NumericOptions;
+type UNumericOptions = USchema & {
+    /**
+     * Defind a mark: 
+     *      1. Delete action will update this filed to mark 
+     *      2. Query  action will add conditon with != ${delMark}
+     *      3. Note : A table can only hava ONE delMark.
+    */
+    delMark?: number;
+} & NumericOptions;
 type UDateOptions = USchema & DateOptions & {
     /**
      * 1. Create Time can not be modify
@@ -52,9 +63,9 @@ export const UType = {
 export const throwErr = (err: string[], message?: string) => {
     if (err.length == 0) return;
     if (!STRICT) {
-        console.error(message+'\n      ' + err.join('\n      '));
+        console.error(message + '\n      ' + err.join('\n      '));
         return;
     }
-    throw new Error(message ? message : err[0], { cause: err.join('\n') as any  })
+    throw new Error(message ? message : err[0], { cause: err.join('\n') as any })
 }
 

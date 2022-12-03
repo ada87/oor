@@ -105,4 +105,8 @@ export type USchema = SchemaOptions & {
     * please specify column name if table column name not math the model field name. 
     **/
     column?: string;
+    /**
+     * TODO The Funtion default call on this filed
+    */
+    // fn?: 'lower' | 'upper'
 }

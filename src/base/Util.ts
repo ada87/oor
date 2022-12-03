@@ -55,6 +55,6 @@ export const throwErr = (err: string[], message?: string) => {
         console.error(message+'\n      ' + err.join('\n      '));
         return;
     }
-    throw new Error(message ? message : err[0], { cause: err.join('\n') })
+    throw new Error(message ? message : err[0], { cause: err.join('\n') as any  })
 }
 

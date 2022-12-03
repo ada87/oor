@@ -21,7 +21,7 @@ npm install --save oor pg                           # for PostgreSql
 ```
 
 
-1. 提供数据库
+1. 设置数据库
 
 ```typescript
 import { setup } from 'oor';

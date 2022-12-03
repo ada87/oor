@@ -17,7 +17,7 @@
   "files": [
     "dist"
   ],
-  "main": "dist/index.js",
+  "main": "dist/pg/index.js",
   "scripts": {
     "test": "node -r ts-node/register test.ts"
   },

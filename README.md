@@ -56,7 +56,7 @@ export const UserSchema = UType.Table({
 export type User = Static<typeof UserSchema>;
 
 // Line 4 : Build a Table, it's ok for all
-export const User = new Table('user', UserSchema);
+export const User = new Table('public.user', UserSchema);
 ```
 
 3. 是的，仅需要一个定义，已经全部完成 可以CRUD 了

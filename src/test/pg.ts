@@ -14,7 +14,8 @@ export var pg: Client = new Client({
 });
 setup({
     provider: () => pg,
-    // strict: true
+    strict: true,
+    showSQL: console.log
 })
 
 
@@ -51,13 +52,15 @@ export const UserSchema = UType.Table({
     salary: UType.Number(),
     registerDate: UType.Date({ column: 'register_date', isCreate: true }),
     lastModify: UType.Date({ column: 'last_modify', isModify: true })
-});
+},);
 
 // Line 3 : Define a Type, you can avoid if not need this type.
 export type User = Static<typeof UserSchema>;
 
 // Line 4 : Build a Table, it's ok for all
-export const User = new Table('user', UserSchema);
+export const User = new Table('public.user', UserSchema, {
+    globalCondition: [{ field: 'id', condition: '!=', 'value': 1 }]
+});
 
 // @ts-ignore
 export const FIELD_MAP = User._CONFIG.FIELD_MAP as Map<string, USchema>;

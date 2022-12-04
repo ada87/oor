@@ -1,14 +1,13 @@
 import _ from 'lodash';
+import { SqlWhere } from '../../base/sql';
 import { WhereItem, WhereCondition, MagicSuffix } from '../../base/types';
 import { throwErr } from '../../base/Util';
 import dayjs from 'dayjs';
 
-// var utc = require('dayjs/plugin/utc')
-// var timezone = require('dayjs/plugin/timezone') // dependent on utc plugin
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
-dayjs.extend(utc)
-dayjs.extend(timezone)
+// import utc from 'dayjs/plugin/utc';
+// import timezone from 'dayjs/plugin/timezone';
+// dayjs.extend(utc)
+// dayjs.extend(timezone)
 
 
 
@@ -91,7 +90,6 @@ export const getNumberRange = (txt: string): [MagicSuffix, number][] => {
     return result;
 
 }
-dayjs.tz.setDefault('Etc/GMT+8')
 export const getDateRange = (txt: string): [MagicSuffix, Date][] => {
     let range = getRange(txt);
     if (range == null) return null;
@@ -104,7 +102,7 @@ export const getDateRange = (txt: string): [MagicSuffix, Date][] => {
             return null;
         }
         // console.log(day.tz());
-        console.log(dayjs.tz.guess());
+        // console.log(dayjs.tz.guess());
 
         // dayjs.tz("2014-06-01 12:00", "America/New_York")
         // dayjs("2014-06-01 12:00").tz("America/New_York")
@@ -351,12 +349,12 @@ const ConditionToWhere = (condition: WhereCondition, pos: QueryPos, err: string[
 };
 
 
-export const where = (condition: (WhereCondition) | (WhereItem[]), startIdx = 1): [string, any[]] => {
+export const where: SqlWhere = (condition: (WhereCondition) | (WhereItem[]), startIdx = 1): [string, any[]] => {
     const pos: QueryPos = { SQL: [], PARAM: [], NUM: startIdx };
     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
     let err: string[] = [];
     ConditionToWhere(root, pos, err);
     throwErr(err, 'Some SQL Error Occur');
     if (pos.SQL.length == 0) return ['', []];
-    return ['WHERE ' + pos.SQL.join(" " + root.link + " "), pos.PARAM]
+    return [pos.SQL.join(" " + root.link + " "), pos.PARAM]
 }

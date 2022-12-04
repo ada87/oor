@@ -6,7 +6,6 @@ process.env.PG_PORT = '5432';
 process.env.PG_USER = 'postgres';
 process.env.PG_DB = 'oor'
 
-
 configure({
     files: ['src/**/*.test.ts'],
     plugins: [

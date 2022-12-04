@@ -1,18 +1,20 @@
 import _ from 'lodash';
 import type { TObject, Static } from '@sinclair/typebox';
 import { BaseView } from './BaseView'
-import { getFieldType } from './QueryBuilder';
+import { getFieldType, queryToCondition } from './QueryBuilder';
 import { SqlExecutor } from './sql';
-import { QuerySchema } from './types';
+import type { QuerySchema, WhereCondition, WhereItem } from './types';
+// import { checkEntity } from '../base/Util'
 
 export abstract class BaseTable<T extends TObject> extends BaseView<T> {
     protected abstract _EXECUTOR: SqlExecutor<T>;
 
     /**
+     * Auto convert data
      * check row data while insert or update
-     * and auto warp the data
      * */
     private checkEntity(obj: any, isAdd = false): any {
+        // checkEntity(this.schema)
         let clone: any = {}
         this._CONFIG.FIELD_MAP.forEach((schema, key) => {
             let field = schema.column || key;
@@ -34,53 +36,82 @@ export abstract class BaseTable<T extends TObject> extends BaseView<T> {
                     return;
                 }
             }
-
         })
         return clone;
     }
 
-    // deleteByQuery(query: QuerySchema): Promise<number> {
-    //     const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
-    //     const SQL = _BUILDER.delete(_table);
-    //     const [WHERE, PARAM] = this.whereByQuery(query);
-    //     return _EXECUTOR.execute(this.db(), `${SQL} ${WHERE}`, PARAM);
-    // }
+
+    deleteByField(field: string, value: string | number | boolean): Promise<number> {
+        const { _CONFIG: { mark } } = this;
+        if (mark) return this.updateByField(mark, field, value)
+        return this.deleteByCondition([{ field, value }])
+    }
+
+
+    deleteByQuery(query: QuerySchema): Promise<number> {
+        const { _CONFIG: { mark } } = this;
+        if (mark) return this.updateByQuery(mark, query)
+        const condition = queryToCondition(query, this._CONFIG.FIELD_MAP, this._QUERY_CACHE);
+        return this.deleteByCondition(condition);
+    }
+
+    deleteByCondition(condition: WhereCondition | (WhereItem[])): Promise<number> {
+        const { _table, _BUILDER, _EXECUTOR, _CONFIG: { mark } } = this;
+        if (mark) return this.updateByCondition(mark, condition)
+        const SQL = _BUILDER.delete(_table);
+        const [WHERE, PARAM] = this._BUILDER.where(condition);
+        return _EXECUTOR.execute(this.db(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
+    }
 
 
     deleteById(id: number | string): Promise<number> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key, mark } } = this;
-        if (mark.length) {
-            // update mark as delete
-            const SQL = _BUILDER.update(_table, { [key]: id, [mark[0]]: mark[1] });
-            const [WHERE, PARAM] = _BUILDER.byId(id, key);
-            return _EXECUTOR.execute(this.db(), `${SQL} ${WHERE}`, PARAM);
-        }
-
+        if (mark) return this.update({ ...mark, [key]: id })
         const SQL = _BUILDER.delete(_table);
-        const [WHERE, PARAM] = _BUILDER.byId(id, key);
-        return _EXECUTOR.execute(this.db(), `${SQL} ${WHERE}`, PARAM);
-
+        const [WHERE, PARAM] = _BUILDER.byField(key, id);
+        return _EXECUTOR.execute(this.db(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
     }
 
     /**
-     * Update a record, By Id
+     * Update a record, By Id in
     */
-    update(object: Static<T>): Promise<number> {
+    update(obj: Static<T>): Promise<number> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
-        let entity = this.checkEntity(object, false);
-        const [SQL, PARAM] = _BUILDER.update(_table, entity, key);
-        return _EXECUTOR.execute(this.db(), `${SQL}`, PARAM);
+        if (!_.has(obj, key)) {
+            throw new Error(`Update Action must have a key`);
+        }
+        let entity = this.checkEntity(obj, false);
+        const [SQL, FIELD_SET] = _BUILDER.update(_table, entity, key);
+        if (FIELD_SET.length == 0) {
+            throw new Error(`Update Action must have some properties`);
+        }
+        const [WHERE, PARAM] = _BUILDER.byField(key, obj[key] as any, FIELD_SET.length + 1)
+        return _EXECUTOR.execute(this.db(), `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM]);
     }
 
-    // updateByQuery(properties: Static<T>, query: QuerySchema) {
+    updateByField(obj: Static<T>, field: string, value: string | number | boolean): Promise<number> {
+        return this.updateByCondition(obj, [{ field, value }])
+    }
 
-    // }
+    updateByQuery(obj: Static<T>, query: QuerySchema): Promise<number> {
+        const condition = queryToCondition(query, this._CONFIG.FIELD_MAP, this._QUERY_CACHE);
+        return this.updateByCondition(obj, condition);
+    }
+    updateByCondition(obj: Static<T>, condition?: WhereCondition | (WhereItem[])): Promise<number> {
+        const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
+        _.unset(obj, key);
+        let entity = this.checkEntity(obj, false);
+        if (_.keys(entity).length == 0) return new Promise(r => r(0));
+        const [SQL, FIELD_SET] = _BUILDER.update(_table, entity);
+        const [WHERE, PARAM] = this._BUILDER.where(condition, FIELD_SET.length + 1);
+        return _EXECUTOR.execute(this.db(), `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM]);
+    }
 
     /**
      * Insert a record
     */
     insert(object: Static<T>): Promise<Static<T>> {
-        const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
+        const { _table, _BUILDER, _EXECUTOR } = this;
         let entity = this.checkEntity(object, true);
         const [SQL, PARAM] = _BUILDER.insert(_table, entity);
         return _EXECUTOR.add(this.db(), `${SQL}`, PARAM);

@@ -1,13 +1,26 @@
 import type { ClientBase } from 'pg';
 import type { USchema } from './types';
 import { Type } from '@sinclair/typebox';
+import { Value } from '@sinclair/typebox/value';
 import type { TProperties, TPartial, TObject, StringOptions, StringFormatOption, DateOptions, NumericOptions } from '@sinclair/typebox';
+import _ from 'lodash';
 
 type Settings = {
     provider?: () => ClientBase,
     pageSize?: number,
-    strict?: boolean,
+    /**
+     * A log Function Example : default :null
+     *      console.info
+     *      logger.log
+     */
+    showSQL?: Function;
+    strict?: boolean | {
+        query?: boolean
+        entity?: boolean,
+    },
 }
+
+
 
 type UStringOptions<Format extends string> = USchema & StringOptions<Format> & {
     /**
@@ -41,14 +54,27 @@ type UDateOptions = USchema & DateOptions & {
     isModify?: boolean;
 }
 
-var STRICT = false;
+var STRICT_QUERY = false;
+var STRICT_ENTITY = false;
+export var ShowSql = (str, param?: any) => { }
+
 export var getDB = (): ClientBase => { throw new Error('Must specfy a DataBase provider') };
 export var PAGE_SIZE = 10;
 
 export const setup = (settings: Settings) => {
     if (settings.provider) getDB = settings.provider;
-    if (settings.strict) STRICT = true;
+    // if (settings.strict) STRICT = true;
+    if (settings.strict) {
+        if (_.isBoolean(settings.strict)) {
+            STRICT_QUERY = true;
+            STRICT_ENTITY = true;
+        } else {
+            if (settings.strict.entity) STRICT_ENTITY = true;
+            if (settings.strict.query) STRICT_QUERY = true;
+        }
+    }
     if (settings.pageSize) PAGE_SIZE = settings.pageSize;
+    if (settings.showSQL && _.isFunction(settings.showSQL)) ShowSql = settings.showSQL;
 }
 
 export const UType = {
@@ -62,10 +88,22 @@ export const UType = {
 
 export const throwErr = (err: string[], message?: string) => {
     if (err.length == 0) return;
-    if (!STRICT) {
+    if (!STRICT_QUERY) {
         console.error(message + '\n      ' + err.join('\n      '));
         return;
     }
     throw new Error(message ? message : err[0], { cause: err.join('\n') as any })
 }
 
+
+export const checkEntity = (T: TObject, val: any) => {
+    if (!STRICT_ENTITY) {
+        return;
+    }
+    const result = Value.Errors(T, val);
+    let err = result.next();
+    if (err) {
+        throw new Error('Entity Has Some value')
+    }
+
+}

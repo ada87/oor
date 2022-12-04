@@ -9,8 +9,9 @@ export type SqlUpdate = (table: string, obj: PlainObject, key?: string) => [stri
 export type SqlDelete = (table: string) => string;
 export type SqlCount = (table: string, field?: string) => string;
 
-export type SqlById = (idValue: string | number, idKey?: string) => [string, any[]];
 export type SqlWhere = (condition: (WhereCondition) | (WhereItem[]), startIdx?: number) => [string, any[]];
+export type SqlByField = (field: string, value: string | number | boolean, startIdx?: number) => [string, any[]];
+
 export type SqlOrderBy = (fieldSet: Map<string, any>, query?: QuerySchema, default_order?: string, default_by?: string) => string;
 export type SqlLimit = (query?: QuerySchema, pageSize?: number) => string;
 
@@ -24,8 +25,8 @@ export type SqlBuilder = {
     update: SqlUpdate,
     delete: SqlDelete,
 
-    byId: SqlById,
     where: SqlWhere,
+    byField: SqlByField,
     orderBy: SqlOrderBy,
     limit: SqlLimit,
 }

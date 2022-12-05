@@ -1,8 +1,9 @@
-import _, { startsWith } from 'lodash';
+import _ from 'lodash';
 import { SqlWhere } from '../base/sql';
 import { WhereItem, WhereCondition, MagicSuffix, FieldType } from '../base/types';
-import { throwErr } from '../base/Util';
+import { throwErr, NONE_PARAM, isSupport } from '../base/Util';
 import dayjs, { Dayjs } from 'dayjs';
+
 
 // import utc from 'dayjs/plugin/utc';
 // import timezone from 'dayjs/plugin/timezone';
@@ -12,23 +13,6 @@ import dayjs, { Dayjs } from 'dayjs';
 
 
 type QueryPos = { SQL: string[]; PARAM: any[], NUM: number; }
-
-
-
-const SUPPORT_MAP = new Map<FieldType, Set<MagicSuffix>>([
-    ['string', new Set<MagicSuffix>(['Min', 'MinThan', 'Max', 'MaxThan', 'Like', 'Likel', 'Liker', 'Not', 'IsNull', 'NotNull', 'IsDistinct', 'NotDistinct', '>', '>=', '<', '<=', '=', '!=', '<>'])],
-    ['number', new Set<MagicSuffix>(['Min', 'MinThan', 'Max', 'MaxThan', 'Bt', 'Not', 'IsNull', 'NotNull', 'IsDistinct', 'NotDistinct', '>', '>=', '<', '<=', '=', '!=', '<>'])],
-    ['boolean', new Set<MagicSuffix>(['Min', 'Max', 'Not', 'IsNull', 'NotNull', '>', '<', '=', '!=', '<>'])],
-    ['date', new Set<MagicSuffix>(['Min', 'MinThan', 'Max', 'MaxThan', 'MinH', 'MinD', 'MinM', 'MaxH', 'MaxD', 'MaxM', 'Bt', 'BtD', 'BtY', 'BtM', 'Not', 'IsNull', 'NotNull', '>', '>=', '<', '<=', '=', '!=', '<>'])],
-]);
-
-
-const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull', 'IsDistinct', 'NotDistinct']);
-
-const isSupport = (type: FieldType, suffix: MagicSuffix) => {
-    let set = SUPPORT_MAP.has(type) ? SUPPORT_MAP.get(type) : SUPPORT_MAP.get('string');
-    return set.has(suffix);
-}
 
 
 const BOOLEAN_TEXT_IGNORE = new Set(['', 'null']);
@@ -360,19 +344,14 @@ const ConditionToWhere = (condition: WhereCondition, pos: QueryPos, err: string[
                 NUM: pos.NUM
             }
             ConditionToWhere(group as WhereCondition, _pos, err);
-            if (_pos.NUM > pos.NUM) {
-                pos.NUM = _pos.NUM;
-                for (let param of _pos.PARAM) {
-                    pos.PARAM.push(param);
-                }
+            if (_pos.SQL.length) {
+                if (_pos.NUM > pos.NUM) pos.NUM = _pos.NUM;
+                for (let param of _pos.PARAM) pos.PARAM.push(param);
                 //@ts-ignore;
                 pos.SQL.push('(' + _pos.SQL.join(' ' + group.link + ' ') + ')')
             }
-
-
         } else {
             ItemToWhere(group as WhereItem, pos, err)
-
         }
     }
 };

@@ -1,12 +1,27 @@
-import type { ClientBase } from 'pg';
-import type { USchema } from './types';
+import type { ClientBase, Pool } from 'pg';
+import _ from 'lodash';
+import type { USchema, FieldType, MagicSuffix } from './types';
 import { Type } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
 import type { TProperties, TPartial, TObject, StringOptions, StringFormatOption, DateOptions, NumericOptions } from '@sinclair/typebox';
-import _ from 'lodash';
 
-type Settings = {
-    provider?: () => ClientBase,
+
+
+const SUPPORT_MAP = new Map<FieldType, Set<MagicSuffix>>([
+    ['string', new Set<MagicSuffix>(['Min', 'MinThan', 'Max', 'MaxThan', 'Like', 'Likel', 'Liker', 'Not', 'IsNull', 'NotNull', 'IsDistinct', 'NotDistinct', '>', '>=', '<', '<=', '=', '!=', '<>'])],
+    ['number', new Set<MagicSuffix>(['Min', 'MinThan', 'Max', 'MaxThan', 'Bt', 'Not', 'IsNull', 'NotNull', 'IsDistinct', 'NotDistinct', '>', '>=', '<', '<=', '=', '!=', '<>'])],
+    ['boolean', new Set<MagicSuffix>(['Min', 'Max', 'Not', 'IsNull', 'NotNull', '>', '<', '=', '!=', '<>'])],
+    ['date', new Set<MagicSuffix>(['Min', 'MinThan', 'Max', 'MaxThan', 'MinH', 'MinD', 'MinM', 'MaxH', 'MaxD', 'MaxM', 'Bt', 'BtD', 'BtY', 'BtM', 'Not', 'IsNull', 'NotNull', '>', '>=', '<', '<=', '=', '!=', '<>'])],
+]);
+
+export const isSupport = (type: FieldType, suffix: MagicSuffix) => {
+    let set = SUPPORT_MAP.has(type) ? SUPPORT_MAP.get(type) : SUPPORT_MAP.get('string');
+    return set.has(suffix);
+}
+export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull', 'IsDistinct', 'NotDistinct']);
+
+export type Settings = {
+    provider: () => ClientBase | Pool,
     pageSize?: number,
     /**
      * A log Function Example : default :null
@@ -58,7 +73,7 @@ var STRICT_QUERY = false;
 var STRICT_ENTITY = false;
 export var ShowSql = (str, param?: any) => { }
 
-export var getDB = (): ClientBase => { throw new Error('Must specfy a DataBase provider') };
+export var getDB = (): (ClientBase | Pool) => { throw new Error('Must specfy a DataBase provider') };
 export var PAGE_SIZE = 10;
 
 export const setup = (settings: Settings) => {

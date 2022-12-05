@@ -15,7 +15,8 @@ export const SUFFIX = [
     'Not',                                              // != or <>
     'IsNull', 'NotNull',                                // isNull or Not NULL           This Suffix will avoid value
     'IsDistinct', 'NotDistinct',                        // isDistinct or Not Distinct   This Suffix will avoid value
-    '>', '>=', '<', '<=', '=', '!=', '<>'               // Comparison Functions,  https://www.postgresql.org/docs/current/functions-comparison.html
+    '>', '>=', '<', '<=', '=', '!=', '<>',              // Comparison Functions,  https://www.postgresql.org/docs/current/functions-comparison.html
+    // 'In',                                            // Lower Perference ,  closed awhile
 ] as const;
 export type MagicSuffix = (typeof SUFFIX)[number];
 
@@ -33,21 +34,9 @@ export type WhereDefine = {
     */
     property?: string,
     /**
-     * 条件，支持后缀
+     * 条件
     */
     condition?: MagicSuffix,
-    /**
-     * 对比判断条件
-    */
-    // operation: WhereOperaction;
-    /**
-     * 调用函数
-     * h / d / m = Hour / Day  / Month  仅对日期类型有效
-     * ceil / floor / 仅对 Number 有效
-     * 'lower' / 'upper' = '小写' '大写' 仅对 String 有效
-    */
-    // fn?: FieldFunction;
-
 }
 
 export type WhereItem = WhereDefine & {

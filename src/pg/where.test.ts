@@ -50,7 +50,7 @@ test('Test : Between Date', ({ assert }, txt) => {
     '(2022-11-11,2022-11-12)',
     '0,20,df,fads',
 ])
-    .pin()
+    // .pin()
     ;
 
 

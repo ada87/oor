@@ -1,13 +1,29 @@
 import { test } from '@japa/runner'
-// import { FIELD_MAP } from '../test/pg';
-import { WhereCondition, QuerySchema, SUFFIX } from '../../base/types'
-import { where, getRange, getNumberRange, getDateRange } from './where'
+import { FIELD_MAP } from '../test/pg';
+import { WhereCondition, QuerySchema, SUFFIX } from '../base/types'
+import { where, between, betweenNumber, betweenDate } from './where'
+import { queryToCondition } from '../base/QueryBuilder';
 // import { whereByQuery } from './QueryBuilder';
 // import { orderByLimit } from './QueryPagition';
 
 
-test('Test : Range Number', ({ assert }, txt) => {
-    console.log(txt, getNumberRange(txt as any))
+test('Test : Between Number', ({ assert }, txt) => {
+    // console.log(txt, getNumberRange(txt as any))
+
+    // let query: any = {};
+    // for (let suffix of SUFFIX) {
+    //     query['age' + suffix] = 12;
+    //     // query['name' + suffix] = 'abc';
+    // }
+    const query: any = { ageBt: txt }
+    // console.log(query)
+    let condition = queryToCondition(query, FIELD_MAP, new Map());
+    // console.log(condition)
+    // console.log(condition.items.length);
+    const [sql, param] = where(condition);
+    console.log(query.ageBt, sql, param)
+
+
 }).with([
     '',
     '0,20',
@@ -24,13 +40,17 @@ test('Test : Range Number', ({ assert }, txt) => {
     // .pin()
     ;
 
-test('Test : Range Date', ({ assert }, txt) => {
-    console.log(txt, getDateRange(txt as any))
+test('Test : Between Date', ({ assert }, txt) => {
+    console.log(txt, betweenDate(txt as any))
 }).with([
     '',
-    '2000-01-01,20110101',
+    '2022-11-11,2022-11-12',
+    '2022-11-11 11:11:11,2022-11-12 12:12',
+    '[2022-11-11,2022-11-12]',
+    '(2022-11-11,2022-11-12)',
+    '0,20,df,fads',
 ])
-    // .pin()
+    .pin()
     ;
 
 
@@ -96,17 +116,19 @@ test('Test : Where', ({ assert }, txt) => {
     const condition: WhereCondition = {
         link: 'AND', items: [
             {
-                type: 'boolean',
-                field: 'age',
+                type: 'date',
+                field: 'sex',
                 // @ts-ignore
                 "condition": txt,
-                value: false
+                value: '2022-11-11 11:11:11'
             }
         ]
     }
     console.log(txt, where(condition, 1))
     // console.log(txt, getDateRange(txt as any))
-}).with(SUFFIX as any)
-// .pin();
+})
+    .with(SUFFIX as any)
+    // .pin()
+    ;
 
 

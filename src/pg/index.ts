@@ -3,11 +3,16 @@ import { BaseView, TableOptions } from '../base/BaseView';
 import { BaseTable } from '../base/BaseTable';
 import type { TObject } from '@sinclair/typebox';
 import { SqlBuilder, SqlExecutor } from '../base/sql';
-import { PG, executor } from './sql'
 import { WhereItem } from '../base/types';
 import { Kind } from '@sinclair/typebox';
 import { USchema } from '../base/types';
-import { where } from './sql/where'
+import { where } from './where'
+import { insert, update, del, select, count, byField, orderBy, limit } from './basic';
+
+
+const PG: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
+
+import { executor } from './executor'
 
 const fixWhere = (FIELD_MAP: Map<string, USchema>, extra: WhereItem[]): [string, string] => {
     let ITEMS: WhereItem[] = [];

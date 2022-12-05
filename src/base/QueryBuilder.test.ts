@@ -3,22 +3,26 @@ import { test } from '@japa/runner'
 import { FIELD_MAP } from '../test/pg';
 import { queryToCondition } from './QueryBuilder';
 import { SUFFIX } from './types';
-import type { QuerySchema } from './types'
+import type { QuerySchema } from './types';
+import { where } from '../pg/where'
 
 test('Test : Suffix Cover', ({ assert }) => {
     let query: any = {};
     for (let suffix of SUFFIX) {
-        query['age' + suffix] = _.random(12, 100);
+        query['age' + suffix] = 12;
         // query['name' + suffix] = 'abc';
     }
     // console.log(query)
-
-
     let condition = queryToCondition(query, FIELD_MAP, new Map());
-    console.log(condition.items.length)
+    // console.log(condition)
+    // console.log(condition.items.length);
+    const [sql, param] = where(condition);
+    console.log(sql, param)
+
     // let [ORDERBY, LIMIT] = orderByLimit(FIELD_MAP, query);
 
 })
+    .skip()
     // .pin()
     ;
 

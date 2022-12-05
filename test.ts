@@ -7,12 +7,12 @@ process.env.PG_USER = 'postgres';
 process.env.PG_DB = 'oor'
 
 configure({
-    files: ['src/**/*.test.ts'],
-    plugins: [
-      assert(),
-    ],
-    reporters: [specReporter()],
-    importer: (filePath) => import(filePath),
-    timeout: 2000,
+  files: ['src/**/*.test.ts'],
+  plugins: [
+    assert(),
+  ],
+  // reporters: [specReporter()],
+  importer: (filePath) => import(filePath),
+  timeout: 2000,
 });
 run();

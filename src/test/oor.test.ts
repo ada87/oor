@@ -116,5 +116,5 @@ test('Test : Delete 2', async () => {
     console.log(result)
 })
     // .skip()
-    .pin()
+    // .pin()
     ;

@@ -1,6 +1,6 @@
 import { test } from '@japa/runner'
 import { FIELD_MAP } from '../test/pg';
-import { WhereCondition, QuerySchema, SUFFIX } from '../base/types'
+import { WhereParam, QuerySchema, SUFFIX } from '../base/types'
 import { where, between, betweenNumber, betweenDate } from './where'
 import { queryToCondition } from '../base/QueryBuilder';
 // import { whereByQuery } from './QueryBuilder';
@@ -87,7 +87,7 @@ test('Test : WhereToSql', ({ assert }) => {
 
 test('Test : buildSQL', ({ assert }) => {
 
-    const root: WhereCondition = {
+    const root: WhereParam = {
         link: 'AND',
         items: [
             { field: 'a1', condition: '<', value: 'value1' },
@@ -113,7 +113,7 @@ test('Test : buildSQL', ({ assert }) => {
 
 
 test('Test : Where', ({ assert }, txt) => {
-    const condition: WhereCondition = {
+    const condition: WhereParam = {
         link: 'AND', items: [
             {
                 type: 'date',

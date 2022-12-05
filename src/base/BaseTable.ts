@@ -3,7 +3,7 @@ import type { TObject, Static } from '@sinclair/typebox';
 import { BaseView } from './BaseView'
 import { getFieldType, queryToCondition } from './QueryBuilder';
 import { SqlExecutor } from './sql';
-import type { QuerySchema, WhereCondition, WhereItem } from './types';
+import type { QuerySchema, WhereParam, WhereItem } from './types';
 // import { checkEntity } from '../base/Util'
 
 export abstract class BaseTable<T extends TObject> extends BaseView<T> {
@@ -55,7 +55,7 @@ export abstract class BaseTable<T extends TObject> extends BaseView<T> {
         return this.deleteByCondition(condition);
     }
 
-    deleteByCondition(condition: WhereCondition | (WhereItem[])): Promise<number> {
+    deleteByCondition(condition: WhereParam): Promise<number> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { mark } } = this;
         if (mark) return this.updateByCondition(mark, condition)
         const SQL = _BUILDER.delete(_table);
@@ -97,7 +97,7 @@ export abstract class BaseTable<T extends TObject> extends BaseView<T> {
         const condition = queryToCondition(query, this._CONFIG.FIELD_MAP, this._QUERY_CACHE);
         return this.updateByCondition(obj, condition);
     }
-    updateByCondition(obj: Static<T>, condition?: WhereCondition | (WhereItem[])): Promise<number> {
+    updateByCondition(obj: Static<T>, condition?: WhereParam): Promise<number> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
         _.unset(obj, key);
         let entity = this.checkEntity(obj, false);

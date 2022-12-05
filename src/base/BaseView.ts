@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { PAGE_SIZE } from './Util';
 import type { TObject, Static, TSchema } from '@sinclair/typebox';
-import type { QuerySchema, WhereCondition, WhereDefine, USchema, WhereItem } from './types';
+import type { QuerySchema, WhereParam, WhereDefine, USchema, WhereItem } from './types';
 import { BaseQuery } from './BaseQuery'
 import { queryToCondition } from './QueryBuilder';
 
@@ -124,7 +124,7 @@ export abstract class BaseView<T extends TObject> extends BaseQuery {
      * @see WhereCondition
      * Use a WhereCondition Query Data 
     */
-    queryByCondition(condition?: WhereCondition | (WhereItem[])): Promise<Static<T>[]> {
+    queryByCondition(condition?: WhereParam): Promise<Static<T>[]> {
         const [WHERE, PARAM] = this._BUILDER.where(condition);
         return this._query(this.fixWhere(WHERE), PARAM);
     }

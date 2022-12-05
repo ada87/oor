@@ -45,6 +45,7 @@ export type WhereItem = WhereDefine & {
 
 export type WhereCondition = { link: 'AND' | 'OR' | 'NOT', items: (WhereItem | WhereCondition)[] }
 
+export type WhereParam = WhereCondition | (WhereItem[]);
 
 export type QuerySchema = {
 

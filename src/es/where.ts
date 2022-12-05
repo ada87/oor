@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { SqlWhere } from '../base/sql';
-import { WhereItem, WhereCondition, MagicSuffix, FieldType, } from '../base/types';
+import { WhereParam, WhereItem, WhereCondition, MagicSuffix, FieldType, } from '../base/types';
 import { throwErr, isSupport, NONE_PARAM } from '../base/Util';
 import dayjs, { Dayjs } from 'dayjs';
 
@@ -296,7 +296,7 @@ const ConditionToWhere = (condition: WhereCondition, pos: QueryPos, err: string[
 
 
 
-export const where: SqlWhere = (condition: (WhereCondition) | (WhereItem[]), startIdx?): [string, any[]] => {
+export const where: SqlWhere = (condition: WhereParam, startIdx?): [string, any[]] => {
     const pos: QueryPos = { SQL: [], PARAM: [], };
     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
     let err: string[] = [];

@@ -4,6 +4,7 @@ test('Test : Query With SQL', async () => {
     const result = await User.sql(`SELECT * FROM  public.user WHERE name='陆磊'`);
     console.log(result);
 
+
 })
     .skip();
 // .pin();

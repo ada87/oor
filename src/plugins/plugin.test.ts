@@ -10,14 +10,14 @@ test('Test : Pg Connection', async () => {
         database: process.env.PG_DB || 'oor',
 
     });
-    pg.connect(err => {
-        console.log('a1', err)
-        pg.connect(err => {
-            console.log('a2', err)
-            pg.end(() => console.log('a3', err));
+    // pg.connect(err => {
+    //     console.log('a1', err)
+    //     pg.connect(err => {
+    //         console.log('a2', err)
+    //         pg.end(() => console.log('a3', err));
 
-        })
-    })
+    //     })
+    // })
 
     // console.log('start connect ')
     // // console.log(pg)
@@ -31,4 +31,5 @@ test('Test : Pg Connection', async () => {
     // await pg.end()
     // console.log('ended ')
 })
-    .pin();
+    // .pin()
+    ;

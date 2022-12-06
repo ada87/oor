@@ -1,8 +1,10 @@
+import type { WhereParam, WhereItem, WhereCondition, MagicSuffix } from '../base/types';
+import type { Dayjs } from 'dayjs';
+
 import _ from 'lodash';
 import { SqlWhere } from '../base/sql';
-import { WhereParam, WhereItem, WhereCondition, MagicSuffix } from '../base/types';
 import { throwErr, NONE_PARAM, isSupport } from '../base/Util';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 
 // import utc from 'dayjs/plugin/utc';
@@ -10,10 +12,7 @@ import dayjs, { Dayjs } from 'dayjs';
 // dayjs.extend(utc)
 // dayjs.extend(timezone)
 
-
-
 type QueryPos = { SQL: string[]; PARAM: any[], NUM: number; }
-
 
 const BOOLEAN_TEXT_IGNORE = new Set(['', 'null']);
 const BOOLEAN_TEXT_FALSE = new Set<any>(['0', 'false', '-1']);

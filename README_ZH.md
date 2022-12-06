@@ -5,27 +5,28 @@
 ![npm version](https://img.shields.io/npm/v/viz.svg?style=flat)
 
 
-NodeJs ORM tool library , Only support `Postgresql` for now. `ElasticSearch` and `MySql` is Coming!
+NodeJs ORM 工具包 , 目前仅支持 `Postgresql`
 
-[Documention](https://oor.xdnote.com/index.en/)
+[参考文档](https://oor.xdnote.com/)
 
-## Features
+## 特点
 
-1. High performance 🚀。
-2. Code is Type, Type is Code, Code is Schema!
-3. Easy API.
-4. Builtin Magic Suffix📍. Save your code lines.
-5. Support PagitionQuery, MagicSuffixQuery, CoditionQuery(Very Strong).
-6. Suport ignore column, logical delete, mark date.
-7. Support plugin, tools (Plan)
+1. 启动快，性能强 🚀。
+2. 强类型 TypeScript，即是 Type，又是 Code，还是 Schema!
+3. 克制且易用的 API。
+4. 内置魔法后缀📍, 极省代码行数。
+5. 支持分页，支持超强条件构造。
+6. 支持查询列过滤，逻辑删除，日期标识等。
+7. 自带插件，工具包（计划中）
 8. Promise
 9. NodeJS 14+
 
-## Install
+
+## 安装
 
 
 ```bash
-npm install --save oor pg                           # for PostgreSql
+npm install --save oor pg                           # PostgreSql
 # OR 
 # npm install --save oor pg-native                  # PostgreSql native 
 # npm install --save oor mysql2                     # MySql 
@@ -33,29 +34,31 @@ npm install --save oor pg                           # for PostgreSql
 ```
 
 
-## Setup
+## 设置数据源
+
 
 ```typescript
 import { setup } from 'oor';
-import { Client } from 'pg';
-const pg = new Client({})
+import { Pool } from 'pg';
+const pg = new Pool({...})
+pg.connect();
 setup({ provider: () => pg })
 ```
 
-
-## Define  Mapping Object & Type & Schema
+## 定义 Mapping Object & Type & Schema
 
 ```typescript
 // Line 1 : import oor
 import { Table, UType, Static } from 'oor';
 
-// Line 2 : Define 'Realtion Mapping' & 'Mapping Schema' & 'Entity Type (Line3)' together by one Funtion.
-//          Schema has some usage , some lib(like fastify,ajv.) support schema。
-//              https://www.npmjs.com/package/@sinclair/typebox
+// Line 2 : 同时定义 Mapping 映射 / Schema / Type (Line3)
+//          Schema 可以使用 @sinclair/typebox 的 API 进行操作
+//          也有一些工具支持此 Schema 如 fastify/ajv 等。
+//          参考：  https://www.npmjs.com/package/@sinclair/typebox
 export const UserSchema = UType.Table({
     id: UType.Number(),
     name: UType.String({ maxLength: 32 }),
-    age: UType.Integer({ minimum: 0, maximum: 128 }),
+    age: UType.Number({ minimum: 0, maximum: 128 }),
     sex: UType.Boolean(),
     profile: UType.String({ ignore: true }),
     address: UType.String({ maxLength: 128 }),
@@ -64,18 +67,18 @@ export const UserSchema = UType.Table({
     lastModify: UType.Date({ column: 'last_modify', isModify: true })
 });
 
-// Line 3 : Define a Type, you can avoid if not need this type.
+// Line 3 : 如果需要为个类型，可以通过 Staitc 来定义。
 export type User = Static<typeof UserSchema>;
 
-// Line 4 : Build a Table, it's ok for all
+// Line 4 : 定义操作对象，大功告成
 export const User = new Table('public.user', UserSchema);
 ```
 
-## Usage
+## 使用
 
 
 ```typescript
-// Fetch all user
+// 查询所有 User
 const result = await User.all();
 console.log(result);
 
@@ -110,11 +113,10 @@ await setTimeout(r => r, 1000); // wait , notice last_update value
 const afterDelete = await User.getById(userId);
 console.log('After Delete', afterDelete)
 
-// Execue custom SQL Sentence.
+// 执行自定义SQL语句
 const result = await User.sql(`SELECT XXX 
 FROM YYY 
 WHERE ZZZ = $1 
 ORDER BY $2 $3`,['value','id','DESC']);
 console.log(result);
 ```
-

@@ -86,8 +86,8 @@ test('Test : CRUD', async () => {
     const afterDelete = await User.getById(userId);
     console.log('After Delete', afterDelete)
 })
-    .skip();
-// .pin();
+    // .skip();
+.pin();
 
 
 

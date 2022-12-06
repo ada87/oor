@@ -14,7 +14,7 @@ export var pg: Client = new Client({
 });
 setup({
     provider: () => pg,
-    // strict: true,
+    strict: true,
     showSQL: console.log
 })
 

@@ -1,12 +1,13 @@
-import _ from 'lodash';
 import type { TObject, Static } from '@sinclair/typebox';
+import type { QuerySchema, WhereParam } from './types';
+
+import _ from 'lodash';
 import { BaseView } from './BaseView'
 import { getFieldType, queryToCondition } from './QueryBuilder';
 import { SqlExecutor } from './sql';
-import type { QuerySchema, WhereParam, WhereItem } from './types';
-// import { checkEntity } from '../base/Util'
 
 export abstract class BaseTable<T extends TObject> extends BaseView<T> {
+
     protected abstract _EXECUTOR: SqlExecutor<T>;
 
     /**
@@ -73,7 +74,7 @@ export abstract class BaseTable<T extends TObject> extends BaseView<T> {
     }
 
     /**
-     * Update a record, By Id in
+     * Update a record, By Primary Key in the obj
     */
     update(obj: Static<T>): Promise<number> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;

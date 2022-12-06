@@ -1,5 +1,6 @@
 import type { SchemaOptions } from '@sinclair/typebox';
 
+export type DB_TYPE = 'pg' | 'es' | 'mysql';
 /**
  * Where 判断条件
 */

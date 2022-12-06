@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { WhereItem, WhereCondition, QuerySchema, WhereDefine, FieldType, SUFFIX, USchema, MagicSuffix } from './types';
 import { Kind } from '@sinclair/typebox';
+import { WhereItem, WhereCondition, QuerySchema, WhereDefine, FieldType, SUFFIX, USchema, MagicSuffix } from './types';
 import { throwErr } from './Util';
 
 
@@ -26,14 +26,6 @@ export const getFieldType = (schema: any): FieldType => {
  * Cache Query Field To Where Filed
 */
 const fieldToDef = (key: string, FIELD_MAP: Map<string, USchema>): WhereDefine => {
-    // console.log(key);
-    // if (key == 'namea') {
-    //     for (let [key, value] of FIELD_MAP) {
-    //         console.log(key)
-    //     }
-    //     // console.log(FIELD_MAP)
-    // }
-
     let SCHEMA = FIELD_MAP.get(key);
     let query_field = key, suffix: MagicSuffix = null;
     if (SCHEMA == null) {
@@ -63,9 +55,7 @@ const fieldToDef = (key: string, FIELD_MAP: Map<string, USchema>): WhereDefine =
 }
 
 const defineToItem = (def: WhereDefine, schema: USchema, value: string | boolean | number | Date): WhereItem => {
-
-    // console.log(def, schema)
-    // switch(schema.ignore)
+    // TODO : IGNORE SOME INVALIDATE SCHEMA
     // return null;
     return { ...def, value };
 

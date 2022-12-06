@@ -1,18 +1,26 @@
 import _ from 'lodash';
+import { Kind } from '@sinclair/typebox';
+import type { TObject } from '@sinclair/typebox';
+import type { ClientBase, Pool } from 'pg';
+
+import { USchema, WhereItem, DB_TYPE } from '../base/types';
+import { Settings, setup as _setup } from '../base/Util'
+import { SqlBuilder, SqlExecutor } from '../base/sql';
 import { BaseView, TableOptions } from '../base/BaseView';
 import { BaseTable } from '../base/BaseTable';
-import type { TObject } from '@sinclair/typebox';
-import { SqlBuilder, SqlExecutor } from '../base/sql';
-import { WhereItem } from '../base/types';
-import { Kind } from '@sinclair/typebox';
-import { USchema } from '../base/types';
-import { where } from './where'
+
 import { insert, update, del, select, count, byField, orderBy, limit } from './basic';
+import { where } from './where'
+import { executor } from './executor'
+
+// Export Some useful global apis/types.
+export * from '../base/types';
+export { UType } from '../base/Util';
+export type { Static } from '@sinclair/typebox';
+
 
 
 const PG: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
-
-import { executor } from './executor'
 
 const fixWhere = (FIELD_MAP: Map<string, USchema>, extra: WhereItem[]): [string, string] => {
     let ITEMS: WhereItem[] = [];
@@ -50,6 +58,7 @@ const fixWhere = (FIELD_MAP: Map<string, USchema>, extra: WhereItem[]): [string,
 
 
 export class View<T extends TObject> extends BaseView<T> {
+    protected _DB_TYPE: DB_TYPE = 'pg';
     protected _BUILDER: SqlBuilder = PG;
     protected _EXECUTOR: SqlExecutor<T> = executor;
 
@@ -61,6 +70,7 @@ export class View<T extends TObject> extends BaseView<T> {
 }
 
 export class Table<T extends TObject> extends BaseTable<T> {
+    protected _DB_TYPE: DB_TYPE = 'pg';
     protected _BUILDER: SqlBuilder = PG;
     protected _EXECUTOR: SqlExecutor<T> = executor;
     constructor(tableName: string, schema: T, options?: TableOptions) {
@@ -69,6 +79,8 @@ export class Table<T extends TObject> extends BaseTable<T> {
     }
 }
 
-export { setup, UType } from '../base/Util';
-export * from '../base/types';
-export type { Static } from '@sinclair/typebox';
+export type PGSettings = Omit<Settings, 'provider'> & {
+    provider: () => ClientBase | Pool
+};
+
+export const setup = (settings: PGSettings) => _setup({ ...settings, provider: ['pg', settings.provider], })

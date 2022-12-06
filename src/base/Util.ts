@@ -1,10 +1,10 @@
-import type { ClientBase, Pool } from 'pg';
-import _ from 'lodash';
-import type { USchema, FieldType, MagicSuffix } from './types';
-import { Type } from '@sinclair/typebox';
-import { Value } from '@sinclair/typebox/value';
+import type { USchema, FieldType, MagicSuffix, DB_TYPE } from './types';
 import type { TProperties, TPartial, TObject, StringOptions, StringFormatOption, DateOptions, NumericOptions } from '@sinclair/typebox';
 
+import _ from 'lodash';
+import { Type } from '@sinclair/typebox';
+import { Value } from '@sinclair/typebox/value';
+import { setProvider } from './Providers';
 
 
 const SUPPORT_MAP = new Map<FieldType, Set<MagicSuffix>>([
@@ -21,7 +21,7 @@ export const isSupport = (type: FieldType, suffix: MagicSuffix) => {
 export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull', 'IsDistinct', 'NotDistinct']);
 
 export type Settings = {
-    provider: () => ClientBase | Pool,
+    provider: [DB_TYPE, () => any] | (() => any),
     pageSize?: number,
     /**
      * A log Function Example : default :null
@@ -72,13 +72,14 @@ type UDateOptions = USchema & DateOptions & {
 var STRICT_QUERY = false;
 var STRICT_ENTITY = false;
 export var ShowSql = (str, param?: any) => { }
-
-export var getDB = (): (ClientBase | Pool) => { throw new Error('Must specfy a DataBase provider') };
 export var PAGE_SIZE = 10;
 
 export const setup = (settings: Settings) => {
-    if (settings.provider) getDB = settings.provider;
-    // if (settings.strict) STRICT = true;
+    if (_.isArray(settings.provider)) {
+        setProvider(settings.provider[0], settings.provider[1]);
+    } else if (_.isFunction(settings.provider)) {
+        setProvider('pg', settings.provider);
+    }
     if (settings.strict) {
         if (_.isBoolean(settings.strict)) {
             STRICT_QUERY = true;

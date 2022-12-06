@@ -1,6 +1,7 @@
+// Not Now!
+// I was still thing is correct provide this feature ? 
 
 // import type { ClientBase } from 'pg'
-
 // const transactionFailedSymbol = Symbol('transactionFailed')
 
 // function transactionUtil(db: ClientBase, fn, cb) {

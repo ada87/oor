@@ -1,43 +1,33 @@
-import { Pool } from 'pg';
-import fp from 'fastify-plugin';
-import type { PoolConfig, ClientBase } from 'pg'
+import type { PoolConfig } from 'pg'
 import type { FastifyInstance, FastifyPluginCallback } from 'fastify';
-import { setup } from '../pg'
 import type { Settings } from '../base/Util'
+
 import _ from 'lodash';
+import fp from 'fastify-plugin';
+import { Pool } from 'pg';
+import { setup } from '../pg/index'
 
-type OorConfig = {
-    PageSize?: number,
-    ShowSQL?: Function;
-    Strict?: boolean | {
-        query?: boolean
-        entity?: boolean,
-    },
-}
+type OOR_CONFIG = Omit<Settings, 'provider'>;
 
-
-const OOR_FASTIFY_PG: FastifyPluginCallback<PoolConfig> = (fastify: FastifyInstance, options: PoolConfig & OorConfig, next) => {
-    let oorConfig: Settings = {
-        pageSize: options.PageSize || 10,
-        showSQL: options.ShowSQL || console.debug,
-        strict: options.Strict ? options.Strict : false,
+const OOR_FASTIFY_PG: FastifyPluginCallback<PoolConfig> = (fastify: FastifyInstance, options: PoolConfig & OOR_CONFIG, next) => {
+    let oorConfig: OOR_CONFIG = {
+        pageSize: options.pageSize || 10,
+        showSQL: options.showSQL || console.debug,
+        strict: options.strict || false,
     };
-    _.unset(options, 'PageSize');
-    _.unset(options, 'ShowSQL');
-    _.unset(options, 'Strict');
+    _.unset(options, 'pageSize');
+    _.unset(options, 'showSQL');
+    _.unset(options, 'strict');
     const pool = new Pool(options);
-    oorConfig.provider = () => pool;
-    setup(oorConfig);
+    setup({ ...oorConfig, provider: () => pool });
     fastify.addHook('onClose', () => pool.end())
     fastify.decorate('oor', pool);
     pool.connect(next)
 }
 
-
-
 declare module 'fastify' {
     export interface FastifyInstance {
-        oor: ClientBase
+        oor: Pool
     }
 }
 

@@ -48,7 +48,7 @@ const fieldToDef = (key: string, FIELD_MAP: Map<string, USchema>): WhereDefine =
     }
     // console.log(query_field, SCHEMA, suffix)
     const fieldType = getFieldType(SCHEMA);
-    let def: WhereDefine = { property: query_field, field: SCHEMA.column || query_field, type: fieldType, condition: suffix };
+    let def: WhereDefine = { field: query_field, column: SCHEMA.column || query_field, type: fieldType, condition: suffix };
 
 
     return def;
@@ -82,7 +82,7 @@ export const queryToCondition = (query: QuerySchema, FIELD_MAP: Map<string, USch
             return
         };
 
-        let queryItem = defineToItem(define, FIELD_MAP.get(define.property || define.field), query[key])
+        let queryItem = defineToItem(define, FIELD_MAP.get(define.column || define.field), query[key])
         if (queryItem == null) {
             err.push(key + ' \' value has problem : ' + String(query[key]))
             return;

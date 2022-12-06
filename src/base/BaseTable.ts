@@ -43,9 +43,11 @@ export abstract class BaseTable<T extends TObject> extends BaseView<T> {
 
 
     deleteByField(field: string, value: string | number | boolean): Promise<number> {
-        const { _CONFIG: { mark } } = this;
+        const { _CONFIG: { mark, FIELD_MAP } } = this;
         if (mark) return this.updateByField(mark, field, value)
-        return this.deleteByCondition([{ field, value }])
+        let schema = FIELD_MAP.get(field);
+        let column = (schema && schema.column) ? schema.column : field;
+        return this.deleteByCondition([{ column, value }])
     }
 
 
@@ -91,7 +93,9 @@ export abstract class BaseTable<T extends TObject> extends BaseView<T> {
     }
 
     updateByField(obj: Static<T>, field: string, value: string | number | boolean): Promise<number> {
-        return this.updateByCondition(obj, [{ field, value }])
+        let schema = this._CONFIG.FIELD_MAP.get(field);
+        let column = (schema && schema.column) ? schema.column : field;
+        return this.updateByCondition(obj, [{ column, value }])
     }
 
     updateByQuery(obj: Static<T>, query: QuerySchema): Promise<number> {

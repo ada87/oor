@@ -29,16 +29,16 @@ const NullCondition = (item: WhereItem, pos: QueryPos,): boolean => {
     }
     switch (item.condition) {
         case 'IsNull':
-            pos.SQL.push(`${item.field} IS ${bool ? '' : 'NOT'} NULL`);
+            pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} NULL`);
             return true;
         case 'NotNull':
-            pos.SQL.push(`${item.field} IS ${bool ? 'NOT' : ''} NULL`);
+            pos.SQL.push(`${item.column} IS ${bool ? 'NOT' : ''} NULL`);
             return true;
         case 'IsDistinct':
-            pos.SQL.push(`${item.field} IS ${bool ? '' : 'NOT'} DISTINCT`);
+            pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} DISTINCT`);
             return true;
         case 'NotDistinct':
-            pos.SQL.push(`${item.field} IS ${bool ? 'NOT' : ''} DISTINCT`);
+            pos.SQL.push(`${item.column} IS ${bool ? 'NOT' : ''} DISTINCT`);
             return true;
 
     }
@@ -132,29 +132,29 @@ const whereText = (item: WhereItem, pos: QueryPos, err: string[]) => {
     if (NullCondition(item, pos)) return;
     const compare = compareSuffix(item.condition);
     if (compare != null) {
-        pos.SQL.push(`${item.field} ${compare} $${pos.NUM}`);
+        pos.SQL.push(`${item.column} ${compare} $${pos.NUM}`);
         pos.PARAM.push(item.value)
         pos.NUM++;
         return;
     }
     switch (item.condition) {
         case 'Like':
-            pos.SQL.push(`${item.field} LIKE $${pos.NUM}`);
+            pos.SQL.push(`${item.column} LIKE $${pos.NUM}`);
             pos.PARAM.push('%' + item.value + '%')
             pos.NUM++;
             return;
         case 'Likel':
-            pos.SQL.push(`${item.field} LIKE $${pos.NUM}`);
+            pos.SQL.push(`${item.column} LIKE $${pos.NUM}`);
             pos.PARAM.push(item.value + '%')
             pos.NUM++;
             return;
         case 'Liker':
-            pos.SQL.push(`${item.field} LIKE $${pos.NUM}`);
+            pos.SQL.push(`${item.column} LIKE $${pos.NUM}`);
             pos.PARAM.push('%' + item.value)
             pos.NUM++;
             return;
         default:
-            err.push(`${item.field}/ type : String not support method ${item.condition}`)
+            err.push(`${item.column}/ type : String not support method ${item.condition}`)
             return;
     }
 }
@@ -165,28 +165,28 @@ const whereNumber = (item: WhereItem, pos: QueryPos, err: string[]) => {
     if (compare != null) {
         try {
             let val = _.isNumber(item.value) ? item.value : parseFloat(item.value as string);
-            pos.SQL.push(`${item.field} ${compare} $${pos.NUM}`);
+            pos.SQL.push(`${item.column} ${compare} $${pos.NUM}`);
             pos.PARAM.push(val)
             pos.NUM++;
         } catch {
-            err.push(`${item.field}/ type : Number value is not a Number ${item.value}`)
+            err.push(`${item.column}/ type : Number value is not a Number ${item.value}`)
         }
         return;
     }
     if (item.condition == 'Bt') {
         let range = betweenNumber(item.value + '');
         if (range == null) {
-            err.push(`${item.field}/(Number) :  Between Value invalidated ${item.value}`)
+            err.push(`${item.column}/(Number) :  Between Value invalidated ${item.value}`)
             return;
         }
         range.map(oper => {
-            pos.SQL.push(`${item.field} ${oper[0]} $${pos.NUM}`)
+            pos.SQL.push(`${item.column} ${oper[0]} $${pos.NUM}`)
             pos.PARAM.push(oper[1])
             pos.NUM++;
         })
         return;
     }
-    err.push(`${item.field}/(Number) : not support method ${item.condition}`);
+    err.push(`${item.column}/(Number) : not support method ${item.condition}`);
 }
 
 
@@ -196,12 +196,12 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
     let val: Dayjs = null;
     if (item.condition != 'Bt') {
         if (item.value == '' || item.value == null) {
-            err.push(`${item.field}/(date) : Can not be null`)
+            err.push(`${item.column}/(date) : Can not be null`)
             return;
         }
         val = dayjs(item.value as any);
         if (!val.isValid()) {
-            err.push(`${item.field}/(date) : Must Be a date-string or number-stamp ${item.value}`)
+            err.push(`${item.column}/(date) : Must Be a date-string or number-stamp ${item.value}`)
             return;
         }
         switch (item.condition) {
@@ -227,7 +227,7 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
     }
     const compare = compareSuffix(item.condition);
     if (compare != null) {
-        pos.SQL.push(`${item.field} ${compare} $${pos.NUM}`);
+        pos.SQL.push(`${item.column} ${compare} $${pos.NUM}`);
         pos.PARAM.push(val.toDate())
         pos.NUM++;
         return;
@@ -250,25 +250,25 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
         case 'Bt':
             const range = betweenDate(item.value + '')
             if (range == null) {
-                err.push(`${item.field}/(Date) :  Between Value invalidated ${item.value}`)
+                err.push(`${item.column}/(Date) :  Between Value invalidated ${item.value}`)
                 return;
             }
             range.map(oper => {
-                pos.SQL.push(`${item.field} ${oper[0]} $${pos.NUM}`)
+                pos.SQL.push(`${item.column} ${oper[0]} $${pos.NUM}`)
                 pos.PARAM.push(oper[1])
                 pos.NUM++;
             })
             return;
     }
     if (start == null || end == null) {
-        err.push(`${item.field}/(Date) : not support method ${item.condition}`);
+        err.push(`${item.column}/(Date) : not support method ${item.condition}`);
         return;
     }
 
-    pos.SQL.push(`${item.field} >= $${pos.NUM}`)
+    pos.SQL.push(`${item.column} >= $${pos.NUM}`)
     pos.PARAM.push(start)
     pos.NUM++;
-    pos.SQL.push(`${item.field} <= $${pos.NUM}`)
+    pos.SQL.push(`${item.column} <= $${pos.NUM}`)
     pos.PARAM.push(end)
     pos.NUM++;
 
@@ -287,10 +287,10 @@ const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
     }
     switch (item.condition) {
         case 'IsNull':
-            pos.SQL.push(`${item.field} IS ${bool ? '' : 'NOT'} NULL`);
+            pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} NULL`);
             return;
         case 'NotNull':
-            pos.SQL.push(`${item.field} IS ${bool ? 'NOT' : ''} NULL`);
+            pos.SQL.push(`${item.column} IS ${bool ? 'NOT' : ''} NULL`);
             return;
         case '!=':
         case '<>':
@@ -304,7 +304,7 @@ const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
         default:
             break;
     }
-    pos.SQL.push(`${item.field} IS ${bool ? '' : 'NOT'} TRUE`)
+    pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} TRUE`)
 
 
 }
@@ -312,7 +312,7 @@ const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
 const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
     let item = { ...whereItem, condition: whereItem.condition ? whereItem.condition : '=', type: whereItem.type ? whereItem.type : 'string' }
     if (!isSupport(item.type, item.condition)) {
-        err.push(`${item.field}/(${item.type}) not support method ${item.condition}`)
+        err.push(`${item.column}/(${item.type}) not support method ${item.condition}`)
         return;
     }
     switch (item.type) {
@@ -335,22 +335,23 @@ const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
 }
 
 const ConditionToWhere = (condition: WhereCondition, pos: QueryPos, err: string[]) => {
-    for (let group of condition.items) {
-        if (_.has(group, 'link')) {
+    for (let item of condition.items) {
+        if (_.has(item, 'link')) {
+            let group = item as WhereCondition;
             let _pos: QueryPos = {
                 SQL: [],
                 PARAM: [],
                 NUM: pos.NUM
             }
-            ConditionToWhere(group as WhereCondition, _pos, err);
+            ConditionToWhere(group, _pos, err);
             if (_pos.SQL.length) {
                 if (_pos.NUM > pos.NUM) pos.NUM = _pos.NUM;
                 for (let param of _pos.PARAM) pos.PARAM.push(param);
-                //@ts-ignore;
-                pos.SQL.push('(' + _pos.SQL.join(' ' + group.link + ' ') + ')')
+                let link = group.link == 'NOT' ? 'AND NOT' : group.link;
+                pos.SQL.push('(' + _pos.SQL.join(' ' + link + ' ') + ')')
             }
         } else {
-            ItemToWhere(group as WhereItem, pos, err)
+            ItemToWhere(item as WhereItem, pos, err)
         }
     }
 };

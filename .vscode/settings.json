@@ -1,0 +1,10 @@
+{
+    "files.exclude": {
+        ".npmignore": true,
+        "build": true,
+        "oor.svg": true,
+        "test.sql.7z": true,
+        "test.ts": true,
+        "tsconfig.json": true
+    }
+}

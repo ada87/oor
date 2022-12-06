@@ -23,19 +23,19 @@ export type MagicSuffix = (typeof SUFFIX)[number];
 
 export type WhereDefine = {
     /**
-     * 名称
+     * Field Type.
     */
     type?: FieldType
     /**
-     * 数据库字段名称
+     * The column Name in DB Table.
     */
-    field: string,
+    column: string,
     /**
-     * 字段名称
+     * The Field Name in Entity Model.
     */
-    property?: string,
+    field?: string,
     /**
-     * 条件
+     * Action
     */
     condition?: MagicSuffix,
 }

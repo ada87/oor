@@ -1,8 +1,7 @@
 import { test as jtest, Test, TestContext } from '@japa/runner';
-import { assert } from '@japa/assert'
 import { Client } from 'pg';
 import { TestExecutor } from '@japa/core';
-import { setup, Table, UType, Static } from '../index';
+import { setup, Table, UType, Static } from '../pg/index';
 import * as _ from 'lodash';
 
 
@@ -59,7 +58,7 @@ export type User = Static<typeof UserSchema>;
 
 // Line 4 : Build a Table, it's ok for all
 export const User = new Table('public.user', UserSchema, {
-    globalCondition: [{ field: 'id', condition: '!=', 'value': 1 }]
+    globalCondition: [{ column: 'id', condition: '!=', 'value': 1 }]
 });
 
 // @ts-ignore

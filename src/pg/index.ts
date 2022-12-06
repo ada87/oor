@@ -39,7 +39,7 @@ const fixWhere = (FIELD_MAP: Map<string, USchema>, extra: WhereItem[]): [string,
     }
     for (let [key, val] of FIELD_MAP) {
         if (_.has(val, 'delMark')) {
-            ITEMS.push({ field: (val.column || key), condition: '<>', value: convert(val[Kind as any], val.delMark) })
+            ITEMS.push({ column: (val.column || key), condition: '<>', value: convert(val[Kind as any], val.delMark) })
         }
         ctf.set((val.column || key), key);
     }

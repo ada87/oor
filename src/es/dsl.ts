@@ -56,9 +56,9 @@ const TERMS = "{\"terms\":{\"field\":\"%s\",\"size\":%d,\"min_doc_count\":1,\"sh
 
 
 const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
-    let item = { ...whereItem, condition: whereItem.condition ? whereItem.condition : '=', type: whereItem.type ? whereItem.type : 'string' }
-    if (!isSupport(item.type, item.condition)) {
-        err.push(`${item.column}/(${item.type}) not support method ${item.condition}`)
+    let item = { ...whereItem, fn: whereItem.fn ? whereItem.fn : '=', type: whereItem.type ? whereItem.type : 'string' }
+    if (!isSupport(item.type, item.fn)) {
+        err.push(`${item.column}/(${item.type}) not support method ${item.fn}`)
         return;
     }
     switch (item.type) {

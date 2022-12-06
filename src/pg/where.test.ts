@@ -3,6 +3,7 @@ import { FIELD_MAP } from '../test/pg';
 import { WhereParam, QuerySchema, SUFFIX } from '../base/types'
 import { where, between, betweenNumber, betweenDate } from './where'
 import { queryToCondition } from '../base/QueryBuilder';
+import { isCoverOrCoverError } from '../test/Const';
 // import { whereByQuery } from './QueryBuilder';
 // import { orderByLimit } from './QueryPagition';
 
@@ -119,11 +120,15 @@ test('Test : buildSQL', ({ assert }) => {
 
     // console.log(sql[0], sql[1])
 })
-    .pin()
+    // .pin()
 
     ;
 
-
+test('Test : Suffix Coverage', () => {
+    isCoverOrCoverError(where);
+})
+    // .skip()
+    .pin();
 
 test('Test : Where', ({ assert }, txt) => {
     const condition: WhereParam = {

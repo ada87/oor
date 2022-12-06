@@ -1,5 +1,7 @@
 import _ from 'lodash';
 import { test } from '@japa/runner'
+import '@japa/assert'
+
 import { FIELD_MAP } from '../test/pg';
 import { queryToCondition } from './QueryBuilder';
 import { SUFFIX } from './types';

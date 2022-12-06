@@ -1,13 +1,10 @@
 # OOR
 
 
-![npm version](oor.svg)
-![npm version](https://img.shields.io/npm/v/viz.svg?style=flat)
+[参考文档](https://oor.xdnote.com/)  |  [English](README.md)  | ![npm version](https://img.shields.io/npm/v/oor.svg?style=flat)
 
 
 NodeJs ORM 工具包 , 目前仅支持 `Postgresql`
-
-[参考文档](https://oor.xdnote.com/)
 
 ## 特点
 

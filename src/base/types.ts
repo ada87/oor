@@ -33,11 +33,11 @@ export type WhereDefine = {
     /**
      * The Field Name in Entity Model.
     */
-    field?: string,
+    // field?: string,
     /**
-     * Action
+     * The comparison function.
     */
-    condition?: MagicSuffix,
+    fn?: MagicSuffix,
 }
 
 export type WhereItem = WhereDefine & {
@@ -46,7 +46,7 @@ export type WhereItem = WhereDefine & {
 
 export type WhereCondition = { link: 'AND' | 'OR' | 'NOT', items: (WhereItem | WhereCondition)[] }
 
-export type WhereParam = WhereCondition | (WhereItem[]);
+export type WhereParam = WhereCondition | (WhereCondition | WhereItem)[];
 
 export type QuerySchema = {
 

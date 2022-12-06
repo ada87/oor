@@ -114,7 +114,7 @@ test('Test : Delete 2', async () => {
     // const result = await User.deleteById(2);
     // const result = await User.deleteByField('id', 3);
     // const result = await User.deleteByQuery( { idMax: 10, sex: false });
-    const result = await User.deleteByCondition([{ column: 'id', condition: '<', value: 10 }]);
+    const result = await User.deleteByCondition([{ column: 'id', fn: '<', value: 10 }]);
     console.log(result)
 })
     // .skip()

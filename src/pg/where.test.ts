@@ -58,19 +58,19 @@ test('Test : Between Date', ({ assert }, txt) => {
 test('Test : WhereToSql', ({ assert }) => {
     assert.throws(() => where({
         // string not support MaxD will throw a error
-        link: 'AND', items: [{ column: 'name', type: 'string', value: 'a', condition: 'MaxD' }]
+        link: 'AND', items: [{ column: 'name', type: 'string', value: 'a', fn: 'MaxD' }]
     }), 'Some SQL Error Occur');
 
 
     const [SQL, PARAM] = where({
         // string not support MaxD will throw a error
         link: 'AND', items: [
-            { column: 'name', type: 'string', value: 'a', condition: 'Like' },
-            { column: 'profile', value: '', condition: 'IsNull' },
+            { column: 'name', type: 'string', value: 'a', fn: 'Like' },
+            { column: 'profile', value: '', fn: 'IsNull' },
             {
                 link: 'OR', items: [
-                    { column: 'age', type: 'number', value: 14, condition: '<=' },
-                    { column: 'age', type: 'number', value: 60, condition: '>=' },
+                    { column: 'age', type: 'number', value: 14, fn: '<=' },
+                    { column: 'age', type: 'number', value: 60, fn: '>=' },
                 ]
             }
         ]
@@ -86,39 +86,34 @@ test('Test : WhereToSql', ({ assert }) => {
 
 
 test('Test : buildSQL', ({ assert }) => {
+    const root: WhereParam = [
+        { column: 'a1', fn: '<', value: 'value1' },
+        { column: 'a2', fn: '<', value: 'value2' },
+        {
+            link: 'OR', items: [
+                { column: 'b1', fn: 'Like', value: 'value3' },
+                {
+                    link: 'NOT', items: [
+                        { column: 'd1', value: 'test1' },
+                        { column: 'd2', value: 'test2' },
+                        {
+                            link: 'AND', items: [
+                                { column: 'e1', value: 'test6' },
+                                { column: 'e2', value: 'test7' },
 
-    const root: WhereParam = {
-        link: 'AND',
-        items: [
-            { column: 'a1', condition: '<', value: 'value1' },
-            { column: 'a2', condition: '<', value: 'value2' },
+                            ]
+                        }
+                    ]
+                },
+                { column: 'b2', fn: '>=', value: 'value4' },
+            ]
+        },
+        { column: 'a3', fn: '<', value: 'value1' },
 
-            {
-                link: 'OR', items: [
-                    { column: 'b1', condition: 'Like', value: 'value3' },
-                    {
-                        link: 'NOT', items: [
-                            { column: 'd1', value: 'test1' },
-                            { column: 'd2', value: 'test2' },
-                            {
-                                link: 'AND', items: [
-                                    { column: 'e1', value: 'test6' },
-                                    { column: 'e2', value: 'test7' },
-
-                                ]
-                            }
-                        ]
-                    },
-                    { column: 'b2', condition: '>=', value: 'value4' },
-
-                ]
-            },
-            { column: 'a3', condition: '<', value: 'value1' },
-
-        ]
-    }
+    ]
 
     const sql = where(root);
+    console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     console.log(sql)
     // assert.equal(sql[1].length, 5)
 
@@ -135,9 +130,9 @@ test('Test : Where', ({ assert }, txt) => {
         link: 'AND', items: [
             {
                 type: 'date',
-                field: 'sex',
+                // field: 'sex',
                 // @ts-ignore
-                "condition": txt,
+                fn: txt,
                 value: '2022-11-11 11:11:11'
             }
         ]

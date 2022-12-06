@@ -18,7 +18,7 @@ const BOOLEAN_TEXT_IGNORE = new Set(['', 'null']);
 const BOOLEAN_TEXT_FALSE = new Set<any>(['0', 'false', '-1']);
 
 const NullCondition = (item: WhereItem, pos: QueryPos,): boolean => {
-    if (!NONE_PARAM.has(item.condition)) return false;
+    if (!NONE_PARAM.has(item.fn)) return false;
     let bool = true
     if (_.isString(item.value)) {
         let v = _.toLower(_.trim(item.value));
@@ -27,7 +27,7 @@ const NullCondition = (item: WhereItem, pos: QueryPos,): boolean => {
     } else {
         bool = !!item.value;
     }
-    switch (item.condition) {
+    switch (item.fn) {
         case 'IsNull':
             pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} NULL`);
             return true;
@@ -130,14 +130,14 @@ export const betweenDate = (txt: string): [MagicSuffix, Date][] => {
 
 const whereText = (item: WhereItem, pos: QueryPos, err: string[]) => {
     if (NullCondition(item, pos)) return;
-    const compare = compareSuffix(item.condition);
+    const compare = compareSuffix(item.fn);
     if (compare != null) {
         pos.SQL.push(`${item.column} ${compare} $${pos.NUM}`);
         pos.PARAM.push(item.value)
         pos.NUM++;
         return;
     }
-    switch (item.condition) {
+    switch (item.fn) {
         case 'Like':
             pos.SQL.push(`${item.column} LIKE $${pos.NUM}`);
             pos.PARAM.push('%' + item.value + '%')
@@ -154,14 +154,14 @@ const whereText = (item: WhereItem, pos: QueryPos, err: string[]) => {
             pos.NUM++;
             return;
         default:
-            err.push(`${item.column}/ type : String not support method ${item.condition}`)
+            err.push(`${item.column}/ type : String not support method ${item.fn}`)
             return;
     }
 }
 
 const whereNumber = (item: WhereItem, pos: QueryPos, err: string[]) => {
     if (NullCondition(item, pos)) return;
-    const compare = compareSuffix(item.condition);
+    const compare = compareSuffix(item.fn);
     if (compare != null) {
         try {
             let val = _.isNumber(item.value) ? item.value : parseFloat(item.value as string);
@@ -173,7 +173,7 @@ const whereNumber = (item: WhereItem, pos: QueryPos, err: string[]) => {
         }
         return;
     }
-    if (item.condition == 'Bt') {
+    if (item.fn == 'Bt') {
         let range = betweenNumber(item.value + '');
         if (range == null) {
             err.push(`${item.column}/(Number) :  Between Value invalidated ${item.value}`)
@@ -186,7 +186,7 @@ const whereNumber = (item: WhereItem, pos: QueryPos, err: string[]) => {
         })
         return;
     }
-    err.push(`${item.column}/(Number) : not support method ${item.condition}`);
+    err.push(`${item.column}/(Number) : not support method ${item.fn}`);
 }
 
 
@@ -194,7 +194,7 @@ const whereNumber = (item: WhereItem, pos: QueryPos, err: string[]) => {
 const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
     if (NullCondition(item, pos)) return;
     let val: Dayjs = null;
-    if (item.condition != 'Bt') {
+    if (item.fn != 'Bt') {
         if (item.value == '' || item.value == null) {
             err.push(`${item.column}/(date) : Can not be null`)
             return;
@@ -204,7 +204,7 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
             err.push(`${item.column}/(date) : Must Be a date-string or number-stamp ${item.value}`)
             return;
         }
-        switch (item.condition) {
+        switch (item.fn) {
             case 'MinH':
                 val = val.startOf('hour');
                 break;
@@ -225,7 +225,7 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
                 break;
         }
     }
-    const compare = compareSuffix(item.condition);
+    const compare = compareSuffix(item.fn);
     if (compare != null) {
         pos.SQL.push(`${item.column} ${compare} $${pos.NUM}`);
         pos.PARAM.push(val.toDate())
@@ -234,7 +234,7 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
     }
     let start = null, end = null;
 
-    switch (item.condition) {
+    switch (item.fn) {
         case 'BtD':
             start = val.clone().startOf('date').toDate();
             end = val.clone().endOf('date').toDate();
@@ -261,7 +261,7 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
             return;
     }
     if (start == null || end == null) {
-        err.push(`${item.column}/(Date) : not support method ${item.condition}`);
+        err.push(`${item.column}/(Date) : not support method ${item.fn}`);
         return;
     }
 
@@ -285,7 +285,7 @@ const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
     } else {
         bool = !!item.value;
     }
-    switch (item.condition) {
+    switch (item.fn) {
         case 'IsNull':
             pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} NULL`);
             return;
@@ -310,9 +310,9 @@ const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
 }
 
 const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
-    let item = { ...whereItem, condition: whereItem.condition ? whereItem.condition : '=', type: whereItem.type ? whereItem.type : 'string' }
-    if (!isSupport(item.type, item.condition)) {
-        err.push(`${item.column}/(${item.type}) not support method ${item.condition}`)
+    let item = { ...whereItem, fn: whereItem.fn ? whereItem.fn : '=', type: whereItem.type ? whereItem.type : 'string' }
+    if (!isSupport(item.type, item.fn)) {
+        err.push(`${item.column}/(${item.type}) not support method ${item.fn}`)
         return;
     }
     switch (item.type) {
@@ -363,6 +363,8 @@ export const where: SqlWhere = (condition: WhereParam, startIdx = 1): [string, a
     let err: string[] = [];
     ConditionToWhere(root, pos, err);
     throwErr(err, 'Some SQL Error Occur');
-    if (pos.SQL.length == 0) return ['', []];
+    if (pos.SQL.length == 0) {
+        return ['', []]
+    };
     return [pos.SQL.join(" " + root.link + " "), pos.PARAM]
 }

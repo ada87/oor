@@ -26,7 +26,6 @@ export const test = (title: string, callback: TestExecutor<TestContext, undefine
     .setup(async () => {
 
         clearTimeout(pid);
-        // console.log(pg)
         // @ts-ignore
         if (!pg._connected) {
             await pg.connect()
@@ -58,7 +57,7 @@ export type User = Static<typeof UserSchema>;
 
 // Line 4 : Build a Table, it's ok for all
 export const User = new Table('public.user', UserSchema, {
-    globalCondition: [{ column: 'id', condition: '!=', 'value': 1 }]
+    // globalCondition: [{ column: 'id', fn: '!=', 'value': 1 }]
 });
 
 // @ts-ignore

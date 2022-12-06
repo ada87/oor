@@ -27,7 +27,6 @@
 //     .setup(async () => {
 
 //         clearTimeout(pid);
-//         // console.log(pg)
 //         // @ts-ignore
 //         if (!pg._connected) {
 //             await pg.connect()

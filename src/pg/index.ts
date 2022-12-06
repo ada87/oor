@@ -18,8 +18,6 @@ export * from '../base/types';
 export { UType } from '../base/Util';
 export type { Static } from '@sinclair/typebox';
 
-
-
 const PG: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
 
 const fixWhere = (FIELD_MAP: Map<string, USchema>, extra: WhereItem[]): [string, string] => {
@@ -39,15 +37,18 @@ const fixWhere = (FIELD_MAP: Map<string, USchema>, extra: WhereItem[]): [string,
     }
     for (let [key, val] of FIELD_MAP) {
         if (_.has(val, 'delMark')) {
-            ITEMS.push({ column: (val.column || key), condition: '<>', value: convert(val[Kind as any], val.delMark) })
+            ITEMS.push({ column: (val.column || key), fn: '<>', value: convert(val[Kind as any], val.delMark) })
         }
         ctf.set((val.column || key), key);
     }
     extra.map(item => {
+        // inner usage field
+        // @ts-ignore
         let schema = FIELD_MAP.get(item.field) || FIELD_MAP.get(ctf.get(item.field));
         if (schema == null) return;
         ITEMS.push({ ...item, value: convert(schema[Kind as any], item.value) });
     })
+    if (ITEMS.length == 0) return ['', ' WHERE '];
     let [SQL, PARAM] = where(ITEMS);
     if (SQL.length == 0) return ['', ' WHERE '];
     PARAM.map((item, i) => {

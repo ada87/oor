@@ -38,7 +38,6 @@ test('Test : Between Number', ({ assert }, txt) => {
     '(0,20)',
     '0,20,df,fads',
 ])
-    // .pin()
     ;
 
 test('Test : Between Date', ({ assert }, txt) => {
@@ -51,7 +50,6 @@ test('Test : Between Date', ({ assert }, txt) => {
     '(2022-11-11,2022-11-12)',
     '0,20,df,fads',
 ])
-    // .pin()
     ;
 
 
@@ -80,7 +78,6 @@ test('Test : WhereToSql', ({ assert }) => {
 
 
 })
-    // .pin()
 
     ;
 
@@ -120,19 +117,18 @@ test('Test : buildSQL', ({ assert }) => {
 
     // console.log(sql[0], sql[1])
 })
-    // .pin()
 
     ;
 
 test('Test : Suffix Coverage', ({ assert }) => {
-    try{
+    try {
         isCoverOrCoverError(where);
-    }catch(e){
+    } catch (e) {
         console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-            console.log(e)
+        console.log(e)
     }
 })
-    .pin();
+    ;
 
 test('Test : Where', ({ assert }, txt) => {
     const condition: WhereParam = {
@@ -150,7 +146,6 @@ test('Test : Where', ({ assert }, txt) => {
     // console.log(txt, getDateRange(txt as any))
 })
     .with(SUFFIX as any)
-    // .pin()
     ;
 
 

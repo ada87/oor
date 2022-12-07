@@ -6,8 +6,8 @@ test('Test : Query With SQL', async () => {
 
 
 })
-    .skip();
-// .pin();
+    // .skip();
+    ;
 
 
 test('Test : Basic', async () => {
@@ -15,7 +15,6 @@ test('Test : Basic', async () => {
 
     console.log(result);
 })
-    // .pin()
     .skip();
 
 
@@ -32,8 +31,8 @@ test('Test : Query with QuerySchemma', async () => {
     console.log(result);
 
 })
-    .skip();
-// .pin();
+    .skip()
+    ;
 
 
 test('Test : Query With Some Condition', async () => {
@@ -50,8 +49,8 @@ test('Test : Query With Some Condition', async () => {
     // console.log(result.length)
 
 })
-    .skip();
-// .pin();
+    .skip()
+    ;
 
 
 
@@ -88,7 +87,6 @@ test('Test : CRUD', async () => {
     console.log('After Delete', afterDelete)
 })
 // .skip();
-// .pin();
 
 
 
@@ -104,7 +102,6 @@ test('Test : Update 2', async () => {
     console.log(result)
 })
     .skip()
-    // .pin()
     ;
 
 
@@ -118,5 +115,4 @@ test('Test : Delete 2', async () => {
     console.log(result)
 })
     // .skip()
-    // .pin()
     ;

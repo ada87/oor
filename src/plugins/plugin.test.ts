@@ -31,5 +31,4 @@ test('Test : Pg Connection', async () => {
     // await pg.end()
     // console.log('ended ')
 })
-    // .pin()
     ;

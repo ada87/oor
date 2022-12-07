@@ -25,7 +25,6 @@ test('Test : Suffix Cover', ({ assert }) => {
 
 })
     .skip()
-    // .pin()
     ;
 
 
@@ -68,7 +67,6 @@ test('Test : buildQuery', ({ assert }) => {
 
     // buildQuery({ a: '1' })
 })
-    // .pin()
 
     ;
 

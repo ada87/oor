@@ -31,11 +31,8 @@ export type WhereDefine = {
     */
     column: string,
     /**
-     * The Field Name in Entity Model.
-    */
-    // field?: string,
-    /**
      * The comparison function.
+     * Use Magic Suffix!
     */
     fn?: MagicSuffix,
 }

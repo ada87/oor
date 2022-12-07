@@ -38,7 +38,7 @@ export type TableOptions = {
 
 // const WHERE_TO_STRING = ();
 
-export abstract class BaseView<T extends TObject> extends BaseQuery {
+export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
 
     protected _table: string;
 
@@ -116,7 +116,7 @@ export abstract class BaseView<T extends TObject> extends BaseQuery {
         const { _BUILDER, _EXECUTOR, _table, _CONFIG: { fields_query } } = this;
         const SQL_QUERY = _BUILDER.select(_table, fields_query);
         const SQL = `${SQL_QUERY} ${WHERE} ${ORDER_BY} ${LIMIT}`;
-        const result = _EXECUTOR.query(this.db(), SQL, PARAM)
+        const result = _EXECUTOR.query(this.getClient(), SQL, PARAM)
         return result;
     }
 
@@ -158,7 +158,7 @@ export abstract class BaseView<T extends TObject> extends BaseQuery {
             total = query.total_;
         } else {
             const SQL_COUNT = `${_BUILDER.count(_table, key)} ${this.fixWhere(WHERE)}`;
-            const countResult = await _EXECUTOR.get(this.db(), SQL_COUNT, PARAM);
+            const countResult = await _EXECUTOR.get(this.getClient(), SQL_COUNT, PARAM);
             if (countResult == null) {
                 return {
                     total: 0,
@@ -178,7 +178,7 @@ export abstract class BaseView<T extends TObject> extends BaseQuery {
     all(): Promise<Static<T>[]> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_query, WHERE_FIX } } = this;
         const SQL = _BUILDER.select(_table, fields_query) + WHERE_FIX[0];
-        return _EXECUTOR.query(this.db(), SQL);
+        return _EXECUTOR.query(this.getClient(), SQL);
     }
 
     /**
@@ -189,7 +189,7 @@ export abstract class BaseView<T extends TObject> extends BaseQuery {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key, fields_get } } = this;
         const SQL = _BUILDER.select(_table, fields_get);
         const [WHERE, PARAM] = _BUILDER.byField(key, id);
-        return _EXECUTOR.get(this.db(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
+        return _EXECUTOR.get(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
     }
     /**
      * Get A record form Table / View By Specify Field = value.
@@ -201,7 +201,7 @@ export abstract class BaseView<T extends TObject> extends BaseQuery {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_get } } = this;
         const SQL = _BUILDER.select(_table, fields_get);
         const [WHERE, PARAM] = _BUILDER.byField(field, value);
-        return _EXECUTOR.get(this.db(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
+        return _EXECUTOR.get(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
     }
 
     /**
@@ -211,7 +211,7 @@ export abstract class BaseView<T extends TObject> extends BaseQuery {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_get } } = this;
         const SQL = _BUILDER.select(_table, fields_get);
         const [WHERE, PARAM] = _BUILDER.byField(field, value);
-        return _EXECUTOR.query(this.db(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
+        return _EXECUTOR.query(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
     }
 
     protected fixWhere(where: string): string {

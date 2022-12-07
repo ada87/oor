@@ -29,6 +29,5 @@ test('Test : Check', ({ assert }, obj) => {
         { name: new Date() },
     ])
 
-    // .pin()
 
     ;

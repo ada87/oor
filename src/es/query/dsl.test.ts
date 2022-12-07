@@ -1,10 +1,9 @@
 import { test } from '@japa/runner'
-import '@japa/assert'
-import { WhereParam, QuerySchema, SUFFIX } from '../base/types'
+import { WhereParam, QuerySchema, SUFFIX } from '../../base/types'
 
 // import { whereByQuery } from './QueryBuilder';
 // import { orderByLimit } from './QueryPagition';
-import { SUFFIX_COVER_TEST, isCoverOrCoverError } from '../test/Const';
+import { SUFFIX_COVER_TEST, isCoverOrCoverError } from '../../test/Const';
 
 
 test('Test : DSL', () => {
@@ -38,6 +37,5 @@ test('Test : DSL', () => {
     // console.log(root)
     // console.log('DSL BUILDER')
 })
-    // .pin()
 
     ;

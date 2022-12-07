@@ -3,7 +3,7 @@ import type { WhereParam, QuerySchema } from './types';
 type Primitive = string | number | boolean | Date | null | undefined;
 type PlainObject = Record<string, Primitive>;
 
-export type SqlSelect = (table: string, fields?: string) => string;
+export type SqlSelect = (table: string, fields?: any) => string;
 export type SqlInsert = (table: string, row: PlainObject) => [string, any];
 export type SqlUpdate = (table: string, obj: PlainObject, key?: string) => [string, any[]];
 export type SqlDelete = (table: string) => string;

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { Kind } from '@sinclair/typebox';
 import type { TObject } from '@sinclair/typebox';
-import type { ClientBase, Pool } from 'pg';
+import type { ClientBase, Pool, QueryResult } from 'pg';
 
 import { USchema, WhereItem, DB_TYPE } from '../base/types';
 import { Settings, setup as _setup } from '../base/Util'
@@ -14,8 +14,8 @@ import { where } from './where'
 import { executor } from './executor'
 
 // Export Some useful global apis/types.
-export * from '../base/types';
 export { UType } from '../base/Util';
+export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
 export type { Static } from '@sinclair/typebox';
 
 const PG: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
@@ -57,8 +57,9 @@ const fixWhere = (FIELD_MAP: Map<string, USchema>, extra: WhereItem[]): [string,
     return [' WHERE ' + SQL, ' AND ']
 }
 
+type Connection = ClientBase | Pool;
 
-export class View<T extends TObject> extends BaseView<T> {
+export class View<T extends TObject> extends BaseView<T, Connection> {
     protected _DB_TYPE: DB_TYPE = 'pg';
     protected _BUILDER: SqlBuilder = PG;
     protected _EXECUTOR: SqlExecutor<T> = executor;
@@ -66,17 +67,24 @@ export class View<T extends TObject> extends BaseView<T> {
     constructor(tableName: string, schema: T, options?: TableOptions) {
         super(tableName, schema, options);
         this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, (options && options.globalCondition) ? options.globalCondition : [])
+    }
 
+    sql(...args: any[]): Promise<QueryResult<T>> {
+        return super.sql(...args);
     }
 }
 
-export class Table<T extends TObject> extends BaseTable<T> {
+export class Table<T extends TObject> extends BaseTable<T, Connection> {
     protected _DB_TYPE: DB_TYPE = 'pg';
     protected _BUILDER: SqlBuilder = PG;
     protected _EXECUTOR: SqlExecutor<T> = executor;
     constructor(tableName: string, schema: T, options?: TableOptions) {
         super(tableName, schema, options);
         this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, (options && options.globalCondition) ? options.globalCondition : [])
+    }
+
+    sql(...args: any[]): Promise<QueryResult<T>> {
+        return super.sql(...args);
     }
 }
 
@@ -85,3 +93,5 @@ export type PGSettings = Omit<Settings, 'provider'> & {
 };
 
 export const setup = (settings: PGSettings) => _setup({ ...settings, provider: ['pg', settings.provider], })
+
+

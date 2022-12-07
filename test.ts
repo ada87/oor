@@ -1,15 +1,15 @@
 import { assert } from '@japa/assert'
 import { configure, run } from '@japa/runner'
-// import { specReporter } from '@japa/spec-reporter'
+import { specReporter } from '@japa/spec-reporter'
 process.env.PG_HOST = 'pgserver';
 process.env.PG_PORT = '5432';
 process.env.PG_USER = 'postgres';
 process.env.PG_DB = 'oor'
 
 
-process.env.ES_HOST = 'pgserver';
-process.env.ES_PORT = '9200';
-process.env.ES_USER = 'elasticsearch';
+// process.env.ES_NODE = 'https://192.168.119.39:9200';
+process.env.ES_NODE = 'https://localhost:9200';
+process.env.ES_USER = 'ada';
 process.env.ES_PASS = '123456'
 
 
@@ -25,7 +25,7 @@ configure({
   plugins: [
     assert(),
   ],
-  // reporters: [specReporter()],
+  reporters: [specReporter()],
   importer: (filePath) => import(filePath),
   timeout: 2000,
 });

@@ -2,7 +2,7 @@ import type { SqlBuilder, BaseSqlExecutor } from './sql';
 import type { DB_TYPE } from './types';
 import { PROVIDERS } from './Providers';
 
-export abstract class BaseQuery {
+export abstract class BaseQuery<Conn> {
 
     protected abstract _DB_TYPE: DB_TYPE;
 
@@ -13,15 +13,15 @@ export abstract class BaseQuery {
     /**
      * Get Database connection form provider
     */
-    protected db() {
+    getClient(): Conn {
         return PROVIDERS[this._DB_TYPE]();
     }
 
     /**
-     * Exec A SQL Senctence
+     * Exec A Senctence
     */
-    sql(sql: string, params?: (string | number | boolean)[]): Promise<any> {
-        return this._EXECUTOR.query(PROVIDERS[this._DB_TYPE](), sql, params)
+    sql(...args: any[]): Promise<any> {
+        return this._EXECUTOR.query.call(this, this.getClient(), ...args)
     }
 
 

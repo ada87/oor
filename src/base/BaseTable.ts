@@ -6,7 +6,7 @@ import { BaseView } from './BaseView'
 import { getFieldType, queryToCondition } from './QueryBuilder';
 import { SqlExecutor } from './sql';
 
-export abstract class BaseTable<T extends TObject> extends BaseView<T> {
+export abstract class BaseTable<T extends TObject, C> extends BaseView<T, C> {
 
     protected abstract _EXECUTOR: SqlExecutor<T>;
 
@@ -63,7 +63,7 @@ export abstract class BaseTable<T extends TObject> extends BaseView<T> {
         if (mark) return this.updateByCondition(mark, condition)
         const SQL = _BUILDER.delete(_table);
         const [WHERE, PARAM] = this._BUILDER.where(condition);
-        return _EXECUTOR.execute(this.db(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
+        return _EXECUTOR.execute(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
     }
 
 
@@ -72,7 +72,7 @@ export abstract class BaseTable<T extends TObject> extends BaseView<T> {
         if (mark) return this.update({ ...mark, [key]: id })
         const SQL = _BUILDER.delete(_table);
         const [WHERE, PARAM] = _BUILDER.byField(key, id);
-        return _EXECUTOR.execute(this.db(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
+        return _EXECUTOR.execute(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
     }
 
     /**
@@ -89,7 +89,7 @@ export abstract class BaseTable<T extends TObject> extends BaseView<T> {
             throw new Error(`Update Action must have some properties`);
         }
         const [WHERE, PARAM] = _BUILDER.byField(key, obj[key] as any, FIELD_SET.length + 1)
-        return _EXECUTOR.execute(this.db(), `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM]);
+        return _EXECUTOR.execute(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM]);
     }
 
     updateByField(obj: Static<T>, field: string, value: string | number | boolean): Promise<number> {
@@ -109,7 +109,7 @@ export abstract class BaseTable<T extends TObject> extends BaseView<T> {
         if (_.keys(entity).length == 0) return new Promise(r => r(0));
         const [SQL, FIELD_SET] = _BUILDER.update(_table, entity);
         const [WHERE, PARAM] = this._BUILDER.where(condition, FIELD_SET.length + 1);
-        return _EXECUTOR.execute(this.db(), `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM]);
+        return _EXECUTOR.execute(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM]);
     }
 
     /**
@@ -119,7 +119,7 @@ export abstract class BaseTable<T extends TObject> extends BaseView<T> {
         const { _table, _BUILDER, _EXECUTOR } = this;
         let entity = this.checkEntity(object, true);
         const [SQL, PARAM] = _BUILDER.insert(_table, entity);
-        return _EXECUTOR.add(this.db(), `${SQL}`, PARAM);
+        return _EXECUTOR.add(this.getClient(), `${SQL}`, PARAM);
     }
 }
 

@@ -1,7 +1,8 @@
-import { MagicSuffix, SUFFIX } from '../base/types';
+import { MagicSuffix, SUFFIX, WhereItem, FieldType } from '../base/types';
 import { SqlWhere } from '../base/sql'
 import _ from 'lodash';
-import { assert } from '@japa/assert'
+// import { Assert } from '@japa/assert'
+
 
 type Support = {
     string: boolean,
@@ -36,7 +37,7 @@ export const SUFFIX_COVER_TEST: Record<MagicSuffix, Support> = {
     'BtY': { string: false, number: false, date: true, boolean: false },
     'BtM': { string: false, number: false, date: true, boolean: false },
 
-    'Not': { string: true, number: true, date: false, boolean: true },
+    'Not': { string: true, number: true, date: true, boolean: true },
 
     'IsNull': { string: true, number: true, date: true, boolean: true },
     'NotNull': { string: true, number: true, date: true, boolean: true },
@@ -45,30 +46,95 @@ export const SUFFIX_COVER_TEST: Record<MagicSuffix, Support> = {
     'NotDistinct': { string: true, number: true, date: false, boolean: false },
 
     '>': { string: true, number: true, date: true, boolean: true },
-    '>=': { string: true, number: true, date: true, boolean: true },
+    '>=': { string: true, number: true, date: true, boolean: false },
     '<': { string: true, number: true, date: true, boolean: true },
-    '<=': { string: true, number: true, date: true, boolean: true },
+    '<=': { string: true, number: true, date: true, boolean: false },
     '=': { string: true, number: true, date: true, boolean: true },
     '!=': { string: true, number: true, date: true, boolean: true },
     '<>': { string: true, number: true, date: true, boolean: true },
 
 }
 
+const randomBt = (type: FieldType): string => {
+    if (type == 'date') {
+        return '2022-11-11,20221212'
+    }
+    return '4,6';
+}
+
+const randomValue = (type: FieldType, suffix: MagicSuffix): boolean | number | string | Date => {
+
+    if (suffix == 'Bt') return randomBt(type)
+    switch (type) {
+        case 'number':
+            return _.random(1000);
+        case 'boolean':
+            return _.sample([true, false]) as boolean;
+        case 'date':
+            return new Date(_.random(1660000000000, 1670374864438))
+        case 'string':
+            return _.sample(['a', 'b', 'c', 'd']) as string;
+
+
+    }
+
+}
+const TYPES: FieldType[] = ['string', 'number', 'date', 'boolean'];
+
+class TestError extends Error { };
+
+const validateItem = (where: SqlWhere, type: FieldType, suffix: MagicSuffix, isSupport: boolean) => {
+    let value = randomValue(type, suffix);
+    let item: WhereItem = { column: 'field', fn: suffix, type, value }
+    // console.log(`${suffix} ${type} : ${value}`, isSupport)
+
+    try {
+        let [sql, param] = where([item]);
+        console.log(sql, param, isSupport)
+        if (isSupport && sql.length) {
+            console.log(`${suffix} ${type} : ${value} Support`)
+            console.log(sql, param)
+        } else {
+            throw new TestError(`
+---------------Support Not Suppored-----------------
+
+${JSON.stringify(item)} >>>>>>
+
+${sql} -- ${JSON.stringify(param)} 
+
+---------------Support Not Suppored-----------------
+                    `)
+        }
+
+    } catch (e) {
+
+        if (e instanceof TestError) throw (e);
+        if (isSupport) {
+            throw new TestError(`
+---------------Not Suppored Support-----------------
+
+${JSON.stringify(item)} >>>>>>
+
+---------------Not Suppored Support-----------------
+`)
+        } else {
+            console.log(`${suffix} ${type} Not Support`)
+            // console.log(e)
+        }
+    }
+}
 
 
 export const isCoverOrCoverError = (where: SqlWhere) => {
-    for (let suffix of SUFFIX) {
-        for (let type of ['string', 'number', 'date', 'boolean']) {
-            const isSupport = SUFFIX_COVER_TEST[suffix][type];
-            // console.log('suffix - ' + type, isSupport);
 
-            // assert({})
-            // where(type:'')
+    // validateItem(where, 'boolean', 'Like', false)
+    // return
+    for (let suffix of SUFFIX) {
+        for (let type of TYPES) {
+            const isSupport = SUFFIX_COVER_TEST[suffix][type];
+            validateItem(where, type, suffix, isSupport)
         }
 
-        // assert()
-
-        // console.log(_.has(SUFFIX_COVER_TEST, suffix));
     }
 
 }

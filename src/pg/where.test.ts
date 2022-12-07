@@ -94,7 +94,7 @@ test('Test : buildSQL', ({ assert }) => {
             link: 'OR', items: [
                 { column: 'b1', fn: 'Like', value: 'value3' },
                 {
-                    link: 'NOT', items: [
+                    link: 'OR', items: [
                         { column: 'd1', value: 'test1' },
                         { column: 'd2', value: 'test2' },
                         {
@@ -124,10 +124,14 @@ test('Test : buildSQL', ({ assert }) => {
 
     ;
 
-test('Test : Suffix Coverage', () => {
-    isCoverOrCoverError(where);
+test('Test : Suffix Coverage', ({ assert }) => {
+    try{
+        isCoverOrCoverError(where);
+    }catch(e){
+        console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+            console.log(e)
+    }
 })
-    // .skip()
     .pin();
 
 test('Test : Where', ({ assert }, txt) => {

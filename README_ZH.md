@@ -75,7 +75,7 @@ export const User = new Table('public.user', UserSchema);
 
 
 ```typescript
-// 查询所有 User
+// Fetch all Users
 const result = await User.all();
 console.log(result);
 
@@ -84,36 +84,35 @@ const insertResult = await User.insert({
     name: 'test',
     age: 23,
     sex: false,
-    address: 'randmo',
+    address: 'address',
     salary: 1221.2,
 });
 console.log('Insert Result', insertResult)
-let userId = insertResult.id as number;
+let userId = insertResult.id;
 
 
 const afterInsert = await User.getById(userId);
 console.log('After Insert', afterInsert)
 
 // Update
-await new Promise(r => setTimeout(r, 1200)); // wait , notice last_update value
-let isUpdate = await User.update({ id: userId, age: 60, });    // change Age
+await new Promise(r => setTimeout(r, 1234)); // 等待时间会影响到 "last_modify" 字段
+let isUpdate = await User.update({ id: userId, age: 60, });    // 修改 age
 console.log('Update is Success ? : ', isUpdate == 1);
 
 const afterUpdate = await User.getById(userId);
-console.log('After Update', afterUpdate)
+console.log('After Update', afterUpdate);       // lastModify & age 已被修改
 
 // Delete
 let isDelete = await User.deleteById(userId);
 console.log('Delete is Success ? : ', isDelete == 1);
 
-await setTimeout(r => r, 1000); // wait , notice last_update value
 const afterDelete = await User.getById(userId);
 console.log('After Delete', afterDelete)
 
-// 执行自定义SQL语句
-const result = await User.sql(`SELECT XXX 
-FROM YYY 
-WHERE ZZZ = $1 
-ORDER BY $2 $3`,['value','id','DESC']);
+// 执行一个自定义SQL语句，将会调用 [pgClient].query 方法
+const result = await User.sql(
+    `SELECT XXX FROM YYY WHERE ZZZ = $1 ORDER BY $2 $3`, 
+    ['value','id','DESC']
+);
 console.log(result);
 ```

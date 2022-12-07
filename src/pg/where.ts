@@ -347,8 +347,8 @@ const ConditionToWhere = (condition: WhereCondition, pos: QueryPos, err: string[
             if (_pos.SQL.length) {
                 if (_pos.NUM > pos.NUM) pos.NUM = _pos.NUM;
                 for (let param of _pos.PARAM) pos.PARAM.push(param);
-                let link = group.link == 'NOT' ? 'AND NOT' : group.link;
-                pos.SQL.push('(' + _pos.SQL.join(' ' + link + ' ') + ')')
+                // let link = group.link == 'NOT' ? 'AND NOT' : group.link;
+                pos.SQL.push('(' + _pos.SQL.join(' ' + group.link + ' ') + ')')
             }
         } else {
             ItemToWhere(item as WhereItem, pos, err)

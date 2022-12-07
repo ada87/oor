@@ -44,7 +44,11 @@ export type WhereItem = WhereDefine & {
     value: string | number | boolean | Date,
 }
 
-export type WhereCondition = { link: 'AND' | 'OR' | 'NOT', items: (WhereItem | WhereCondition)[] }
+export type WhereCondition = {
+    link: 'AND' | 'OR'
+    // | 'NOT', // 去掉 Not  的支持
+    items: (WhereItem | WhereCondition)[]
+}
 
 export type WhereParam = WhereCondition | (WhereCondition | WhereItem)[];
 

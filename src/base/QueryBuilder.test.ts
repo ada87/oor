@@ -6,7 +6,6 @@ import { FIELD_MAP } from '../test/pg';
 import { queryToCondition } from './QueryBuilder';
 import { SUFFIX } from './types';
 import type { QuerySchema } from './types';
-import { where } from '../pg/where'
 
 test('Test : Suffix Cover', ({ assert }) => {
     let query: any = {};
@@ -16,10 +15,10 @@ test('Test : Suffix Cover', ({ assert }) => {
     }
     // console.log(query)
     let condition = queryToCondition(query, FIELD_MAP, new Map());
-    // console.log(condition)
+    console.log(condition)
     // console.log(condition.items.length);
-    const [sql, param] = where(condition);
-    console.log(sql, param)
+    // const [sql, param] = where(condition);
+    // console.log(sql, param)
 
     // let [ORDERBY, LIMIT] = orderByLimit(FIELD_MAP, query);
 

@@ -18,13 +18,11 @@
     "dist",
     "node_modules",
     "**/*.test.ts",
-    "test.ts",
+    "script.ts",
     "src/test",
     "src/tool"
   ],
   "typeRoots": [
-    "scripts",
-    "test.d.ts",
     "node_modules/@types"
   ]
 }

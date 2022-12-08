@@ -1,10 +1,14 @@
 {
     "files.exclude": {
-        ".npmignore": true,
         "build": true,
         "oor.svg": true,
+        "script.ts": true,
+        "src/mysql": true,
+        "src/pg": true,
+        "src/plugins": true,
+        "src/test": true,
+        "src/tool": true,
         "test.sql.7z": true,
-        "test.ts": true,
         "tsconfig.json": true
     }
 }

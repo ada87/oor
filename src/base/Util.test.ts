@@ -1,4 +1,5 @@
-import { test } from '@japa/runner'
+import { test } from '@japa/runner';
+import '@japa/assert';
 import _ from 'lodash';
 import { UserSchema } from '../test/pg';
 import { checkEntity } from './Util';
@@ -15,7 +16,6 @@ import { checkEntity } from './Util';
 
 test('Test : Check', ({ assert }, obj) => {
     checkEntity(UserSchema, obj)
-
 })
     .with([
         { id: 1 },

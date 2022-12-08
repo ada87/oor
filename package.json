@@ -17,9 +17,10 @@
   "files": [
     "dist"
   ],
-  "main": "dist/pg/index.js",
+  "main": "pg/index.js",
   "scripts": {
-    "test": "node -r ts-node/register test.ts"
+    "test": "node -r ts-node/register script.ts",
+    "pub": "node -r ts-node/register script.ts --pub"
   },
   "devDependencies": {
     "@elastic/elasticsearch": "^8.5.0",

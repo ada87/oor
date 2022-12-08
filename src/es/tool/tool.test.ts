@@ -9,3 +9,21 @@ import { User as PgUser, test as jest } from '../../test/pg';
 //     const result = await PgUser.all();
 //     result.map(item => client.index({ index: 'user', op_type: 'create', document: item, }))
 // }).skip()
+
+
+
+test('Test : Elastich Search adJust Index', async () => {
+    // client();
+
+    let result: any = null;
+
+    // result = await client.license.get();
+
+    // result = await client.explain({})
+
+    console.log(result);
+})
+
+    .pin()
+    ;
+

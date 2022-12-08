@@ -3,7 +3,7 @@ import type { Dayjs } from 'dayjs';
 
 import _ from 'lodash';
 import { SqlWhere } from '../base/sql';
-import { throwErr, NONE_PARAM, isSupport } from '../base/Util';
+import { throwErr, NONE_PARAM, isSupport, betweenDate, betweenNumber, boolValue } from '../base/Util';
 import dayjs from 'dayjs';
 
 
@@ -14,19 +14,10 @@ import dayjs from 'dayjs';
 
 type QueryPos = { SQL: string[]; PARAM: any[], NUM: number; }
 
-const BOOLEAN_TEXT_IGNORE = new Set(['', 'null']);
-const BOOLEAN_TEXT_FALSE = new Set<any>(['0', 'false', '-1']);
 
 const NullCondition = (item: WhereItem, pos: QueryPos,): boolean => {
     if (!NONE_PARAM.has(item.fn)) return false;
-    let bool = true
-    if (_.isString(item.value)) {
-        let v = _.toLower(_.trim(item.value));
-        if (BOOLEAN_TEXT_IGNORE.has(v)) return;
-        if (BOOLEAN_TEXT_FALSE.has(v)) bool = false;
-    } else {
-        bool = !!item.value;
-    }
+    let bool = boolValue(item.value)
     switch (item.fn) {
         case 'IsNull':
             pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} NULL`);
@@ -76,57 +67,7 @@ const compareSuffix = (suffix: MagicSuffix): MagicSuffix => {
     return null;
 }
 
-const getStart = (str: string): [MagicSuffix, string] => {
-    if (str.startsWith('(')) return ['>', str.substring(1)];
-    if (str.startsWith('[')) return ['>=', str.substring(1)];
-    return ['>=', str]
-}
-const getEnd = (str: string): [MagicSuffix, string] => {
-    if (str.endsWith(')')) return ['<', str.substring(0, str.length - 1)];
-    if (str.endsWith(']')) return ['<=', str.substring(0, str.length - 1)];
-    return ['<=', str]
-}
 
-export const between = (txt: string): [MagicSuffix, string][] => {
-    let str = _.trim((txt || ''));
-    if (str.length == 0) return null;
-    let ptns = str.split(',').map(_.trim);
-    if (ptns.length > 2) return null;
-    if (ptns.length == 1) return [getStart(ptns[0])];
-    let result = [];
-    if (ptns[0].length) result.push(getStart(ptns[0]));
-    if (ptns[1].length) result.push(getEnd(ptns[1]));
-    return result;
-}
-
-export const betweenNumber = (txt: string): [MagicSuffix, number][] => {
-    let range = between(txt);
-    if (range == null) return null;
-    let result = [];
-    for (let item of range) {
-        try {
-            let num = parseFloat(item[1]);
-            result.push([item[0], num]);
-        } catch {
-            return null;
-        }
-    }
-    return result;
-
-}
-export const betweenDate = (txt: string): [MagicSuffix, Date][] => {
-    let range = between(txt);
-    if (range == null) return null;
-    let result = [];
-    for (let item of range) {
-        let day = dayjs(item[1])
-        if (!day.isValid()) {
-            return null;
-        }
-        result.push([item[0], day.toDate()]);
-    }
-    return result;
-}
 
 const whereText = (item: WhereItem, pos: QueryPos, err: string[]) => {
     if (NullCondition(item, pos)) return;
@@ -277,14 +218,7 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
 
 const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
     if (NullCondition(item, pos)) return;
-    let bool = true;
-    if (_.isString(item.value)) {
-        let v = _.toLower(_.trim(item.value));
-        if (BOOLEAN_TEXT_IGNORE.has(v)) return;
-        if (BOOLEAN_TEXT_FALSE.has(v)) bool = false;
-    } else {
-        bool = !!item.value;
-    }
+    let bool = boolValue(item.value)
     switch (item.fn) {
         case 'IsNull':
             pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} NULL`);

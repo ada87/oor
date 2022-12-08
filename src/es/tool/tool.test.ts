@@ -21,9 +21,11 @@ test('Test : Elastich Search adJust Index', async () => {
 
     // result = await client.explain({})
 
+    
+
     console.log(result);
 })
 
-    .pin()
+    // .pin()
     ;
 

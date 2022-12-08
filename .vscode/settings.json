@@ -1,5 +1,6 @@
 {
     "files.exclude": {
+        ".env": true,
         "build": true,
         "oor.svg": true,
         "script.ts": true,

@@ -1,7 +1,7 @@
 import { assert } from '@japa/assert'
 import { configure, run } from '@japa/runner'
 import { specReporter } from '@japa/spec-reporter'
-import { existsSync, readFileSync, rmSync, copyFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, rmSync, copyFileSync } from 'fs';
 import { exec } from 'child_process';
 import { resolve, sep } from 'path';
 import _ from 'lodash';
@@ -25,7 +25,7 @@ const RunTest = () => {
     plugins: [
       assert(),
     ],
-    reporters: [specReporter()],
+    // reporters: [specReporter()],
     importer: (filePath) => import(filePath),
     timeout: 2000,
   });
@@ -34,12 +34,19 @@ const RunTest = () => {
 
 
 const RunPub = () => {
+
+
+
   const distDir = resolve(__dirname, './dist')
   if (existsSync(distDir)) rmSync(distDir, { recursive: true });
   exec('tsc', () => {
-    for (let file of ['README.md', 'README_ZH.md', 'package.json']) {
+    for (let file of ['README.md', 'README_ZH.md']) {
       copyFileSync(resolve(__dirname, file), distDir + sep + file)
     }
+    let json = JSON.parse(readFileSync(resolve(__dirname, 'package.json')).toString('utf8'));
+    _.unset(json, 'devDependencies')
+    _.unset(json, 'scripts');
+    writeFileSync(distDir + sep + 'package.json',JSON.stringify(json))
   });
 
 

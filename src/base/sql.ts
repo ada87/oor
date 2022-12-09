@@ -7,7 +7,7 @@ export type SqlSelect = (table: string, fields?: any) => string;
 export type SqlInsert = (table: string, row: PlainObject) => [string, any];
 export type SqlUpdate = (table: string, obj: PlainObject, key?: string) => [string, any[]];
 export type SqlDelete = (table: string) => string;
-export type SqlCount = (table: string, field?: string) => string;
+export type SqlCount = (table: string) => string;
 
 export type SqlWhere = (condition: WhereParam, startIdx?: number) => [string, any[]];
 export type SqlByField = (field: string, value: string | number | boolean, startIdx?: number) => [string, any[]];

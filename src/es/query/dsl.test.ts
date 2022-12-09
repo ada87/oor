@@ -13,17 +13,16 @@ test('Test : DSL', ({ }, suf) => {
     // @ts-ignore
     setup({ strict: false })
     // isCoverOrCoverError(where)
-    console.log(suf)
     const root: WhereParam = [
         //@ts-ignore
-        { column: 'name', value: false, type: 'boolean', fn: suf },
+        { column: 'last_modify', value: '2021-12-12 12:12:12', type: 'date', fn: suf },
     ]
     console.log(JSON.stringify(where(root)));
     // console.log(JSON.stringify(where(root).constant_score?.filter.bool, null, 1))
     // console.log(root)
     // console.log('DSL BUILDER')
 })
-    // .with(SUFFIX as any)
+    .with(SUFFIX as any)
 
     .pin();
 
@@ -61,6 +60,6 @@ test('Test : DSL', () => {
     // console.log(root)
     // console.log('DSL BUILDER')
 })
-    .pin();
+    // .pin();
 
     ;

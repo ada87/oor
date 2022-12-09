@@ -6,7 +6,7 @@ import { PAGE_SIZE } from '../base/Util';
 
 export const select: SqlSelect = (table: string, fields: string = '*'): string => `SELECT ${fields || '*'} FROM ${table} `;
 
-export const count: SqlCount = (table: string, field: string = '*') => `SELECT count(${field}) AS total FROM ${table}`;
+export const count: SqlCount = (table: string) => `SELECT count(0) AS total FROM ${table}`;
 
 export const insert: SqlInsert = (table: string, obj: any): [string, any[]] => {
     const fields = _.keys(obj);

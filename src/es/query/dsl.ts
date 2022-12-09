@@ -24,8 +24,6 @@ const RANGE_MAP = new Map<MagicSuffix, COMPARE>([
     ['>=', 'gte'],
     ['<', 'lt'],
     ['<=', 'lte'],
-    // ['!=', 'gt'],
-    // ['<>', 'gt'],
 ]);
 
 const setRange = (query: QueryDslQueryContainer[], column: string, value: any, compare: COMPARE) => {
@@ -37,12 +35,18 @@ const setRange = (query: QueryDslQueryContainer[], column: string, value: any, c
     }
 }
 
+// ES Will Not Support  IsDistinct / NotDistinct Suffix
+const NotSuppportES = new Set<MagicSuffix>(['IsDistinct', 'NotDistinct']);
 
-const TERMS = "{\"terms\":{\"field\":\"%s\",\"size\":%d,\"min_doc_count\":1,\"shard_min_doc_count\":0,\"show_term_doc_count_error\":false,\"order\":[{\"_count\":\"desc\"}]}}";
-
-const NullCondition = (item: WhereItem, query: QueryDslQueryContainer[]): boolean => {
+const NullCondition = (item: WhereItem, query: QueryDslQueryContainer[], err: string[]): boolean => {
     if (!NONE_PARAM.has(item.fn)) return false;
+    if (NotSuppportES.has(item.fn)) {
+        err.push(`${item.column}/(${item.type}) not support method ${item.fn}`)
+
+        return true;
+    }
     let bool = boolValue(item.value)
+
     switch (item.fn) {
         case 'IsNull':
             break;
@@ -59,7 +63,6 @@ const NullCondition = (item: WhereItem, query: QueryDslQueryContainer[]): boolea
 
 
 const whereText = (item: WhereItem, query: QueryDslQueryContainer[], err: string[]) => {
-    if (NullCondition(item, query)) return;
     switch (item.fn) {
         case 'Not':
             query.push({ bool: { must_not: { term: { [item.column]: item.value + '' } }, should: [] } })
@@ -84,7 +87,7 @@ const whereText = (item: WhereItem, query: QueryDslQueryContainer[], err: string
 
 
 const whereNumber = (item: WhereItem, query: QueryDslQueryContainer[], err: string[]) => {
-    if (NullCondition(item, query)) return;
+
     let compare = RANGE_MAP.get(item.fn);
     if (compare) {
         let value = parseFloat(item.value as any);
@@ -115,7 +118,6 @@ const whereNumber = (item: WhereItem, query: QueryDslQueryContainer[], err: stri
     }
 }
 const whereBoolean = (item: WhereItem, query: QueryDslQueryContainer[], err: string[]) => {
-    if (NullCondition(item, query)) return;
     let bool = boolValue(item.value);
     switch (item.fn) {
         case '<':
@@ -139,16 +141,88 @@ const whereBoolean = (item: WhereItem, query: QueryDslQueryContainer[], err: str
 }
 
 const whereDate = (item: WhereItem, query: QueryDslQueryContainer[], err: string[]) => {
-
+    if (item.value == '' || item.value == null) {
+        // err.push(`${item.column}/(date) : Can not be null`)
+        return;
+    }
+    let val: Dayjs = null;
+    if (item.fn != 'Bt') {
+        val = dayjs(item.value as any);
+        if (!val.isValid()) {
+            err.push(`${item.column}/(date) : Must Be a date-string or number-stamp ${item.value}`)
+            return;
+        }
+        switch (item.fn) {
+            case 'MinH':
+                val = val.startOf('hour');
+                break;
+            case 'MinD':
+                val = val.startOf('date');
+                break;
+            case 'MinM':
+                val = val.startOf('month');
+                break;
+            case 'MaxH':
+                val = val.endOf('hour');
+                break;
+            case 'MaxD':
+                val = val.endOf('date');
+                break;
+            case 'MaxM':
+                val = val.endOf('month');
+                break;
+        }
+    }
+    const compare = RANGE_MAP.get(item.fn);
+    if (compare != null) {
+        setRange(query, item.column, val.format(), compare)
+        return;
+    }
+    let start = null, end = null;
+    switch (item.fn) {
+        case 'BtD':
+            start = val.startOf('date').format();
+            end = val.endOf('date').format();
+            break;
+        case 'BtM':
+            start = val.startOf('month').format();
+            end = val.endOf('month').format();
+            break;
+        case 'BtY':
+            start = val.startOf('year').format();
+            end = val.endOf('year').format();
+            break;
+        case 'Bt':
+            let range = betweenDate(item.value + '');
+            range.map(ptn => {
+                let compare = RANGE_MAP.get(ptn[0]);
+                if (compare) {
+                    setRange(query, item.column, ptn[1], compare)
+                }
+            })
+            return;
+        case '!=':
+        case '<>':
+        case 'Not':
+            query.push({ bool: { must_not: { term: { [item.column]: val.toDate() } }, should: [] } })
+            return;
+        case '=':
+            query.push({ term: { [item.column]: val.toDate() } })
+            return;
+        default:
+            return;
+    }
+    setRange(query, item.column, start, 'lte')
+    setRange(query, item.column, end, 'gte')
 }
-
 
 const ItemToWhere = (whereItem: WhereItem, query: QueryDslQueryContainer[], err: string[]) => {
     let item = { ...whereItem, fn: whereItem.fn ? whereItem.fn : '=', type: whereItem.type ? whereItem.type : 'string' }
-    if (!isSupport(item.type, item.fn)) {
+    if (!isSupport(item.type, item.fn) || NotSuppportES.has(item.fn)) {
         err.push(`${item.column}/(${item.type}) not support method ${item.fn}`)
         return;
     }
+    if (NullCondition(whereItem, query, err)) return;
     switch (item.type) {
         case 'number':
             whereNumber(item, query, err);

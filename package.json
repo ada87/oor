@@ -7,6 +7,7 @@
     "postgres",
     "orm"
   ],
+  "files": ["./dist/**.*"],
   "description": " An extreme simple ORM Lib for NodeJs.",
   "homepage": "https://oor.xdnote.com",
   "repository": {
@@ -17,7 +18,7 @@
   "main": "pg/index.js",
   "scripts": {
     "test": "node -r ts-node/register script.ts",
-    "pub": "node -r ts-node/register script.ts --pub"
+    "start": "node -r ts-node/register script.ts --build"
   },
   "devDependencies": {
     "@elastic/elasticsearch": "^8.5.0",

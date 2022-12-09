@@ -6,7 +6,7 @@ import { exec } from 'child_process';
 import { resolve, sep } from 'path';
 import _ from 'lodash';
 
-let isPub = (process.argv[process.argv.length - 1] == '--pub');
+let isPub = (process.argv[process.argv.length - 1] == '--build');
 
 const RunTest = () => {
   // Load Env
@@ -33,10 +33,7 @@ const RunTest = () => {
 }
 
 
-const RunPub = () => {
-
-
-
+const RunBuild = () => {
   const distDir = resolve(__dirname, './dist')
   if (existsSync(distDir)) rmSync(distDir, { recursive: true });
   exec('tsc', () => {
@@ -46,10 +43,11 @@ const RunPub = () => {
     let json = JSON.parse(readFileSync(resolve(__dirname, 'package.json')).toString('utf8'));
     _.unset(json, 'devDependencies')
     _.unset(json, 'scripts');
-    writeFileSync(distDir + sep + 'package.json',JSON.stringify(json))
+    _.unset(json, 'files');
+    writeFileSync(distDir + sep + 'package.json', JSON.stringify(json))
   });
 
 
 }
 
-isPub ? RunPub() : RunTest();
+isPub ? RunBuild() : RunTest();

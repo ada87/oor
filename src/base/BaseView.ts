@@ -151,13 +151,13 @@ export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
     async queryPager(query?: QuerySchema): Promise<{ total: number, list: Static<T>[] }> {
         let total = 0;
 
-        const { _table, _BUILDER, _EXECUTOR, _QUERY_CACHE, _CONFIG: { key, FIELD_MAP } } = this;
+        const { _table, _BUILDER, _EXECUTOR, _QUERY_CACHE, _CONFIG: { FIELD_MAP } } = this;
         const condition = queryToCondition(query, FIELD_MAP, _QUERY_CACHE);
         const [WHERE, PARAM] = _BUILDER.where(condition);
         if (_.has(query, 'total_') && _.isNumber(query.total_)) {
             total = query.total_;
         } else {
-            const SQL_COUNT = `${_BUILDER.count(_table, key)} ${this.fixWhere(WHERE)}`;
+            const SQL_COUNT = `${_BUILDER.count(_table)} ${this.fixWhere(WHERE)}`;
             const countResult = await _EXECUTOR.get(this.getClient(), SQL_COUNT, PARAM);
             if (countResult == null) {
                 return {

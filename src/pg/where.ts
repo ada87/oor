@@ -156,10 +156,10 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
                 val = val.startOf('month');
                 break;
             case 'MaxH':
-                val = val.endOf('month');
+                val = val.endOf('hour');
                 break;
             case 'MaxD':
-                val = val.endOf('month');
+                val = val.endOf('date');
                 break;
             case 'MaxM':
                 val = val.endOf('month');
@@ -177,16 +177,16 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
 
     switch (item.fn) {
         case 'BtD':
-            start = val.clone().startOf('date').toDate();
-            end = val.clone().endOf('date').toDate();
+            start = val.startOf('date').toDate();
+            end = val.endOf('date').toDate();
             break;
         case 'BtM':
-            start = val.clone().startOf('month').toDate();
-            end = val.clone().endOf('month').toDate();
+            start = val.startOf('month').toDate();
+            end = val.endOf('month').toDate();
             break;
         case 'BtY':
-            start = val.clone().startOf('year').toDate();
-            end = val.clone().endOf('year').toDate();
+            start = val.startOf('year').toDate();
+            end = val.endOf('year').toDate();
             break;
         case 'Bt':
             const range = betweenDate(item.value + '')

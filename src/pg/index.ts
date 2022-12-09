@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { Kind } from '@sinclair/typebox';
 import type { TObject } from '@sinclair/typebox';
-import type { ClientBase, Pool, QueryResult } from 'pg';
+import { ClientBase, Pool, PoolConfig, QueryResult } from 'pg';
 
 import { USchema, WhereItem, DB_TYPE } from '../base/types';
 import { Settings, setup as _setup } from '../base/Util'
@@ -89,9 +89,15 @@ export class Table<T extends TObject> extends BaseTable<T, Connection> {
 }
 
 export type PGSettings = Omit<Settings, 'provider'> & {
-    provider: () => ClientBase | Pool
+    provider: PoolConfig | (() => ClientBase | Pool)
 };
 
-export const setup = (settings: PGSettings) => _setup({ ...settings, provider: ['pg', settings.provider], })
-
-
+export const setup = (settings: PGSettings) => {
+    if (_.isFunction(settings.provider)) {
+        _setup({ ...settings, provider: ['pg', settings.provider], })
+    } else {
+        const pool = new Pool(settings.provider);
+        pool.connect();
+        _setup({ ...settings, provider: ['pg', () => pool], })
+    }
+}

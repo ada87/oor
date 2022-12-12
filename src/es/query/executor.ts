@@ -1,22 +1,17 @@
 import type { Client } from '@elastic/elasticsearch';
-import type { SearchRequest, SearchHit } from '@elastic/elasticsearch/lib/api/types';
-import type { SqlExecutor } from '../../base/sql';
+import type { SearchRequest, SearchHit, QueryDslQueryContainer } from '@elastic/elasticsearch/lib/api/types';
+import type { ESExecutor } from './es_warper';
 import _ from 'lodash';
 import { ShowSql } from '../../base/Util';
 
 
-type ESExecutor<T> = Omit<SqlExecutor<T>, 'execute'> & {
-
-    update: (conn, sql: string, param?: any) => Promise<number>,
-    delete: (conn, sql: string, param?: any) => Promise<number>,
-
-}
 
 
-export const executor: ESExecutor<SearchHit<any>> = {
+export const executor: ESExecutor<any> = {
 
-    query: async (client: Client, index: string, body: any = null): Promise<SearchHit<any>[]> => {
-        let param: SearchRequest = { index, ...body, };
+    query: async (client: Client, index: string, query: QueryDslQueryContainer = null): Promise<SearchHit<any>[]> => {
+        // ShowSql(index, JSON.stringify(query))
+        let param: SearchRequest = { index, query };
         let result = await client.search(param)
         return result.hits.hits;
     },
@@ -37,46 +32,49 @@ export const executor: ESExecutor<SearchHit<any>> = {
         return result;
     },
 
+    execute: async (client: Client, index: string, id: string): Promise<any> => {
+
+    }
 
 
 
 
-    update: async (client: Client, index: string, PARAM: any): Promise<number> => {
-        // ShowSql(SQL, PARAM)
-        // const result = await conn.query(SQL, PARAM);
-        // return result.rowCount;
+    // update: async (client: Client, index: string, PARAM: any): Promise<number> => {
+    //     // ShowSql(SQL, PARAM)
+    //     // const result = await conn.query(SQL, PARAM);
+    //     // return result.rowCount;
 
-        // client.update({})
+    //     // client.update({})
 
 
-        return 1;
-    },
+    //     return 1;
+    // },
 
-    delete: async (client: Client, index: string, PARAM: any): Promise<number> => {
-        // ShowSql(SQL, PARAM)
-        // const result = await conn.query(SQL, PARAM);
-        // return result.rowCount;
-        // client.deleteByQuery({index:''})
-        client.delete({ id: '', index })
+    // delete: async (client: Client, index: string, PARAM: any): Promise<number> => {
+    //     // ShowSql(SQL, PARAM)
+    //     // const result = await conn.query(SQL, PARAM);
+    //     // return result.rowCount;
+    //     // client.deleteByQuery({index:''})
+    //     client.delete({ id: '', index })
 
-        return 1;
-    },
+    //     return 1;
+    // },
 
 }
 
 
-export const flatExecutor: ESExecutor<any> = {
+// export const flatExecutor: ESExecutor<any> = {
 
-    query: async (client: Client, index: string, body: any = null): Promise<any[]> => {
-        let result = await executor.query(client, index, body);
-        return result.map(item => item._source);
-    },
+//     query: async (client: Client, index: string, body: any = null): Promise<any[]> => {
+//         let result = await executor.query(client, index, body);
+//         return result.map(item => item._source);
+//     },
 
-    add: executor.add,
+//     add: executor.add,
 
-    get: executor.get,
+//     get: executor.get,
 
-    update: executor.update,
+//     update: executor.update,
 
-    delete: executor.delete,
-}
+//     delete: executor.delete,
+// }

@@ -92,12 +92,19 @@ export type PGSettings = Omit<Settings, 'provider'> & {
     provider: PoolConfig | (() => ClientBase | Pool)
 };
 
-export const setup = (settings: PGSettings) => {
+export const setup = (settings: PGSettings, cb?: (err: Error) => void): Pool => {
     if (_.isFunction(settings.provider)) {
         _setup({ ...settings, provider: ['pg', settings.provider], })
+        return settings.provider() as Pool;
     } else {
         const pool = new Pool(settings.provider);
-        pool.connect();
+        if (cb) {
+            pool.connect(cb);
+        } else {
+            pool.connect()
+        }
+
         _setup({ ...settings, provider: ['pg', () => pool], })
+        return pool;
     }
 }

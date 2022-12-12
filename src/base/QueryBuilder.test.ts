@@ -51,6 +51,7 @@ test('Test : buildQuery', ({ assert }) => {
     };
 
     let condition = queryToCondition(query, FIELD_MAP, new Map());
+    console.log(condition)
     // let [ORDERBY, LIMIT] = orderByLimit(FIELD_MAP, query);
 
 
@@ -67,6 +68,7 @@ test('Test : buildQuery', ({ assert }) => {
     // buildQuery({ a: '1' })
 })
 
+    // .pin()
     ;
 
 

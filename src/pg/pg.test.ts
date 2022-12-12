@@ -1,4 +1,4 @@
-import { test, User } from './pg';
+import { test, User } from '../test/pg';
 
 test('Test : Query With SQL', async () => {
     const result = await User.sql(`SELECT * FROM  public.user WHERE name='陆磊'`);

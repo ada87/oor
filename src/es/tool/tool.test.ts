@@ -21,7 +21,24 @@ test('Test : Elastich Search adJust Index', async () => {
 
     // result = await client.explain({})
 
-    
+
+
+    // await client.create({})
+
+    await client.update({ id: '', index: '', doc: {} })
+
+    await client.updateByQuery({ index: '' })
+
+
+    // result = await client.delete({ id: '', index: '' })
+
+    // result = await client.deleteByQuery({
+    //     index: 'user', query: {
+    //         constant_score: {
+    //             filter: {}
+    //         }
+    //     }
+    // })
 
     console.log(result);
 })

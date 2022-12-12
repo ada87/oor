@@ -48,8 +48,8 @@ const fieldToDef = (key: string, FIELD_MAP: Map<string, USchema>): WhereDefine =
     }
     // console.log(query_field, SCHEMA, suffix)
     const fieldType = getFieldType(SCHEMA);
-    // @ts-ignore
-    let def: WhereDefine = { field: query_field, column: SCHEMA.column || query_field, type: fieldType, condition: suffix };
+    // @ts-ignore // field only use in inner , use for Query Buider validate
+    let def: WhereDefine = { field: query_field, column: SCHEMA.column || query_field, type: fieldType, fn: suffix };
 
 
     return def;
@@ -93,13 +93,3 @@ export const queryToCondition = (query: QuerySchema, FIELD_MAP: Map<string, USch
     throwErr(err, 'Some SQL Error Occur')
     return ROOT;
 }
-
-// /**
-//  * @see QuerySchema
-//  * Build Query Where By QuerySchema
-// */
-// export const conditionByQuery = (query: QuerySchema, FIELD_MAP: Map<string, USchema>, FIELD_CACHE: Map<string, WhereDefine>): [string, any[]] => {
-//     const condition = queryToCondition(query, FIELD_MAP, FIELD_CACHE);
-
-//     // return whereByCondition(condition, startIdx)
-// }

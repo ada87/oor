@@ -10,7 +10,7 @@ NodeJs ORM tool library , Only support `Postgresql` for now. `ElasticSearch` and
 1. High performance 🚀。
 2. Code is Type, Type is Code, Code is Schema!
 3. Easy API.
-4. Builtin Magic Suffix📍. Save your code lines.
+4. Builtin Magic Suffix📍. Save your time and code lines.
 5. Support PagitionQuery, MagicSuffixQuery, CoditionQuery(Very Strong).
 6. Suport ignore column, logical delete, mark date.
 7. Support plugin, tools (Plan)

@@ -24,7 +24,7 @@ test('Test : DSL', ({ }, suf) => {
 })
     .with(SUFFIX as any)
 
-    .pin();
+    // .pin();
 
 ;
 

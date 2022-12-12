@@ -1,17 +1,25 @@
 import type { TObject, Static, TSchema } from '@sinclair/typebox';
 import type { QuerySchema, WhereParam, WhereDefine, USchema, WhereItem } from '../../base/types';
 import type { TableOptions } from '../../base/BaseView'
-import type { Client, } from '@elastic/elasticsearch'
+import type { SearchRequest, SearchResponse, SearchHit, Field } from '@elastic/elasticsearch/lib/api/types';
+
 import _ from 'lodash';
 import { PAGE_SIZE } from '../../base/Util';
 import { BaseQuery } from './BaseQuery'
 import { queryToCondition } from '../../base/QueryBuilder';
-import type { SearchRequest, SearchResponse, SearchHit, Field } from '@elastic/elasticsearch/lib/api/types';
 
 const ES_MAX_SIZE = 10000;
 
-import { executor } from '../query/executor';
+// import { SqlBuilder, SqlExecutor } from '../../base/sql';
 
+// const ES: SqlBuilder = {
+//     insert: (table: string, row: PlainObject) => [table, row]
+// }
+// (item => client.index({ index: 'user', op_type: 'create', document: item, })
+
+
+import { executor } from '../query/executor';
+import { where } from '../query/dsl';
 
 export class View<T extends TObject> extends BaseQuery<T> {
 
@@ -32,13 +40,6 @@ export class View<T extends TObject> extends BaseQuery<T> {
     all(): Promise<SearchHit<Static<T>>[]> {
         const { _CONFIG: { BASE_QUERY } } = this;
         return executor.query(this.getClient(), this._index, { ...BASE_QUERY, from: 0, size: ES_MAX_SIZE })
-    }
-
-    /**
-     * Exec A Senctence
-    */
-    sql(request?: SearchRequest): Promise<SearchResponse<Static<T>>> {
-        return executor.query.call(this, this.getClient(), (request && request.index) ? request.index : this._index, request)
     }
 
 
@@ -123,17 +124,26 @@ export class View<T extends TObject> extends BaseQuery<T> {
     // }
 
 
-    // /**
-    //  * @see QuerySchema
-    //  * Use a QuerySchema Query Data 
-    // */
-    // query(query?: QuerySchema): Promise<Static<T>[]> {
-    //     const { _QUERY_CACHE, _BUILDER, _CONFIG: { FIELD_MAP } } = this;
-    //     const condition = queryToCondition(query, FIELD_MAP, _QUERY_CACHE);
-    //     const [WHERE, PARAM] = _BUILDER.where(condition);
-    //     const [ORDER_BY, LIMIT] = this.orderByLimit(query);
-    //     return this._query(this.fixWhere(WHERE), PARAM, ORDER_BY, LIMIT);
-    // }
+    /**
+     * @see QuerySchema
+     * Use a QuerySchema Query Data 
+    */
+    query(query?: QuerySchema): Promise<SearchHit<Static<T>>[]> {
+        const { _QUERY_CACHE, _CONFIG: { FIELD_MAP } } = this;
+
+        const condition = queryToCondition(query, FIELD_MAP, _QUERY_CACHE);
+        const dsl = where(condition);
+        return executor.query(this.getClient(), this._index, dsl)
+    }
+
+
+    /**
+ * Exec A Senctence
+*/
+    sql(request?: SearchRequest): Promise<SearchResponse<Static<T>>> {
+        return this.getClient().search(request);
+    }
+
 
     // /**
     //  * @see QuerySchema
@@ -176,12 +186,12 @@ export class View<T extends TObject> extends BaseQuery<T> {
     //     const [WHERE, PARAM] = _BUILDER.byField(key, id);
     //     return _EXECUTOR.get(this.getClient(), PARAM);
     // }
-    // /**
-    //  * Get A record form Table / View By Specify Field = value.
-    //  * This method will return All column. Even if the IGNORE column.
-    //  * Note : If result has multi records , return the first row
-    //  *        Want return all records?  use `queryByField`
-    // */
+    /**
+     * Get A record form Table / View By Specify Field = value.
+     * This method will return All column. Even if the IGNORE column.
+     * Note : If result has multi records , return the first row
+     *        Want return all records?  use `queryByField`
+    */
     // getByField(field: string, value?: string | number): Promise<Static<T>> {
     //     const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_get } } = this;
     //     const SQL = _BUILDER.select(_table, fields_get);
@@ -189,9 +199,9 @@ export class View<T extends TObject> extends BaseQuery<T> {
     //     return _EXECUTOR.get(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
     // }
 
-    // /**
-    //  * Get records form Table / View By Specify Property = value.
-    // */
+    /**
+     * Get records form Table / View By Specify Property = value.
+    */
     // queryByField(field: string, value?: string | number | boolean): Promise<Static<T>[]> {
     //     const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_get } } = this;
     //     const SQL = _BUILDER.select(_table, fields_get);

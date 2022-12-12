@@ -60,11 +60,6 @@ export type QuerySchema = {
      */
     count_?: number;
     /**
-     * If specify total_ field, The Query will skip the count(total) query and return in total derectly.
-     * do specify total_ in second can upper the performane in pagition query.
-    */
-    total_?: number;
-    /**
      * Not : Not Support yet!
     */
     keyword_?: string;
@@ -77,6 +72,18 @@ export type QuerySchema = {
      * The Sort column method
     */
     by_?: 'asc' | 'desc';
+    // /**
+    //  * If specify sid_ field, The Query will skip Steps:
+    //  *      1. use last cached sql condition (exclude <start,count,order,by>)
+    //  *      2. use last total (in pagition query).
+    //  * do specify sid_ in second can upper the performane in pagition query.
+    // */
+    // sid_?: number;
+    /**
+     * If specify total_ field, The Query will skip the count(total) query and return in total derectly.
+     * do specify total_ in second can upper the performane in pagition query.
+    */
+    total_?: number;
     /**
      * Extend Query 
      * Use Maggic Suffix to build query condition

@@ -16,7 +16,7 @@ export const client = new Client({
     }
 })
 
-setup({ provider: () => client, strict: true, showSQL: console.log })
+setup({ provider: () => client, strict: false, showSQL: console.error })
 
 
 

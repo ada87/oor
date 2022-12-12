@@ -87,7 +87,6 @@ const whereText = (item: WhereItem, query: QueryDslQueryContainer[], err: string
 
 
 const whereNumber = (item: WhereItem, query: QueryDslQueryContainer[], err: string[]) => {
-
     let compare = RANGE_MAP.get(item.fn);
     if (compare) {
         let value = parseFloat(item.value as any);
@@ -267,7 +266,6 @@ const ConditionToWhere = (root: WhereCondition, query: QueryDslQueryContainer[],
 
 
 export const where = (condition: WhereParam): QueryDslQueryContainer => {
-
     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
     let query: QueryDslQueryContainer[] = [];
     let err: string[] = [];
@@ -283,8 +281,4 @@ export const where = (condition: WhereParam): QueryDslQueryContainer => {
         return { constant_score: { filter: { bool: { should: query } } } };
     }
     return { constant_score: { filter: { bool: { filter: query, should: [] } } } }
-
-
-
-
 }

@@ -46,7 +46,6 @@ const fieldToDef = (key: string, FIELD_MAP: Map<string, USchema>): WhereDefine =
     if (SCHEMA == null) {
         return null;
     }
-    // console.log(query_field, SCHEMA, suffix)
     const fieldType = getFieldType(SCHEMA);
     // @ts-ignore // field only use in inner , use for Query Buider validate
     let def: WhereDefine = { field: query_field, column: SCHEMA.column || query_field, type: fieldType, fn: suffix };

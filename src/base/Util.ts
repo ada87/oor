@@ -34,6 +34,10 @@ export type Settings = {
         query?: boolean
         entity?: boolean,
     },
+    // date?: {
+    //     // spify this to boost speed ,suggest aways iso 8601
+    //     parseRuleFormat?: string,
+    // }
 }
 
 

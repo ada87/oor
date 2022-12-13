@@ -1,4 +1,8 @@
 import { test, User } from '../test/es';
+import dayjs from 'dayjs';
+import _ from 'lodash';
+
+
 
 
 // test('Test : Query With SQL', async () => {
@@ -22,17 +26,40 @@ test('Test : Basic', async () => {
 test('Test : Query with QuerySchemma', async () => {
     // const result = await User.query({
     // console.log('aaa')
-    
-    const result = await User.query({
+    let result;
+    result = await User.queryPager({
         start_: 0,
-        count_: 5,
-        order_: 'salary',
+        count_: 3,
+        order_: 'age',
         by_: 'desc',
-        nameLike: '陆',
-        sex: false,
-        ageBt: "[12,13]",
+        nameLikel: '陆',
+        sex: true,
+        ageBt: "[12,17]",
     });
+
+    // result = await User.queryByField('name', '陆')
+
+
+    // result = await User.getById('HNoA7IQB65L_VamPfysf');
+
+
     console.log(result);
+
+    // const b = _.cloneDeep(a);
+
+    // // console.log(b);
+
+    // console.log(b == a)
+    // console.log(b.u == a.u)
+    // console.log(b.u.db == a.u.db)
+    // console.log(_.isEqual(b.u.db, a.u.db))
+    // console.log(b.u.c == a.u.c)
+    // b.u.c = 1212;
+    // console.log(b.u.c == a.u.c)
+
+
+
+
 
 })
     .pin()

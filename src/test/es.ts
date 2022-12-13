@@ -36,7 +36,10 @@ export const UserSchema = UType.Table({
 // export type User = Static<typeof UserSchema>;
 
 // Line 4 : Build a Table, it's ok for all
-export const User = new View('user', UserSchema, { key: 'register_date' });
+export const User = new View('user', UserSchema, {
+    key: 'register_date',
+    globalCondition: [{ fn: '>', column: 'age', value: 2 }]
+});
 
 // @ts-ignore
 // export const FIELD_MAP = User._CONFIG.FIELD_MAP as Map<string, USchema>;

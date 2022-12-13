@@ -6,6 +6,7 @@ import { ClientBase, Pool, PoolConfig, QueryResult } from 'pg';
 import { USchema, WhereItem, DB_TYPE } from '../base/types';
 import { Settings, setup as _setup } from '../base/Util'
 import { SqlBuilder, SqlExecutor } from '../base/sql';
+import { getFieldType } from '../base/QueryBuilder';
 import { BaseView, TableOptions } from '../base/BaseView';
 import { BaseTable } from '../base/BaseTable';
 
@@ -66,7 +67,22 @@ export class View<T extends TObject> extends BaseView<T, Connection> {
 
     constructor(tableName: string, schema: T, options?: TableOptions) {
         super(tableName, schema, options);
-        this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, (options && options.globalCondition) ? options.globalCondition : [])
+        const WHERE = [];
+        if (this._CONFIG.mark) {
+            let column = _.keys(this._CONFIG.mark)[0];
+            WHERE.push({ field: column, value: this._CONFIG.mark[column], condition: '!=' });
+        }
+        if (options && options.globalCondition && options.globalCondition.length) {
+            options.globalCondition.map(item => {
+                let schema = this._CONFIG.FIELD_MAP.get(this._C2F.get(item.column))
+                if (schema) {
+                    WHERE.push({ ...item, type: getFieldType(schema) })
+                } else {
+                    console.error(item)
+                }
+            })
+        }
+        this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, WHERE)
     }
 
     sql(...args: any[]): Promise<QueryResult<T>> {
@@ -80,7 +96,22 @@ export class Table<T extends TObject> extends BaseTable<T, Connection> {
     protected _EXECUTOR: SqlExecutor<T> = executor;
     constructor(tableName: string, schema: T, options?: TableOptions) {
         super(tableName, schema, options);
-        this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, (options && options.globalCondition) ? options.globalCondition : [])
+        const WHERE = [];
+        if (this._CONFIG.mark) {
+            let column = _.keys(this._CONFIG.mark)[0];
+            WHERE.push({ field: column, value: this._CONFIG.mark[column], condition: '!=' });
+        }
+        if (options && options.globalCondition && options.globalCondition.length) {
+            options.globalCondition.map(item => {
+                let schema = this._CONFIG.FIELD_MAP.get(this._C2F.get(item.column))
+                if (schema) {
+                    WHERE.push({ ...item, type: getFieldType(schema) })
+                } else {
+                    console.error(item)
+                }
+            })
+        }
+        this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, WHERE)
     }
 
     sql(...args: any[]): Promise<QueryResult<T>> {

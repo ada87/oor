@@ -25,7 +25,7 @@ const RunTest = () => {
     plugins: [
       assert(),
     ],
-    // reporters: [specReporter()],
+    reporters: [specReporter()],
     importer: (filePath) => import(filePath),
     timeout: 2000,
   });

@@ -53,6 +53,7 @@ export const SUFFIX_COVER_TEST: Record<MagicSuffix, Support> = {
     '!=': { string: true, number: true, date: true, boolean: true },
     '<>': { string: true, number: true, date: true, boolean: true },
 
+    // 'In': { string: true, number: true, date: false, boolean: false },
 }
 
 const randomBt = (type: FieldType): string => {

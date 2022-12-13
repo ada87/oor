@@ -1,4 +1,4 @@
-import type { QueryDslQueryContainer, QueryDslBoolQuery } from '@elastic/elasticsearch/lib/api/types';
+import type { QueryDslQueryContainer, QueryDslBoolQuery, SearchRequest } from '@elastic/elasticsearch/lib/api/types';
 import _ from 'lodash';
 import { WhereParam, WhereItem, WhereCondition, MagicSuffix, FieldType, } from '../../base/types';
 import { throwErr, isSupport, NONE_PARAM, betweenDate, betweenNumber, boolValue } from '../../base/Util';
@@ -42,7 +42,6 @@ const NullCondition = (item: WhereItem, query: QueryDslQueryContainer[], err: st
     if (!NONE_PARAM.has(item.fn)) return false;
     if (NotSuppportES.has(item.fn)) {
         err.push(`${item.column}/(${item.type}) not support method ${item.fn}`)
-
         return true;
     }
     let bool = boolValue(item.value)
@@ -56,7 +55,7 @@ const NullCondition = (item: WhereItem, query: QueryDslQueryContainer[], err: st
     if (bool) {
         query.push({ bool: { should: [{ exists: { field: item.column } }, { term: { [item.column]: null } }], minimum_should_match: 1 } })
     } else {
-        query.push({ bool: { must_not: { exists: { field: item.column } }, should: [] } })
+        query.push({ bool: { must_not: { exists: { field: item.column } } } as QueryDslBoolQuery })
     }
     return true;
 }
@@ -65,7 +64,7 @@ const NullCondition = (item: WhereItem, query: QueryDslQueryContainer[], err: st
 const whereText = (item: WhereItem, query: QueryDslQueryContainer[], err: string[]) => {
     switch (item.fn) {
         case 'Not':
-            query.push({ bool: { must_not: { term: { [item.column]: item.value + '' } }, should: [] } })
+            query.push({ bool: { must_not: { term: { [item.column]: item.value + '' } } } as QueryDslBoolQuery })
             break;
         case 'Like':
             query.push({ wildcard: { [item.column]: item.value + '' } });
@@ -106,7 +105,7 @@ const whereNumber = (item: WhereItem, query: QueryDslQueryContainer[], err: stri
     switch (item.fn) {
         case '!=':
         case '<>':
-            query.push({ bool: { must_not: { term: { [item.column]: item.value } }, should: [] } })
+            query.push({ bool: { must_not: { term: { [item.column]: item.value } } } as QueryDslBoolQuery })
             break;
         case '=':
             query.push({ term: { [item.column]: item.value } });
@@ -141,7 +140,7 @@ const whereBoolean = (item: WhereItem, query: QueryDslQueryContainer[], err: str
 
 const whereDate = (item: WhereItem, query: QueryDslQueryContainer[], err: string[]) => {
     if (item.value == '' || item.value == null) {
-        // err.push(`${item.column}/(date) : Can not be null`)
+        err.push(`${item.column}/(date) : Can not be null`)
         return;
     }
     let val: Dayjs = null;
@@ -203,7 +202,7 @@ const whereDate = (item: WhereItem, query: QueryDslQueryContainer[], err: string
         case '!=':
         case '<>':
         case 'Not':
-            query.push({ bool: { must_not: { term: { [item.column]: val.toDate() } }, should: [] } })
+            query.push({ bool: { must_not: { term: { [item.column]: val.toDate() } } } as QueryDslBoolQuery })
             return;
         case '=':
             query.push({ term: { [item.column]: val.toDate() } })
@@ -264,21 +263,90 @@ const ConditionToWhere = (root: WhereCondition, query: QueryDslQueryContainer[],
 };
 
 
-
-export const where = (condition: WhereParam): QueryDslQueryContainer => {
+const buildWhere = (condition: WhereParam): QueryDslQueryContainer[] => {
     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
     let query: QueryDslQueryContainer[] = [];
     let err: string[] = [];
     ConditionToWhere(root, query, err);
     throwErr(err, 'Some DSL Error Occur');
+    return query;
+}
+
+export const fixWhere = (condition: WhereParam): QueryDslQueryContainer => {
+    let query: QueryDslQueryContainer[] = buildWhere(condition)
     if (query.length == 0) {
-        return { match_all: {} }
+        return null;
+    }
+    let bool = { filter: query } as QueryDslBoolQuery;
+    return { constant_score: { filter: { bool } } }
+}
+
+
+
+export const where = (condition: WhereParam): QueryDslQueryContainer => {
+    let query: QueryDslQueryContainer[] = buildWhere(condition)
+    if (query.length == 0) {
+        return null;
     }
     if (query.length == 1) {
         return { constant_score: { filter: query[0] } }
     }
-    if (root.link == 'OR') {
-        return { constant_score: { filter: { bool: { should: query } } } };
+    if (!_.isArray(condition) && condition.link == 'OR') {
+        return { constant_score: { filter: { bool: { should: query, minimum_should_match: 1 } } } };
     }
-    return { constant_score: { filter: { bool: { filter: query, should: [] } } } }
+    return { constant_score: { filter: { bool: { filter: query } as QueryDslBoolQuery } } }
+}
+
+// sort: null,
+// mark: null,
+// fields_exclude: [],
+// pageSize: PAGE_SIZE,
+// FIELD_MAP: new Map<string, USchema>(),
+// globalFilter: null as QueryDslBoolQuery,
+
+
+export const fixRequest = (fixFilter?: QueryDslQueryContainer, query?: QueryDslQueryContainer): QueryDslQueryContainer => {
+    if (fixFilter == null && query == null) {
+        return { match_all: {} }
+    }
+    if (fixFilter == null) {
+        return query;
+    }
+    if (query == null) {
+        return fixFilter;
+    }
+
+    if (!_.has(query, 'constant_score')) {
+        return _.merge({}, fixFilter, query)
+    }
+
+
+    let searchParam: QueryDslQueryContainer = _.cloneDeep(fixFilter);
+
+    _.keys(query.constant_score.filter).map(key => {
+        if (key == 'bool') {
+            _.keys(query.constant_score.filter.bool).map(boolKey => {
+                if (boolKey == 'filter' || boolKey == 'must') {
+                    if (_.isArray(query.constant_score.filter.bool[boolKey])) {
+                        (query.constant_score.filter.bool[boolKey] as QueryDslQueryContainer[]).map(item=>{
+                            (searchParam.constant_score.filter.bool.filter as QueryDslQueryContainer[]).push(item)
+                        });
+                        // (searchParam.constant_score.filter.bool.filter as QueryDslQueryContainer[]).concat(query.constant_score.filter.bool[boolKey] as QueryDslQueryContainer[])
+                    } else {
+                        (searchParam.constant_score.filter.bool.filter as QueryDslQueryContainer[]).push(query.constant_score.filter.bool[boolKey] as QueryDslQueryContainer);
+                    }
+                } else {
+                    searchParam.constant_score.filter.bool[boolKey] = query.constant_score.filter.bool[boolKey];
+                }
+            })
+
+
+        } else {
+            (searchParam.constant_score.filter.bool.filter as QueryDslQueryContainer[]).push({ [key]: query.constant_score.filter[key] })
+        }
+    })
+
+    return searchParam;
+
+
 }

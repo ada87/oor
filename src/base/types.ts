@@ -17,7 +17,7 @@ export const SUFFIX = [
     'IsNull', 'NotNull',                                // isNull or Not NULL           This Suffix will avoid value
     'IsDistinct', 'NotDistinct',                        // isDistinct or Not Distinct   This Suffix will avoid value
     '>', '>=', '<', '<=', '=', '!=', '<>',              // Comparison Functions,  https://www.postgresql.org/docs/current/functions-comparison.html
-    // 'In',                                            // Lower Perference ,  closed awhile
+    // 'In', 'NotIn'                                       // SQL IN Condition , use "," sperate items, Not support boolean date
 ] as const;
 export type MagicSuffix = (typeof SUFFIX)[number];
 

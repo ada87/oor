@@ -1,46 +1,35 @@
 import type { TObject, Static, TSchema } from '@sinclair/typebox';
 import type { QuerySchema, WhereParam, WhereDefine, USchema, WhereItem } from '../../base/types';
 import type { TableOptions } from '../../base/BaseView'
-import type { SearchRequest, SearchResponse, SearchHit, Field } from '@elastic/elasticsearch/lib/api/types';
+import type { SearchRequest, SearchResponse, SearchHit, Field, QueryDslBoolQuery, QueryDslQueryContainer } from '@elastic/elasticsearch/lib/api/types';
 
 import _ from 'lodash';
 import { PAGE_SIZE } from '../../base/Util';
 import { BaseQuery } from './BaseQuery'
-import { queryToCondition } from '../../base/QueryBuilder';
-
-const ES_MAX_SIZE = 10000;
-
-// import { SqlBuilder, SqlExecutor } from '../../base/sql';
-
-// const ES: SqlBuilder = {
-//     insert: (table: string, row: PlainObject) => [table, row]
-// }
-// (item => client.index({ index: 'user', op_type: 'create', document: item, })
-
-
+import { queryToCondition, getFieldType } from '../../base/QueryBuilder';
+import { builder, ES_MAX_SIZE, } from '../query/builder'
+import type { OrderByLimit } from '../query/es';
 import { executor } from '../query/executor';
-import { where } from '../query/dsl';
+import { where, fixWhere, } from '../query/dsl';
 
 export class View<T extends TObject> extends BaseQuery<T> {
 
     protected _index: string;
 
 
+    private _F2C = new Map<string, string>(); // Field To Column
+    private _C2F = new Map<string, string>(); // Column To Field
+
     protected _CONFIG = {
-        key: null as string | null,
+        sort: null,
         mark: null,
+        fields_exclude: [],
         pageSize: PAGE_SIZE,
         FIELD_MAP: new Map<string, USchema>(),
-        WHERE_FIX: ['', ' WHERE '] as [string, string],
-        BASE_QUERY: {} as SearchRequest,
-        // globalCondition: [] as WhereItem[]
+        globalFilter: null as QueryDslQueryContainer,
     }
     protected _QUERY_CACHE = new Map<string, WhereDefine>();
 
-    all(): Promise<SearchHit<Static<T>>[]> {
-        const { _CONFIG: { BASE_QUERY } } = this;
-        return executor.query(this.getClient(), this._index, { ...BASE_QUERY, from: 0, size: ES_MAX_SIZE })
-    }
 
 
 
@@ -54,74 +43,81 @@ export class View<T extends TObject> extends BaseQuery<T> {
     constructor(indexName: string, schema: T, options?: TableOptions) {
         super();
         this._index = indexName;
-        this._CONFIG.BASE_QUERY.index = indexName;
-
-        this._CONFIG.BASE_QUERY.from = 0;
-        this._CONFIG.BASE_QUERY._source_excludes = [] as Field[];
+        this._CONFIG.fields_exclude = [] as Field[];
 
         this._CONFIG.FIELD_MAP = new Map<string, TSchema>();
         var WHERE = [];
         _.keys(schema.properties).map(field => {
             let properties = schema.properties[field];
             let column = properties.column || field;
+            this._F2C.set(field, column);
+            this._C2F.set(column, field);
             this._CONFIG.FIELD_MAP.set(field, properties);
             if (_.has(properties, 'delMark') && properties.delMark != null) {
                 this._CONFIG.mark = { [column]: properties.delMark };
                 WHERE.push({ field: column, value: properties.delMark, condition: '!=' });
             }
             if (properties.ignore) {
-                (this._CONFIG.BASE_QUERY._source_excludes as Field[]).push(field)
+                this._CONFIG.fields_exclude.push(field)
                 return;
             }
-
-            // if (properties.column) {
-            //     fields_get.push(`"${properties.column}" AS "${field}"`);
-            //     fields_query.push(`"${properties.column}" AS "${field}"`);
-            // } else {
-            //     fields_get.push('"' + field + '"');
-            //     if (properties.ignore === true) {
-            //         return;
-            //     }
-            //     fields_query.push('"' + field + '"');
-            // }
         });
 
-        if (this._CONFIG.BASE_QUERY._source_excludes.length == 0) _.unset(this._CONFIG, '_source_excludes');
-
-
-        if (options == null) return;
-        if (options.sortOrder) this._CONFIG.BASE_QUERY.sort = { [options.sortOrder]: options.sortBy ? options.sortBy : 'desc' };
-        if (options.pageSize) this._CONFIG.pageSize = options.pageSize;
-        if (options.globalCondition && options.globalCondition.length) {
-            // WHERE = WHERE.concat(options.globalCondition)
-        };
+        if (options == null) {
+            this._CONFIG.globalFilter = fixWhere(WHERE);
+            return;
+        }
         if (options.key) {
-            this._CONFIG.key = options.key;
-            if (this._CONFIG.BASE_QUERY.sort == null) {
-                this._CONFIG.BASE_QUERY.sort = { [options.key]: options.sortBy ? options.sortBy : 'desc' };
+            if (this._CONFIG.sort == null) {
+                this._CONFIG.sort = { [options.key]: options.sortBy ? options.sortBy : 'desc' };
             }
         }
+        if (options.sortOrder) this._CONFIG.sort = { [options.sortOrder]: options.sortBy ? options.sortBy : 'desc' };
+        if (options.pageSize) this._CONFIG.pageSize = options.pageSize;
+        if (options.globalCondition && options.globalCondition.length) {
+            options.globalCondition.map(item => {
+                let schema = this._CONFIG.FIELD_MAP.get(this._C2F.get(item.column))
+                if (schema) {
+                    WHERE.push({ ...item, type: getFieldType(schema) })
+                } else {
+                    console.error(item)
+                }
+            })
+        };
+        this._CONFIG.globalFilter = fixWhere(WHERE);
+
 
     };
 
 
-    // private async _query(WHERE, PARAM: string[] = [], ORDER_BY = '', LIMIT = ''): Promise<Static<T>[]> {
-    //     const { _BUILDER, _EXECUTOR, _table, _CONFIG: { fields_query } } = this;
-    //     const SQL_QUERY = _BUILDER.select(_table, fields_query);
-    //     const SQL = `${SQL_QUERY} ${WHERE} ${ORDER_BY} ${LIMIT}`;
-    //     const result = _EXECUTOR.query(this.getClient(), SQL, PARAM)
-    //     return result;
-    // }
+    all(): Promise<SearchHit<Static<T>>[]> {
+        const orderBy = this.orderByLimit({ start_: 0, count_: ES_MAX_SIZE });
+        return this._query(null, orderBy)
+    }
 
 
-    // /**
-    //  * @see WhereCondition
-    //  * Use a WhereCondition Query Data 
-    // */
-    // queryByCondition(condition?: WhereParam): Promise<Static<T>[]> {
-    //     const [WHERE, PARAM] = this._BUILDER.where(condition);
-    //     return this._query(this.fixWhere(WHERE), PARAM);
-    // }
+    private async _query(param: QueryDslQueryContainer, orderBy: OrderByLimit): Promise<SearchHit<Static<T>>[]> {
+        const { _CONFIG: { fields_exclude, globalFilter } } = this;
+        const request = builder.request(this._index, param, orderBy, fields_exclude, globalFilter)
+        return executor.query(this.getClient(), request)
+    }
+
+
+    /**
+     * @see WhereCondition
+     * Use a WhereCondition Query Data 
+    */
+    queryByCondition(condition?: WhereParam, query?: QuerySchema): Promise<SearchHit<Static<T>>[]> {
+        const { _CONFIG: { pageSize } } = this;
+        const param = where(condition);
+        let orderBy: OrderByLimit;
+        if (query) {
+            orderBy = this.orderByLimit(query);
+        } else {
+            orderBy = this.orderByLimit({ start_: 0, count_: pageSize });
+        }
+        return this._query(param, orderBy)
+    }
 
 
     /**
@@ -129,50 +125,34 @@ export class View<T extends TObject> extends BaseQuery<T> {
      * Use a QuerySchema Query Data 
     */
     query(query?: QuerySchema): Promise<SearchHit<Static<T>>[]> {
-        const { _QUERY_CACHE, _CONFIG: { FIELD_MAP } } = this;
-
+        const { _QUERY_CACHE, _CONFIG: { FIELD_MAP, } } = this;
         const condition = queryToCondition(query, FIELD_MAP, _QUERY_CACHE);
-        const dsl = where(condition);
-        return executor.query(this.getClient(), this._index, dsl)
+        return this.queryByCondition(condition, query)
     }
 
 
     /**
- * Exec A Senctence
-*/
+     * Exec A Senctence
+    */
     sql(request?: SearchRequest): Promise<SearchResponse<Static<T>>> {
         return this.getClient().search(request);
     }
 
 
-    // /**
-    //  * @see QuerySchema
-    //  * Use a QuerySchema Query Data With Page
-    //  * this will return a object with {total:number,list:any[]}
-    // */
-    // async queryPager(query?: QuerySchema): Promise<{ total: number, list: Static<T>[] }> {
-    //     let total = 0;
+    /**
+     * @see QuerySchema
+     * Use a QuerySchema Query Data With Page
+     * this will return a object with {total:number,list:any[]}
+    */
+    async queryPager(query?: QuerySchema): Promise<{ total: number, list: SearchHit<Static<T>>[] }> {
 
-    //     const { _table, _BUILDER, _EXECUTOR, _QUERY_CACHE, _CONFIG: { key, FIELD_MAP } } = this;
-    //     const condition = queryToCondition(query, FIELD_MAP, _QUERY_CACHE);
-    //     const [WHERE, PARAM] = _BUILDER.where(condition);
-    //     if (_.has(query, 'total_') && _.isNumber(query.total_)) {
-    //         total = query.total_;
-    //     } else {
-    //         const SQL_COUNT = `${_BUILDER.count(_table, key)} ${this.fixWhere(WHERE)}`;
-    //         const countResult = await _EXECUTOR.get(this.getClient(), SQL_COUNT, PARAM);
-    //         if (countResult == null) {
-    //             return {
-    //                 total: 0,
-    //                 list: [],
-    //             }
-    //         }
-    //         total = parseInt(countResult.total);
-    //     }
-    //     const [ORDER_BY, LIMIT] = this.orderByLimit(query);
-    //     const list = await this._query(this.fixWhere(WHERE), PARAM, ORDER_BY, LIMIT)
-    //     return { total, list }
-    // }
+        const { _QUERY_CACHE, _CONFIG: { FIELD_MAP, fields_exclude, globalFilter } } = this;
+        const condition = queryToCondition(query, FIELD_MAP, _QUERY_CACHE);
+        const orderBy = this.orderByLimit(query);
+        const param = where(condition);
+        const request = builder.request(this._index, param, orderBy, fields_exclude, globalFilter);
+        return executor.queryPager(this.getClient(), request)
+    }
 
 
 
@@ -180,42 +160,62 @@ export class View<T extends TObject> extends BaseQuery<T> {
      * Get A record form Table / View By Primary key.
      * This method will return All column. Even if the IGNORE column.
     */
-    // getById(id: string): Promise<Static<T>> {
-    //     const { _index, _EXECUTOR, _CONFIG: { key, BASE_QUERY } } = this;
-    //     const SQL = _BUILDER.select(_index, { ...BASE_QUERY });
-    //     const [WHERE, PARAM] = _BUILDER.byField(key, id);
-    //     return _EXECUTOR.get(this.getClient(), PARAM);
-    // }
+    getById(id: string): Promise<Static<T>> {
+        return executor.getById(this.getClient(), this._index, id);
+    }
     /**
      * Get A record form Table / View By Specify Field = value.
      * This method will return All column. Even if the IGNORE column.
      * Note : If result has multi records , return the first row
      *        Want return all records?  use `queryByField`
     */
-    // getByField(field: string, value?: string | number): Promise<Static<T>> {
-    //     const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_get } } = this;
-    //     const SQL = _BUILDER.select(_table, fields_get);
-    //     const [WHERE, PARAM] = _BUILDER.byField(field, value);
-    //     return _EXECUTOR.get(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
-    // }
+    getByField(field: string, value?: string | number): Promise<SearchHit<Static<T>>> {
+        const { _CONFIG: { globalFilter, FIELD_MAP }, _F2C, _C2F } = this;
+        let column = _F2C.has(field) ? _F2C.get(field) : (_C2F.has(field) ? field : null);
+        if (column == null) {
+            throw new Error(`Index ${this._index} do not has field ${field}`);
+        }
+        let schema = FIELD_MAP.get(_C2F.get(column));
+        const type = getFieldType(schema);
+        const param = where([{ column, type, value }]);
+        const request = builder.request(this._index, param, null, [], globalFilter)
+        return executor.getOne(this.getClient(), request);
+    }
 
     /**
      * Get records form Table / View By Specify Property = value.
     */
-    // queryByField(field: string, value?: string | number | boolean): Promise<Static<T>[]> {
-    //     const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_get } } = this;
-    //     const SQL = _BUILDER.select(_table, fields_get);
-    //     const [WHERE, PARAM] = _BUILDER.byField(field, value);
-    //     return _EXECUTOR.query(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
-    // }
+    queryByField(field: string, value?: string | number | boolean): Promise<SearchHit<Static<T>>[]> {
+        const { _CONFIG: { FIELD_MAP }, _F2C, _C2F } = this;
+        let column = _F2C.has(field) ? _F2C.get(field) : (_C2F.has(field) ? field : null);
+        if (column == null) {
+            throw new Error(`Index ${this._index} do not has field ${field}`);
+        }
+        let schema = FIELD_MAP.get(_C2F.get(column));
+        const type = getFieldType(schema);
+        const param = where([{ column, type, value }]);
+        const orderBy = this.orderByLimit();
+        return this._query(param, orderBy)
+    }
 
-    // protected fixWhere(where: string): string {
-    //     const { _CONFIG: { WHERE_FIX } } = this;
-    //     let whereStr = _.trim(where);
-    //     return whereStr.length ? (WHERE_FIX[0] + WHERE_FIX[1] + whereStr) : WHERE_FIX[0];
-    // }
 
+    private orderByLimit(query?: QuerySchema): OrderByLimit {
+        const { _CONFIG: { sort, pageSize, } } = this;
+        let orderBy: OrderByLimit = {}
+        if (query == null) {
+            orderBy.from = 0;
+            orderBy.size = pageSize;
+            if (sort) orderBy.sort = sort;
+            return orderBy
+        }
+        orderBy.from = query.start_ || 0;
+        orderBy.size = query.count_ || pageSize;
+        if (this._F2C.has(query.order_)) {
+            let by = _.trim(query.by_) == 'asc' ? 'asc' : 'desc';
+            orderBy.sort = `${this._F2C.get(query.order_)}:${by}`
+        }
+        return orderBy
 
-
+    }
 
 }

@@ -4,11 +4,9 @@ import type { QuerySchema, WhereParam, WhereDefine, USchema, WhereItem } from '.
 import _ from 'lodash';
 import { PAGE_SIZE } from './Util';
 import { BaseQuery } from './BaseQuery'
-import { queryToCondition } from './QueryBuilder';
+import { queryToCondition, getFieldType } from './QueryBuilder';
 
-// import type { SqlExecutor } from './sql'
 
-// const DEFAULT_SCHEMA = 'public';
 
 export type TableOptions = {
     /**
@@ -42,6 +40,11 @@ export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
 
     protected _table: string;
 
+
+    protected _F2C = new Map<string, string>(); // Field To Column
+    protected _C2F = new Map<string, string>(); // Column To Field
+
+
     protected _CONFIG = {
         key: 'id',
         order: 'id',
@@ -71,14 +74,15 @@ export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
         let fields_query = [];
         let fields_get = [];
         this._CONFIG.FIELD_MAP = new Map<string, TSchema>();
-        var WHERE = [];
+        // var WHERE = [];
         _.keys(schema.properties).map(field => {
             let properties = schema.properties[field];
             let column = properties.column || field;
+            this._F2C.set(field, column);
+            this._C2F.set(column, field);
             this._CONFIG.FIELD_MAP.set(field, properties);
             if (_.has(properties, 'delMark') && properties.delMark != null) {
                 this._CONFIG.mark = { [column]: properties.delMark };
-                WHERE.push({ field: column, value: properties.delMark, condition: '!=' });
             }
             if (properties.column) {
                 fields_get.push(`"${properties.column}" AS "${field}"`);
@@ -102,9 +106,9 @@ export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
         if (options.sortOrder) this._CONFIG.order = options.sortOrder;
         if (options.sortBy) this._CONFIG.by = options.sortBy;
         if (options.pageSize) this._CONFIG.pageSize = options.pageSize;
-        if (options.globalCondition && options.globalCondition.length) {
-            WHERE = WHERE.concat(options.globalCondition)
-        };
+        // if (options.globalCondition && options.globalCondition.length) {
+
+        // };
         if (options.key) {
             this._CONFIG.key = options.key;
             this._CONFIG.order = options.key;
@@ -125,8 +129,13 @@ export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
      * @see WhereCondition
      * Use a WhereCondition Query Data 
     */
-    queryByCondition(condition?: WhereParam): Promise<Static<T>[]> {
+    queryByCondition(condition?: WhereParam, limit?: QuerySchema): Promise<Static<T>[]> {
         const [WHERE, PARAM] = this._BUILDER.where(condition);
+        if (limit) {
+            const [ORDER_BY, LIMIT] = this.orderByLimit(limit);
+            return this._query(this.fixWhere(WHERE), PARAM, ORDER_BY, LIMIT);
+        }
+
         return this._query(this.fixWhere(WHERE), PARAM);
     }
 
@@ -136,11 +145,9 @@ export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
      * Use a QuerySchema Query Data 
     */
     query(query?: QuerySchema): Promise<Static<T>[]> {
-        const { _QUERY_CACHE, _BUILDER, _CONFIG: { FIELD_MAP } } = this;
+        const { _QUERY_CACHE, _CONFIG: { FIELD_MAP } } = this;
         const condition = queryToCondition(query, FIELD_MAP, _QUERY_CACHE);
-        const [WHERE, PARAM] = _BUILDER.where(condition);
-        const [ORDER_BY, LIMIT] = this.orderByLimit(query);
-        return this._query(this.fixWhere(WHERE), PARAM, ORDER_BY, LIMIT);
+        return this.queryByCondition(condition, query)
     }
 
     /**

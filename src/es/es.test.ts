@@ -62,7 +62,7 @@ test('Test : Query with QuerySchemma', async () => {
 
 
 })
-    .pin()
+    // .pin()
     // .skip()
     ;
 
@@ -86,42 +86,49 @@ test('Test : Query with QuerySchemma', async () => {
 
 
 
-// test('Test : CRUD', async () => {
-//     // Insert
-//     const insertResult = await User.insert({
-//         name: 'test',
-//         age: 23,
-//         sex: false,
-//         address: 'randmo',
-//         salary: 1221.2,
-//     });
-//     console.log('Insert Result', insertResult)
-//     let userId = insertResult.id as number;
-
-
-//     const afterInsert = await User.getById(userId);
-//     console.log('After Insert', afterInsert)
-
-//     // Update
-//     await new Promise(r => setTimeout(r, 1200)); // wait , notice last_update value
-//     let isUpdate = await User.update({ id: userId, age: 60, });    // change Age
-//     console.log('Update is Success ? : ', isUpdate == 1);
-
-//     const afterUpdate = await User.getById(userId);
-//     console.log('After Update', afterUpdate)
-
-//     // Delete
-//     let isDelete = await User.deleteById(userId);
-//     console.log('Delete is Success ? : ', isDelete == 1);
-
-//     await setTimeout(r => r, 1000); // wait , notice last_update value
-//     const afterDelete = await User.getById(userId);
-//     console.log('After Delete', afterDelete)
-// })
-// // .skip();
+test('Test : CRUD', async () => {
+    // Insert
+    // const insertResult = await User.insert({
+    //     name: 'test',
+    //     age: 23,
+    //     sex: false,
+    //     address: 'randmo',
+    //     salary: 1221.2,
+    // });
+    // console.log('Insert Result', insertResult._id)
+    // let userId = insertResult.id as number;
 
 
 
+    const id = 'V9oA7IQB65L_VamPgTVU';
+
+
+    // const afterInsert = await User.getById(userId);
+    // console.log('After Insert', afterInsert)
+
+    // // Update
+    // await new Promise(r => setTimeout(r, 1200)); // wait , notice last_update value
+    let isUpdate = await User.deleteById(id);    // change Age
+    console.log('Update is Success ? : ', isUpdate == 1);
+
+    const afterUpdate = await User.getById(id);
+    console.log('After Update', afterUpdate)
+
+    // // Delete
+    // let isDelete = await User.deleteById(userId);
+    // console.log('Delete is Success ? : ', isDelete == 1);
+
+    // await setTimeout(r => r, 1000); // wait , notice last_update value
+    // const afterDelete = await User.getById(userId);
+    // console.log('After Delete', afterDelete)
+})
+
+
+    .pin()
+    // .skip()
+
+
+    ;
 
 
 // test('Test : Update 2', async () => {

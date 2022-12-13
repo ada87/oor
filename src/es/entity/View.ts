@@ -1,21 +1,22 @@
 import type { TObject, Static, TSchema } from '@sinclair/typebox';
-import type { QuerySchema, WhereParam, WhereDefine, USchema, WhereItem } from '../../base/types';
+import type { QuerySchema, WhereParam, WhereDefine, USchema } from '../../base/types';
 import type { TableOptions } from '../../base/BaseView'
-import type { SearchRequest, SearchResponse, SearchHit, Field, QueryDslBoolQuery, QueryDslQueryContainer } from '@elastic/elasticsearch/lib/api/types';
+import type { SearchRequest, SearchResponse, SearchHit, Field, QueryDslQueryContainer } from '@elastic/elasticsearch/lib/api/types';
 
 import _ from 'lodash';
 import { PAGE_SIZE } from '../../base/Util';
 import { BaseQuery } from './BaseQuery'
 import { queryToCondition, getFieldType } from '../../base/QueryBuilder';
-import { builder, ES_MAX_SIZE, } from '../query/builder'
-import type { OrderByLimit } from '../query/es';
+// import { builder, ES_MAX_SIZE, } from '../query/builder'
+import type { OrderByLimit } from '../query/define';
 import { executor } from '../query/executor';
-import { where, fixWhere, } from '../query/dsl';
+import { where, fixWhere, buildSearch } from '../query/dsl';
+
+const ES_MAX_SIZE = 10000;
 
 export class View<T extends TObject> extends BaseQuery<T> {
 
     protected _index: string;
-
 
     private _F2C = new Map<string, string>(); // Field To Column
     private _C2F = new Map<string, string>(); // Column To Field
@@ -98,7 +99,7 @@ export class View<T extends TObject> extends BaseQuery<T> {
 
     private async _query(param: QueryDslQueryContainer, orderBy: OrderByLimit): Promise<SearchHit<Static<T>>[]> {
         const { _CONFIG: { fields_exclude, globalFilter } } = this;
-        const request = builder.request(this._index, param, orderBy, fields_exclude, globalFilter)
+        const request = buildSearch(this._index, param, orderBy, fields_exclude, globalFilter)
         return executor.query(this.getClient(), request)
     }
 
@@ -150,10 +151,20 @@ export class View<T extends TObject> extends BaseQuery<T> {
         const condition = queryToCondition(query, FIELD_MAP, _QUERY_CACHE);
         const orderBy = this.orderByLimit(query);
         const param = where(condition);
-        const request = builder.request(this._index, param, orderBy, fields_exclude, globalFilter);
+        const request = buildSearch(this._index, param, orderBy, fields_exclude, globalFilter);
         return executor.queryPager(this.getClient(), request)
     }
 
+    protected byField(field: string, value?: string | number | boolean): QueryDslQueryContainer {
+        const { _CONFIG: { globalFilter, FIELD_MAP }, _F2C, _C2F } = this;
+        let column = _F2C.has(field) ? _F2C.get(field) : (_C2F.has(field) ? field : null);
+        if (column == null) {
+            throw new Error(`Index ${this._index} do not has field ${field}`);
+        }
+        let schema = FIELD_MAP.get(_C2F.get(column));
+        const type = getFieldType(schema);
+        return where([{ column, type, value }]);
+    }
 
 
     /**
@@ -169,16 +180,10 @@ export class View<T extends TObject> extends BaseQuery<T> {
      * Note : If result has multi records , return the first row
      *        Want return all records?  use `queryByField`
     */
-    getByField(field: string, value?: string | number): Promise<SearchHit<Static<T>>> {
-        const { _CONFIG: { globalFilter, FIELD_MAP }, _F2C, _C2F } = this;
-        let column = _F2C.has(field) ? _F2C.get(field) : (_C2F.has(field) ? field : null);
-        if (column == null) {
-            throw new Error(`Index ${this._index} do not has field ${field}`);
-        }
-        let schema = FIELD_MAP.get(_C2F.get(column));
-        const type = getFieldType(schema);
-        const param = where([{ column, type, value }]);
-        const request = builder.request(this._index, param, null, [], globalFilter)
+    getByField(field: string, value: string | number): Promise<SearchHit<Static<T>>> {
+        const { _CONFIG: { globalFilter, } } = this;
+        const param = this.byField(field, value);
+        const request = buildSearch(this._index, param, null, [], globalFilter)
         return executor.getOne(this.getClient(), request);
     }
 
@@ -186,14 +191,7 @@ export class View<T extends TObject> extends BaseQuery<T> {
      * Get records form Table / View By Specify Property = value.
     */
     queryByField(field: string, value?: string | number | boolean): Promise<SearchHit<Static<T>>[]> {
-        const { _CONFIG: { FIELD_MAP }, _F2C, _C2F } = this;
-        let column = _F2C.has(field) ? _F2C.get(field) : (_C2F.has(field) ? field : null);
-        if (column == null) {
-            throw new Error(`Index ${this._index} do not has field ${field}`);
-        }
-        let schema = FIELD_MAP.get(_C2F.get(column));
-        const type = getFieldType(schema);
-        const param = where([{ column, type, value }]);
+        const param = this.byField(field, value);
         const orderBy = this.orderByLimit();
         return this._query(param, orderBy)
     }

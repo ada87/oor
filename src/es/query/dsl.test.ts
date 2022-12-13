@@ -1,6 +1,6 @@
 import { test } from '@japa/runner'
 import { WhereParam, QuerySchema, SUFFIX } from '../../base/types'
-import { where, fixWhere, fixRequest } from './dsl'
+import { where, fixWhere, buildSearch } from './dsl'
 import { setup } from '../../base/Util'
 
 

@@ -1,127 +1,116 @@
-// import type { TObject, Static } from '@sinclair/typebox';
-// import type { QuerySchema, WhereParam } from './types';
+import type { TObject, Static } from '@sinclair/typebox';
+import type { QuerySchema, WhereParam } from '../../base/types';
+import type { SearchRequest, SearchResponse, SearchHit, Field, QueryDslBoolQuery, QueryDslQueryContainer, DeleteRequest, UpdateRequest, IndexRequest } from '@elastic/elasticsearch/lib/api/types';
 
-// import _ from 'lodash';
-// import { BaseView } from './BaseView'
-// import { getFieldType, queryToCondition } from './QueryBuilder';
-// import { SqlExecutor } from './sql';
+import _ from 'lodash';
+import { View } from './View'
+import { getFieldType, queryToCondition } from '../../base/QueryBuilder';
+import { executor } from '../query/executor';
+import { where, fixQuery } from '../query/dsl';
 
-// export abstract class BaseTable<T extends TObject, C> extends BaseView<T, C> {
+export class Table<T extends TObject> extends View<T> {
 
-//     protected abstract _EXECUTOR: SqlExecutor<T>;
-
-//     /**
-//      * Auto convert data
-//      * check row data while insert or update
-//      * */
-//     private checkEntity(obj: any, isAdd = false): any {
-//         // checkEntity(this.schema)
-//         let clone: any = {}
-//         this._CONFIG.FIELD_MAP.forEach((schema, key) => {
-//             let field = schema.column || key;
-//             if (_.has(obj, key)) {
-//                 clone[field] = obj[key];
-//             }
-//             let type = getFieldType(schema);
-//             if (type == 'date') {
-//                 if (schema.isCreate) {
-//                     if (isAdd) {
-//                         clone[field] = new Date();
-//                     } else {
-//                         _.unset(clone, field);
-//                     }
-//                     return;
-//                 }
-//                 if (schema.isModify) {
-//                     clone[field] = new Date();
-//                     return;
-//                 }
-//             }
-//         })
-//         return clone;
-//     }
-
-
-//     deleteByField(field: string, value: string | number | boolean): Promise<number> {
-//         const { _CONFIG: { mark, FIELD_MAP } } = this;
-//         if (mark) return this.updateByField(mark, field, value)
-//         let schema = FIELD_MAP.get(field);
-//         let column = (schema && schema.column) ? schema.column : field;
-//         return this.deleteByCondition([{ column, value }])
-//     }
+    /**
+     * Auto convert data
+     * check row data while insert or update
+     * */
+    private checkEntity(obj: any, isAdd = false): any {
+        // checkEntity(this.schema)
+        let clone: any = {}
+        this._CONFIG.FIELD_MAP.forEach((schema, key) => {
+            let field = schema.column || key;
+            if (_.has(obj, key)) {
+                clone[field] = obj[key];
+            }
+            let type = getFieldType(schema);
+            if (type == 'date') {
+                if (schema.isCreate) {
+                    if (isAdd) {
+                        clone[field] = new Date();
+                    } else {
+                        _.unset(clone, field);
+                    }
+                    return;
+                }
+                if (schema.isModify) {
+                    clone[field] = new Date();
+                    return;
+                }
+            }
+        })
+        return clone;
+    }
 
 
-//     deleteByQuery(query: QuerySchema): Promise<number> {
-//         const { _CONFIG: { mark } } = this;
-//         if (mark) return this.updateByQuery(mark, query)
-//         const condition = queryToCondition(query, this._CONFIG.FIELD_MAP, this._QUERY_CACHE);
-//         return this.deleteByCondition(condition);
-//     }
-
-//     deleteByCondition(condition: WhereParam): Promise<number> {
-//         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { mark } } = this;
-//         if (mark) return this.updateByCondition(mark, condition)
-//         const SQL = _BUILDER.delete(_table);
-//         const [WHERE, PARAM] = this._BUILDER.where(condition);
-//         return _EXECUTOR.execute(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
-//     }
+    // deleteByField(field: string, value: string | number | boolean): Promise<number> {
+    //     const { _CONFIG: { mark, FIELD_MAP } } = this;
+    //     if (mark) return this.updateByField(mark, field, value)
+    //     let schema = FIELD_MAP.get(field);
+    //     let column = (schema && schema.column) ? schema.column : field;
+    //     return this.deleteByCondition([{ column, value }])
+    // }
 
 
-//     deleteById(id: number | string): Promise<number> {
-//         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key, mark } } = this;
-//         if (mark) return this.update({ ...mark, [key]: id })
-//         const SQL = _BUILDER.delete(_table);
-//         const [WHERE, PARAM] = _BUILDER.byField(key, id);
-//         return _EXECUTOR.execute(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
-//     }
+    // deleteByQuery(query: QuerySchema): Promise<number> {
+    //     const { _CONFIG: { mark } } = this;
+    //     if (mark) return this.updateByQuery(mark, query)
+    //     const condition = queryToCondition(query, this._CONFIG.FIELD_MAP, this._QUERY_CACHE);
+    //     return this.deleteByCondition(condition);
+    // }
 
-//     /**
-//      * Update a record, By Primary Key in the obj
-//     */
-//     update(obj: Static<T>): Promise<number> {
-//         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
-//         if (!_.has(obj, key)) {
-//             throw new Error(`Update Action must have a key`);
-//         }
-//         let entity = this.checkEntity(obj, false);
-//         const [SQL, FIELD_SET] = _BUILDER.update(_table, entity, key);
-//         if (FIELD_SET.length == 0) {
-//             throw new Error(`Update Action must have some properties`);
-//         }
-//         const [WHERE, PARAM] = _BUILDER.byField(key, obj[key] as any, FIELD_SET.length + 1)
-//         return _EXECUTOR.execute(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM]);
-//     }
+    deleteByCondition(condition: WhereParam): Promise<number> {
+        const { _CONFIG: { globalFilter }, _index } = this;
+        // const { _table, _BUILDER, _EXECUTOR, _CONFIG: { mark } } = this;
+        // if (mark) return this.updateByCondition(mark, condition)
+        // const SQL = _BUILDER.delete(_table);
+        const param = where(condition)
+        const query = fixQuery(globalFilter, param)
+        return executor.deleteByQuery(this.getClient(), _index, query);
+    }
 
-//     updateByField(obj: Static<T>, field: string, value: string | number | boolean): Promise<number> {
-//         let schema = this._CONFIG.FIELD_MAP.get(field);
-//         let column = (schema && schema.column) ? schema.column : field;
-//         return this.updateByCondition(obj, [{ column, value }])
-//     }
 
-//     updateByQuery(obj: Static<T>, query: QuerySchema): Promise<number> {
-//         const condition = queryToCondition(query, this._CONFIG.FIELD_MAP, this._QUERY_CACHE);
-//         return this.updateByCondition(obj, condition);
-//     }
-//     updateByCondition(obj: Static<T>, condition?: WhereParam): Promise<number> {
-//         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
-//         _.unset(obj, key);
-//         let entity = this.checkEntity(obj, false);
-//         if (_.keys(entity).length == 0) return new Promise(r => r(0));
-//         const [SQL, FIELD_SET] = _BUILDER.update(_table, entity);
-//         const [WHERE, PARAM] = this._BUILDER.where(condition, FIELD_SET.length + 1);
-//         return _EXECUTOR.execute(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM]);
-//     }
+    deleteById(id: string): Promise<number> {
+        const { _CONFIG: { mark } } = this;
+        if (mark) return this.update(id, { ...mark, })
+        return executor.deleteById(this.getClient(), this._index, id);
+    }
 
-//     /**
-//      * Insert a record
-//     */
-//     insert(object: Static<T>): Promise<Static<T>> {
-//         const { _table, _BUILDER, _EXECUTOR } = this;
-//         let entity = this.checkEntity(object, true);
-//         const [SQL, PARAM] = _BUILDER.insert(_table, entity);
-//         return _EXECUTOR.add(this.getClient(), `${SQL}`, PARAM);
-//     }
-// }
+    /**
+     * Update a record, By Primary Key in the obj
+    */
+    update(id: string, obj: Static<T>, useIndex = false): Promise<number> {
+        const entity = this.checkEntity(obj, false);
+        return executor.updateById(this.getClient(), this._index, id, entity, useIndex);
+    }
+
+    // updateByField(obj: Static<T>, field: string, value: string | number | boolean): Promise<number> {
+    //     let schema = this._CONFIG.FIELD_MAP.get(field);
+    //     let column = (schema && schema.column) ? schema.column : field;
+    //     return this.updateByCondition(obj, [{ column, value }])
+    // }
+
+    // updateByQuery(obj: Static<T>, query: QuerySchema): Promise<number> {
+    //     const condition = queryToCondition(query, this._CONFIG.FIELD_MAP, this._QUERY_CACHE);
+    //     return this.updateByCondition(obj, condition);
+    // }
+    // updateByCondition(obj: Static<T>, condition?: WhereParam): Promise<number> {
+    //     const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
+    //     _.unset(obj, key);
+    //     let entity = this.checkEntity(obj, false);
+    //     if (_.keys(entity).length == 0) return new Promise(r => r(0));
+    //     const [SQL, FIELD_SET] = _BUILDER.update(_table, entity);
+    //     const [WHERE, PARAM] = this._BUILDER.where(condition, FIELD_SET.length + 1);
+    //     return _EXECUTOR.execute(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM]);
+    // }
+
+    /**
+     * Insert a record
+    */
+    insert(object: Static<T>): Promise<SearchHit<Static<T>>> {
+        let entity = this.checkEntity(object, true)
+        return executor.add(this.getClient(), this._index, entity);
+    }
+}
 
 
 

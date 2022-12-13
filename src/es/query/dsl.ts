@@ -1,5 +1,6 @@
-import type { QueryDslQueryContainer, QueryDslBoolQuery, SearchRequest } from '@elastic/elasticsearch/lib/api/types';
+import type { QueryDslQueryContainer, QueryDslBoolQuery, SearchRequest, Field } from '@elastic/elasticsearch/lib/api/types';
 import _ from 'lodash';
+import type { OrderByLimit } from './define'
 import { WhereParam, WhereItem, WhereCondition, MagicSuffix, FieldType, } from '../../base/types';
 import { throwErr, isSupport, NONE_PARAM, betweenDate, betweenNumber, boolValue } from '../../base/Util';
 import dayjs, { Dayjs } from 'dayjs';
@@ -304,8 +305,10 @@ export const where = (condition: WhereParam): QueryDslQueryContainer => {
 // FIELD_MAP: new Map<string, USchema>(),
 // globalFilter: null as QueryDslBoolQuery,
 
-
-export const fixRequest = (fixFilter?: QueryDslQueryContainer, query?: QueryDslQueryContainer): QueryDslQueryContainer => {
+/**
+ * Global Filter Must postion on first Arg
+*/
+export const fixQuery = (fixFilter?: QueryDslQueryContainer, query?: QueryDslQueryContainer): QueryDslQueryContainer => {
     if (fixFilter == null && query == null) {
         return { match_all: {} }
     }
@@ -328,7 +331,7 @@ export const fixRequest = (fixFilter?: QueryDslQueryContainer, query?: QueryDslQ
             _.keys(query.constant_score.filter.bool).map(boolKey => {
                 if (boolKey == 'filter' || boolKey == 'must') {
                     if (_.isArray(query.constant_score.filter.bool[boolKey])) {
-                        (query.constant_score.filter.bool[boolKey] as QueryDslQueryContainer[]).map(item=>{
+                        (query.constant_score.filter.bool[boolKey] as QueryDslQueryContainer[]).map(item => {
                             (searchParam.constant_score.filter.bool.filter as QueryDslQueryContainer[]).push(item)
                         });
                         // (searchParam.constant_score.filter.bool.filter as QueryDslQueryContainer[]).concat(query.constant_score.filter.bool[boolKey] as QueryDslQueryContainer[])
@@ -350,3 +353,17 @@ export const fixRequest = (fixFilter?: QueryDslQueryContainer, query?: QueryDslQ
 
 
 }
+
+
+export const buildSearch = (indexName: string, query: QueryDslQueryContainer, order: OrderByLimit, _source_excludes: Field[], globalFilter: QueryDslQueryContainer): SearchRequest => {
+    const param: SearchRequest = {
+        index: indexName,
+        ...order,
+    };
+    if (_source_excludes && _source_excludes.length) {
+        param._source_excludes = _source_excludes;
+    }
+    param.query = fixQuery(globalFilter, query)
+    return param;
+}
+

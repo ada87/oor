@@ -1,9 +1,10 @@
-import type { WhereParam, WhereItem, WhereCondition, MagicSuffix, Support, FieldType } from '../base/types';
+import type { WhereParam, WhereItem, WhereCondition, MagicSuffix, Support, USchema } from '../../base/types';
 import type { Dayjs } from 'dayjs';
 
 import _ from 'lodash';
-import { SqlWhere } from '../base/sql';
-import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../base/Util';
+import { SqlWhere } from '../../base/sql';
+import { Kind } from '@sinclair/typebox';
+import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../../base/Util';
 import dayjs from 'dayjs';
 
 
@@ -354,4 +355,43 @@ export const where: SqlWhere = (condition: WhereParam, startIdx = 1): [string, a
         return ['', []]
     };
     return [pos.SQL.join(" " + root.link + " "), pos.PARAM]
+}
+
+
+
+export const fixWhere = (FIELD_MAP: Map<string, USchema>, extra: WhereItem[]): [string, string] => {
+    let ITEMS: WhereItem[] = [];
+    let ctf = new Map<string, string>();
+    const convert = (kind, value) => {
+        switch (kind) {
+            case 'Boolean':
+                return value;
+            case 'Number':
+                return parseFloat(value);
+            case 'Integer':
+                return parseInt(value);
+            default:
+                return value + '';
+        }
+    }
+    for (let [key, val] of FIELD_MAP) {
+        if (_.has(val, 'delMark')) {
+            ITEMS.push({ column: (val.column || key), fn: '<>', value: convert(val[Kind as any], val.delMark) })
+        }
+        ctf.set((val.column || key), key);
+    }
+    extra.map(item => {
+        // inner usage field
+        // @ts-ignore
+        let schema = FIELD_MAP.get(item.field) || FIELD_MAP.get(ctf.get(item.field));
+        if (schema == null) return;
+        ITEMS.push({ ...item, value: convert(schema[Kind as any], item.value) });
+    })
+    if (ITEMS.length == 0) return ['', ' WHERE '];
+    let [SQL, PARAM] = where(ITEMS);
+    if (SQL.length == 0) return ['', ' WHERE '];
+    PARAM.map((item, i) => {
+        SQL = SQL.replaceAll(`$${i + 1}`, _.isNumber(item) ? (item + '') : `'${item}'`)
+    });
+    return [' WHERE ' + SQL, ' AND ']
 }

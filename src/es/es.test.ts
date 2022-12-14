@@ -35,7 +35,7 @@ test('Test : Query with QuerySchemma', async () => {
         // nameLikel: '陆',
         // sex: true,
         // ageBt: "[12,17]",
-        nameNotIn:'朱,陆敏'
+        nameNotIn: '朱,陆敏'
     });
 
     // result = await User.queryByField('name', '陆')
@@ -128,34 +128,38 @@ test('Test : CRUD', async () => {
 })
 
 
-    .pin()
+    // .pin()
     // .skip()
 
 
     ;
 
 
-// test('Test : Update 2', async () => {
+test('Test : Update 2', async () => {
 
-//     const result = await User.update({ id: 1 });
-//     // const result = await User.update({ id: 2 });
-//     // const result = await User.updateByField({ age: 30 }, 'id', 2);
-//     // const result = await User.updateByCondition({ age: 30 }, [{ field: 'id', condition: '<', value: 10 }]);
-//     // const result = await User.updateByQuery({ age: 38 }, { idMax: 10, sex: false });
-//     console.log(result)
-// })
-//     .skip()
-//     ;
+    // const result = await User.update({ id: 1 });
+    // const result = await User.update({ id: 2 });
+    // const result = await User.updateByField({ age: 30 }, 'id', 158);
+    // const result = await User.updateByCondition({ age: 30 }, [{ field: 'id', condition: '<', value: 10 }]);
+    const result = await User.updateByQuery({ age: 38, address: 'fdasfdsa', sex: true }, { idMax: 135, idMin: 131 });
+    console.log(result)
+})
+    // .pin()
+    // .skip()
+    ;
 
 
-// test('Test : Delete 2', async () => {
+test('Test : Delete 2', async () => {
 
-//     // const result = await User.deleteById(1);
-//     // const result = await User.deleteById(2);
-//     // const result = await User.deleteByField('id', 3);
-//     // const result = await User.deleteByQuery( { idMax: 10, sex: false });
-//     const result = await User.deleteByCondition([{ column: 'id', fn: '<', value: 10 }]);
-//     console.log(result)
-// })
-//     // .skip()
-//     ;
+    // const result = await User.deleteById(1);
+    // const result = await User.deleteById(2);
+    // const result = await User.deleteByField('id', 133);
+    // const result = await User.deleteByQuery( { idMax: 120, sex: false });
+
+    const result = await User.deleteByQuery( { idMaxThan: 135, idMinThan: 131 });
+    // const result = await User.deleteByCondition([{ column: 'id', fn: '<', value: 10 }]);
+    console.log(result)
+})
+.pin()
+    // .skip()
+    ;

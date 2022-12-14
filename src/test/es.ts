@@ -7,12 +7,12 @@ import { Client } from '@elastic/elasticsearch'
 export const client = new Client({
     node: process.env.ES_NODE,
     tls: {
-        ca: readFileSync('D:\\ELK\\kibana-8.5.0\\data\\ca_1667380877979.crt'),
+        ca: readFileSync(process.env.ES_CA as string),
         rejectUnauthorized: false,
     },
     auth: {
-        username: process.env.ES_USER || 'elastic',
-        password: process.env.ES_PASS || 'changeme',
+        username: process.env.ES_USER as string,
+        password: process.env.ES_PASS as string,
     }
 })
 
@@ -36,9 +36,9 @@ export const UserSchema = UType.Table({
 // export type User = Static<typeof UserSchema>;
 
 // Line 4 : Build a Table, it's ok for all
-export const User = new FlatView('user', UserSchema, {
+export const User = new Table('user', UserSchema, {
     key: 'register_date',
-    globalCondition: [{ fn: '>', column: 'age', value: 2 }]
+    // globalCondition: [{ fn: '>', column: 'age', value: 2 }]
 });
 
 // @ts-ignore

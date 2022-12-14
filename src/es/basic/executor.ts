@@ -1,5 +1,5 @@
 import type { Client, } from '@elastic/elasticsearch';
-import type { SearchRequest, SearchHit, Field, QueryDslQueryContainer, IndexRequest, UpdateRequest, UpdateByQueryRequest, DeleteRequest, DeleteByQueryRequest } from '@elastic/elasticsearch/lib/api/types';
+import type { SearchRequest, SearchHit, Field, QueryDslQueryContainer, IndexRequest, UpdateRequest, UpdateByQueryRequest, Script, DeleteRequest, DeleteByQueryRequest } from '@elastic/elasticsearch/lib/api/types';
 import type { ESExecutor, FlatExecutor } from './define';
 
 import _ from 'lodash';
@@ -7,6 +7,7 @@ import { ShowSql } from '../../base/Util';
 
 
 const logSearch = (request: SearchRequest) => {
+
     if (ShowSql == null) return
     let url = ['POST /', request.index, '/_search'];
     if (request._source_excludes && request._source_excludes.length) {
@@ -18,7 +19,7 @@ const logSearch = (request: SearchRequest) => {
 
 const logExecuer = (method: string, url: string, param?: any) => {
     if (ShowSql == null) return
-    return `${method} ${url} ${param != null ? JSON.stringify(param) : ''}`;
+    return ShowSql(`${method} ${url} ${param != null ? JSON.stringify(param) : ''}`);
 }
 
 export const executor: ESExecutor<any> = {
@@ -91,45 +92,22 @@ export const executor: ESExecutor<any> = {
 
     },
 
-    updateByQuery: async (client: Client, index: string, param: UpdateByQueryRequest): Promise<number> => {
-
-        // const temp = await client.ingest.putPipeline({
-        //     id: '',
-        //     processors: [
-        //         { set: { field: 'aa', value: bb } }
-        //     ]
-        // })
-        // client
-        client.updateByQuery({
-            index,
-            // conflicts: "proceed"
-            script: {
-                source: `ctx._source['extra'] = 'test'`
-            }
-        })
-        return 1;
+    updateByQuery: async (client: Client, index: string, param: QueryDslQueryContainer, script: Script): Promise<number> => {
+        logExecuer('POST', '/' + index + '/_update_by_query', { script, query: param });
+        const result = await client.updateByQuery({ index, script, query: param });
+        return result.updated;
     },
 
     deleteById: async (client: Client, index: string, id: string): Promise<number> => {
         logExecuer('DELETE', '/' + index + '/_doc/' + id);
-        const param: DeleteRequest = { id, index };
-        try {
-            const result = await client.delete(param)
-            return result.result == 'deleted' ? 1 : 0;
-        } catch (e) {
-            console.error(e)
-            return 0;
-        }
+        const result = await client.delete({ id, index })
+        return result.result == 'deleted' ? 1 : 0;
     },
 
     deleteByQuery: async (client: Client, index: string, query: QueryDslQueryContainer): Promise<number> => {
-        let request: DeleteByQueryRequest = {
-            index,
-            query,
-        }
-        ShowSql(JSON.stringify(request))
-
-        return 1;
+        logExecuer('DELETE', '/' + index + '/_delete_by_query', { query });
+        const result = await client.deleteByQuery({ index, query, })
+        return result.deleted;
     },
 
 
@@ -137,7 +115,7 @@ export const executor: ESExecutor<any> = {
 }
 
 export const fxecutor: FlatExecutor<any> = {
-    
+
     ...executor,
 
     query: async (client: Client, request: SearchRequest): Promise<any[]> => {

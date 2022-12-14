@@ -1,9 +1,10 @@
 import { test } from '@japa/runner'
-import { FIELD_MAP } from '../test/pg';
-import { WhereParam, QuerySchema, SUFFIX } from '../base/types'
+import '@japa/assert';
+import { FIELD_MAP } from '../../test/pg';
+import { WhereParam, QuerySchema, SUFFIX } from '../../base/types'
 import { where, } from './where'
-import { queryToCondition } from '../base/QueryBuilder';
-import { isCoverOrCoverError } from '../test/Const';
+import { queryToCondition } from '../../base/QueryBuilder';
+import { isCoverOrCoverError } from '../../test/Const';
 // import { whereByQuery } from './QueryBuilder';
 // import { orderByLimit } from './QueryPagition';
 

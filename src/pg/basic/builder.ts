@@ -1,8 +1,8 @@
-import type { SqlDelete, SqlInsert, SqlOrderBy, SqlUpdate, SqlLimit, SqlSelect, SqlCount, SqlByField } from '../base/sql';
-import type { QuerySchema } from '../base/types';
+import type { SqlDelete, SqlInsert, SqlOrderBy, SqlUpdate, SqlLimit, SqlSelect, SqlCount, SqlByField } from '../../base/sql';
+import type { QuerySchema } from '../../base/types';
 
 import _ from 'lodash';
-import { PAGE_SIZE } from '../base/Util';
+import { PAGE_SIZE } from '../../base/Util';
 
 export const select: SqlSelect = (table: string, fields: string = '*'): string => `SELECT ${fields || '*'} FROM ${table} `;
 

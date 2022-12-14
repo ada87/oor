@@ -199,6 +199,8 @@ export const inNumber = (txt: string): number[] => {
 
 const BOOLEAN_TEXT_IGNORE = new Set(['', 'null']);
 const BOOLEAN_TEXT_FALSE = new Set<any>(['0', 'false', '-1']);
+
+
 export const boolValue = (value): boolean => {
     let bool = true;
     if (_.isString(value)) {

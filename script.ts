@@ -37,11 +37,12 @@ const RunBuild = () => {
   const distDir = resolve(__dirname, './dist')
   if (existsSync(distDir)) rmSync(distDir, { recursive: true });
   exec('tsc', () => {
-    for (let file of ['README.md', 'README_ZH.md']) {
-      copyFileSync(resolve(__dirname, file), distDir + sep + file)
-    }
+    // for (let file of ['README.md', 'README_ZH.md']) {
+    //   copyFileSync(resolve(__dirname, file), distDir + sep + file)
+    // }
+    copyFileSync(resolve(__dirname, 'README.md'), distDir + sep + 'README.md')
     let json = JSON.parse(readFileSync(resolve(__dirname, 'package.json')).toString('utf8'));
-    _.unset(json, 'devDependencies')
+    // _.unset(json, 'devDependencies')
     _.unset(json, 'scripts');
     _.unset(json, 'files');
     writeFileSync(distDir + sep + 'package.json', JSON.stringify(json))

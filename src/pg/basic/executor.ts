@@ -1,12 +1,12 @@
 import type { ClientBase } from 'pg';
-import type { SqlExecutor } from '../base/sql';
+import type { SqlExecutor } from '../../base/sql';
 
 import _ from 'lodash';
-import { ShowSql } from '../base/Util';
+import { ShowSql } from '../../base/Util';
 
 const log = (SQL: string, PARAM: any[]) => {
     if (ShowSql == null) return;
-    ShowSql(SQL, PARAM)
+    ShowSql(`${SQL} | ${JSON.stringify(PARAM)}`)
 }
 
 export const executor: SqlExecutor<any> = {

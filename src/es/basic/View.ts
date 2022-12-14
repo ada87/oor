@@ -153,13 +153,28 @@ export class View<T extends TObject> extends BaseQuery {
         const request = buildSearch(this._index, param, orderBy, fields_exclude, globalFilter);
         return executor.queryPager(this.getClient(), request)
     }
-
-    protected byField(field: string, value?: string | number | boolean): QueryDslQueryContainer {
-        const { _CONFIG: { globalFilter, FIELD_MAP }, _F2C, _C2F } = this;
-        let column = _F2C.has(field) ? _F2C.get(field) : (_C2F.has(field) ? field : null);
-        if (column == null) {
+    
+    protected getField(key: string) {
+        const { _F2C, _C2F } = this;
+        let field = _F2C.has(key) ? key : (_C2F.has(key) ? _C2F.get(key) : null);
+        if (field == null) {
             throw new Error(`Index ${this._index} do not has field ${field}`);
         }
+        return field;
+    }
+
+    protected getColumn(key: string) {
+        const { _F2C, _C2F } = this;
+        let column = _F2C.has(key) ? _F2C.get(key) : (_C2F.has(key) ? key : null);
+        if (column == null) {
+            throw new Error(`Index ${this._index} do not has field ${key}`);
+        }
+        return column;
+    }
+
+    protected byField(field: string, value?: string | number | boolean): QueryDslQueryContainer {
+        const { _CONFIG: { FIELD_MAP }, _C2F } = this;
+        let column = this.getColumn(field);
         let schema = FIELD_MAP.get(_C2F.get(column));
         const type = getFieldType(schema);
         return where([{ column, type, value }]);

@@ -6,10 +6,10 @@ import { setup, Table, UType, Static } from '../pg/index';
 import * as _ from 'lodash';
 
 const config: ClientConfig = {
-    host: process.env.PG_HOST || 'pgserver',
-    port: parseInt(process.env.PG_PORT || '5432'),
-    user: process.env.PG_USER || 'postgres',
-    database: process.env.PG_DB || 'oor',
+    host: process.env.PG_HOST as string,
+    port: parseInt(process.env.PG_PORT as string),
+    user: process.env.PG_USER as string,
+    database: process.env.PG_DB as string,
     password: process.env.PG_PASS || undefined,
 };
 

@@ -17,11 +17,13 @@ export type ESSettings = Omit<Settings, 'provider'> & {
 
 
 
-export const setup = (settings: ESSettings) => {
+export const setup = (settings: ESSettings): Client => {
     if (_.isFunction(settings.provider)) {
         _setup({ ...settings, provider: ['es', settings.provider], })
+        return settings.provider();
     } else {
         const client = new Client(settings.provider);
         _setup({ ...settings, provider: ['es', () => client], })
+        return client;
     }
 }

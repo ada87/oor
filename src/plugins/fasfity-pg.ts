@@ -15,7 +15,7 @@ const OOR_FASTIFY_PG: FastifyPluginCallback<PGSettings> = (fastify: FastifyInsta
 
 declare module 'fastify' {
     export interface FastifyInstance {
-        oor: Pool
+        opg: Pool
     }
 }
 

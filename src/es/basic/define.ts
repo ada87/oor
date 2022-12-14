@@ -1,5 +1,5 @@
 import type { Client } from '@elastic/elasticsearch';
-import type { SearchRequest, SearchHit, Field, QueryDslQueryContainer, IndexRequest, UpdateByQueryRequest } from '@elastic/elasticsearch/lib/api/types';
+import type { SearchRequest, SearchHit, Field, QueryDslQueryContainer, IndexRequest, UpdateByQueryRequest, Script } from '@elastic/elasticsearch/lib/api/types';
 
 export type OrderByLimit = Pick<SearchRequest, 'sort' | 'from' | 'size'>;
 
@@ -20,7 +20,7 @@ type FlatESExecutor<T> = {
 type ESAction<T> = {
     add: (client: Client, index: string, param: IndexRequest) => Promise<T>,
     updateById: (client: Client, index: string, id: string, entity: any, useIndex?: boolean) => Promise<number>,
-    updateByQuery: (client: Client, index: string, param: UpdateByQueryRequest) => Promise<number>,
+    updateByQuery: (client: Client, index: string, param: QueryDslQueryContainer, script: Script) => Promise<number>,
     deleteById: (client: Client, index: string, id: string) => Promise<number>,
     deleteByQuery: (client: Client, index: string, query: QueryDslQueryContainer) => Promise<number>,
 }

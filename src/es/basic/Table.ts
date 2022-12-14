@@ -5,8 +5,8 @@ import type { SearchRequest, SearchResponse, SearchHit, Field, QueryDslBoolQuery
 import _ from 'lodash';
 import { View } from './View'
 import { getFieldType, queryToCondition } from '../../base/QueryBuilder';
-import { executor } from '../query/executor';
-import { where, fixQuery } from '../query/dsl';
+import { executor } from './executor';
+import { where, fixQuery } from './dsl';
 
 export class Table<T extends TObject> extends View<T> {
 

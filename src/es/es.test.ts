@@ -32,9 +32,10 @@ test('Test : Query with QuerySchemma', async () => {
         count_: 3,
         order_: 'age',
         by_: 'desc',
-        nameLikel: '陆',
-        sex: true,
-        ageBt: "[12,17]",
+        // nameLikel: '陆',
+        // sex: true,
+        // ageBt: "[12,17]",
+        nameNotIn:'朱,陆敏'
     });
 
     // result = await User.queryByField('name', '陆')
@@ -43,7 +44,7 @@ test('Test : Query with QuerySchemma', async () => {
     // result = await User.getById('HNoA7IQB65L_VamPfysf');
 
 
-    console.log(result);
+    // console.log(result.list.map(item=>item._source));
 
     // const b = _.cloneDeep(a);
 
@@ -100,7 +101,7 @@ test('Test : CRUD', async () => {
 
 
 
-    const id = 'V9oA7IQB65L_VamPgTVU';
+    const id = 'VNoA7IQB65L_VamPfysn';
 
 
     // const afterInsert = await User.getById(userId);
@@ -108,11 +109,14 @@ test('Test : CRUD', async () => {
 
     // // Update
     // await new Promise(r => setTimeout(r, 1200)); // wait , notice last_update value
-    let isUpdate = await User.deleteById(id);    // change Age
-    console.log('Update is Success ? : ', isUpdate == 1);
+    // let isUpdate = await User.deleteById(id);    // change Age
+    // console.log('Update is Success ? : ', isUpdate == 1);
 
-    const afterUpdate = await User.getById(id);
-    console.log('After Update', afterUpdate)
+    // const afterUpdate = await User.getById(id);
+    // console.log('After Update', afterUpdate)
+
+    const result = await User.query();
+    console.log(result)
 
     // // Delete
     // let isDelete = await User.deleteById(userId);

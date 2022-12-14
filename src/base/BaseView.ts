@@ -157,7 +157,6 @@ export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
     */
     async queryPager(query?: QuerySchema): Promise<{ total: number, list: Static<T>[] }> {
         let total = 0;
-
         const { _table, _BUILDER, _EXECUTOR, _QUERY_CACHE, _CONFIG: { FIELD_MAP } } = this;
         const condition = queryToCondition(query, FIELD_MAP, _QUERY_CACHE);
         const [WHERE, PARAM] = _BUILDER.where(condition);

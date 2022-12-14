@@ -1,19 +1,65 @@
-import type { WhereParam, WhereItem, WhereCondition, MagicSuffix } from '../base/types';
+import type { WhereParam, WhereItem, WhereCondition, MagicSuffix, Support, FieldType } from '../base/types';
 import type { Dayjs } from 'dayjs';
 
 import _ from 'lodash';
 import { SqlWhere } from '../base/sql';
-import { throwErr, NONE_PARAM, isSupport, betweenDate, betweenNumber, boolValue } from '../base/Util';
+import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../base/Util';
 import dayjs from 'dayjs';
 
 
-// import utc from 'dayjs/plugin/utc';
-// import timezone from 'dayjs/plugin/timezone';
-// dayjs.extend(utc)
-// dayjs.extend(timezone)
-
 type QueryPos = { SQL: string[]; PARAM: any[], NUM: number; }
 
+const SUFFIX_SUPPORTS: Record<MagicSuffix, Support> = {
+
+    'Min': { string: true, number: true, date: true, boolean: true },
+    'MinThan': { string: true, number: true, date: true, boolean: false },
+    'Max': { string: true, number: true, date: true, boolean: true },
+    'MaxThan': { string: true, number: true, date: true, boolean: false },
+
+    'MinH': { string: false, number: false, date: true, boolean: false },
+    'MinD': { string: false, number: false, date: true, boolean: false },
+    'MinM': { string: false, number: false, date: true, boolean: false },
+    'MaxH': { string: false, number: false, date: true, boolean: false },
+    'MaxD': { string: false, number: false, date: true, boolean: false },
+    'MaxM': { string: false, number: false, date: true, boolean: false },
+
+    'Like': { string: true, number: false, date: false, boolean: false },
+    'Likel': { string: true, number: false, date: false, boolean: false },
+    'Liker': { string: true, number: false, date: false, boolean: false },
+
+    'Bt': { string: false, number: true, date: true, boolean: false },
+    'BtD': { string: false, number: false, date: true, boolean: false },
+    'BtY': { string: false, number: false, date: true, boolean: false },
+    'BtM': { string: false, number: false, date: true, boolean: false },
+
+    'Not': { string: true, number: true, date: true, boolean: true },
+
+
+    'In': { string: true, number: true, date: false, boolean: false },
+    'NotIn': { string: true, number: true, date: false, boolean: false },
+
+    'IsNull': { string: true, number: true, date: true, boolean: true },
+    'NotNull': { string: true, number: true, date: true, boolean: true },
+
+    'IsDistinct': { string: true, number: true, date: false, boolean: false },
+    'NotDistinct': { string: true, number: true, date: false, boolean: false },
+
+    '>': { string: true, number: true, date: true, boolean: true },
+    '>=': { string: true, number: true, date: true, boolean: false },
+    '<': { string: true, number: true, date: true, boolean: true },
+    '<=': { string: true, number: true, date: true, boolean: false },
+    '=': { string: true, number: true, date: true, boolean: true },
+    '!=': { string: true, number: true, date: true, boolean: true },
+    '<>': { string: true, number: true, date: true, boolean: true },
+
+}
+
+const isSupport = (item: WhereItem, err: string[]): boolean => {
+    let suffix = SUFFIX_SUPPORTS[item.fn] || SUFFIX_SUPPORTS['='];
+    if (suffix[item.type || 'string']) return true;
+    err.push(`${item.column}/(${item.type}) not support method ${item.fn}`)
+    return false;
+}
 
 const NullCondition = (item: WhereItem, pos: QueryPos,): boolean => {
     if (!NONE_PARAM.has(item.fn)) return false;
@@ -70,13 +116,18 @@ const compareSuffix = (suffix: MagicSuffix): MagicSuffix => {
 
 
 const whereText = (item: WhereItem, pos: QueryPos, err: string[]) => {
-    if (NullCondition(item, pos)) return;
     const compare = compareSuffix(item.fn);
     if (compare != null) {
         pos.SQL.push(`${item.column} ${compare} $${pos.NUM}`);
         pos.PARAM.push(item.value)
         pos.NUM++;
         return;
+    }
+    if (InFn.has(item.fn)) {
+        pos.SQL.push(`${item.column} ${InFn.get(item.fn)} ANY($${pos.NUM}::text[])`);
+        pos.PARAM.push(inString(item.value + ''))
+        pos.NUM++;
+        return
     }
     switch (item.fn) {
         case 'Like':
@@ -100,8 +151,8 @@ const whereText = (item: WhereItem, pos: QueryPos, err: string[]) => {
     }
 }
 
+const InFn = new Map<MagicSuffix, MagicSuffix>([['In', '='], ['NotIn', '!=']]);
 const whereNumber = (item: WhereItem, pos: QueryPos, err: string[]) => {
-    if (NullCondition(item, pos)) return;
     const compare = compareSuffix(item.fn);
     if (compare != null) {
         try {
@@ -113,6 +164,12 @@ const whereNumber = (item: WhereItem, pos: QueryPos, err: string[]) => {
             err.push(`${item.column}/ type : Number value is not a Number ${item.value}`)
         }
         return;
+    }
+    if (InFn.has(item.fn)) {
+        pos.SQL.push(`${item.column} ${InFn.get(item.fn)} ANY($${pos.NUM}::int[])`);
+        pos.PARAM.push(inNumber(item.value + ''))
+        pos.NUM++;
+        return
     }
     if (item.fn == 'Bt') {
         let range = betweenNumber(item.value + '');
@@ -133,7 +190,6 @@ const whereNumber = (item: WhereItem, pos: QueryPos, err: string[]) => {
 
 
 const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
-    if (NullCondition(item, pos)) return;
     let val: Dayjs = null;
     if (item.fn != 'Bt') {
         if (item.value == '' || item.value == null) {
@@ -217,7 +273,6 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
 }
 
 const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
-    if (NullCondition(item, pos)) return;
     let bool = boolValue(item.value)
     switch (item.fn) {
         case 'IsNull':
@@ -245,10 +300,8 @@ const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
 
 const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
     let item = { ...whereItem, fn: whereItem.fn ? whereItem.fn : '=', type: whereItem.type ? whereItem.type : 'string' }
-    if (!isSupport(item.type, item.fn)) {
-        err.push(`${item.column}/(${item.type}) not support method ${item.fn}`)
-        return;
-    }
+    if (!isSupport(item, err)) return;
+    if (NullCondition(item, pos)) return;
     switch (item.type) {
         case 'number':
             whereNumber(item, pos, err);

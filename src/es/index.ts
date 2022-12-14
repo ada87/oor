@@ -7,8 +7,9 @@ import { Settings, setup as _setup } from '../base/Util'
 export { UType } from '../base/Util';
 export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
 export { Static } from '@sinclair/typebox';
-export { View } from './entity/View'
-export { Table } from './entity/Table'
+export { View } from './basic/View'
+export { Table } from './basic/Table'
+export { FlatView } from './basic/FlatView'
 export type ESSettings = Omit<Settings, 'provider'> & {
     provider: ClientOptions | (() => Client)
 };

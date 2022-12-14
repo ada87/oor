@@ -129,12 +129,7 @@ export const setup = (settings: PGSettings, cb?: (err: Error) => void): Pool => 
         return settings.provider() as Pool;
     } else {
         const pool = new Pool(settings.provider);
-        if (cb) {
-            pool.connect(cb);
-        } else {
-            pool.connect()
-        }
-
+        pool.connect(cb);
         _setup({ ...settings, provider: ['pg', () => pool], })
         return pool;
     }

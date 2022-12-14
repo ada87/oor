@@ -1,16 +1,21 @@
 import { test as jtest, Test, TestContext } from '@japa/runner';
 import { Client } from 'pg';
+import type { ClientConfig } from 'pg';
 import { TestExecutor } from '@japa/core';
 import { setup, Table, UType, Static } from '../pg/index';
 import * as _ from 'lodash';
 
-
-export var pg: Client = new Client({
+const config: ClientConfig = {
     host: process.env.PG_HOST || 'pgserver',
     port: parseInt(process.env.PG_PORT || '5432'),
     user: process.env.PG_USER || 'postgres',
     database: process.env.PG_DB || 'oor',
-});
+    password: process.env.PG_PASS || undefined,
+};
+
+
+export var pg: Client = new Client(config);
+
 setup({
     provider: () => pg,
     strict: true,

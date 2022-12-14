@@ -1,60 +1,13 @@
-import { MagicSuffix, SUFFIX, WhereItem, FieldType } from '../base/types';
+import { MagicSuffix, SUFFIX, WhereItem, FieldType, Support } from '../base/types';
 import { SqlWhere } from '../base/sql'
 import _ from 'lodash';
 // import { Assert } from '@japa/assert'
 
 
-type Support = {
-    string: boolean,
-    number: boolean,
-    date: boolean,
-    boolean: boolean
-}
 
 /**
  * Where Coverage Tester
 */
-export const SUFFIX_COVER_TEST: Record<MagicSuffix, Support> = {
-
-    'Min': { string: true, number: true, date: true, boolean: true },
-    'MinThan': { string: true, number: true, date: true, boolean: false },
-    'Max': { string: true, number: true, date: true, boolean: true },
-    'MaxThan': { string: true, number: true, date: true, boolean: false },
-
-    'MinH': { string: false, number: false, date: true, boolean: false },
-    'MinD': { string: false, number: false, date: true, boolean: false },
-    'MinM': { string: false, number: false, date: true, boolean: false },
-    'MaxH': { string: false, number: false, date: true, boolean: false },
-    'MaxD': { string: false, number: false, date: true, boolean: false },
-    'MaxM': { string: false, number: false, date: true, boolean: false },
-
-    'Like': { string: true, number: false, date: false, boolean: false },
-    'Likel': { string: true, number: false, date: false, boolean: false },
-    'Liker': { string: true, number: false, date: false, boolean: false },
-
-    'Bt': { string: false, number: true, date: true, boolean: false },
-    'BtD': { string: false, number: false, date: true, boolean: false },
-    'BtY': { string: false, number: false, date: true, boolean: false },
-    'BtM': { string: false, number: false, date: true, boolean: false },
-
-    'Not': { string: true, number: true, date: true, boolean: true },
-
-    'IsNull': { string: true, number: true, date: true, boolean: true },
-    'NotNull': { string: true, number: true, date: true, boolean: true },
-
-    'IsDistinct': { string: true, number: true, date: false, boolean: false },
-    'NotDistinct': { string: true, number: true, date: false, boolean: false },
-
-    '>': { string: true, number: true, date: true, boolean: true },
-    '>=': { string: true, number: true, date: true, boolean: false },
-    '<': { string: true, number: true, date: true, boolean: true },
-    '<=': { string: true, number: true, date: true, boolean: false },
-    '=': { string: true, number: true, date: true, boolean: true },
-    '!=': { string: true, number: true, date: true, boolean: true },
-    '<>': { string: true, number: true, date: true, boolean: true },
-
-    // 'In': { string: true, number: true, date: false, boolean: false },
-}
 
 const randomBt = (type: FieldType): string => {
     if (type == 'date') {
@@ -126,13 +79,13 @@ ${JSON.stringify(item)} >>>>>>
 }
 
 
-export const isCoverOrCoverError = (where: SqlWhere) => {
+export const isCoverOrCoverError = (where: SqlWhere, SUPPORTS: Record<MagicSuffix, Support>) => {
 
     // validateItem(where, 'boolean', 'Like', false)
     // return
     for (let suffix of SUFFIX) {
         for (let type of TYPES) {
-            const isSupport = SUFFIX_COVER_TEST[suffix][type];
+            const isSupport = SUPPORTS[suffix][type];
             validateItem(where, type, suffix, isSupport)
         }
 

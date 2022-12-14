@@ -7,14 +7,13 @@ import _ from 'lodash';
 import { PAGE_SIZE } from '../../base/Util';
 import { BaseQuery } from './BaseQuery'
 import { queryToCondition, getFieldType } from '../../base/QueryBuilder';
-// import { builder, ES_MAX_SIZE, } from '../query/builder'
-import type { OrderByLimit } from '../query/define';
-import { executor } from '../query/executor';
-import { where, fixWhere, buildSearch } from '../query/dsl';
+import type { OrderByLimit } from './define';
+import { executor } from './executor';
+import { where, fixWhere, buildSearch } from './dsl';
 
 const ES_MAX_SIZE = 10000;
 
-export class View<T extends TObject> extends BaseQuery<T> {
+export class View<T extends TObject> extends BaseQuery {
 
     protected _index: string;
 
@@ -59,7 +58,7 @@ export class View<T extends TObject> extends BaseQuery<T> {
                 WHERE.push({ field: column, value: properties.delMark, condition: '!=' });
             }
             if (properties.ignore) {
-                this._CONFIG.fields_exclude.push(field)
+                this._CONFIG.fields_exclude.push(column)
                 return;
             }
         });

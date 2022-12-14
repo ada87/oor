@@ -1,4 +1,4 @@
-import type { USchema, FieldType, MagicSuffix, DB_TYPE } from './types';
+import type { USchema, MagicSuffix, DB_TYPE } from './types';
 import type { TProperties, TPartial, TObject, StringOptions, StringFormatOption, DateOptions, NumericOptions } from '@sinclair/typebox';
 
 import _ from 'lodash';
@@ -8,17 +8,8 @@ import { Value } from '@sinclair/typebox/value';
 import { setProvider } from './Providers';
 
 
-const SUPPORT_MAP = new Map<FieldType, Set<MagicSuffix>>([
-    ['string', new Set<MagicSuffix>(['Min', 'MinThan', 'Max', 'MaxThan', 'Like', 'Likel', 'Liker', 'Not', 'IsNull', 'NotNull', 'IsDistinct', 'NotDistinct', '>', '>=', '<', '<=', '=', '!=', '<>'])],
-    ['number', new Set<MagicSuffix>(['Min', 'MinThan', 'Max', 'MaxThan', 'Bt', 'Not', 'IsNull', 'NotNull', 'IsDistinct', 'NotDistinct', '>', '>=', '<', '<=', '=', '!=', '<>'])],
-    ['boolean', new Set<MagicSuffix>(['Min', 'Max', 'Not', 'IsNull', 'NotNull', '>', '<', '=', '!=', '<>'])],
-    ['date', new Set<MagicSuffix>(['Min', 'MinThan', 'Max', 'MaxThan', 'MinH', 'MinD', 'MinM', 'MaxH', 'MaxD', 'MaxM', 'Bt', 'BtD', 'BtY', 'BtM', 'Not', 'IsNull', 'NotNull', '>', '>=', '<', '<=', '=', '!=', '<>'])],
-]);
 
-export const isSupport = (type: FieldType, suffix: MagicSuffix) => {
-    let set = SUPPORT_MAP.has(type) ? SUPPORT_MAP.get(type) : SUPPORT_MAP.get('string');
-    return set.has(suffix);
-}
+
 export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull', 'IsDistinct', 'NotDistinct']);
 
 export type Settings = {
@@ -76,7 +67,7 @@ type UDateOptions = USchema & DateOptions & {
 
 var STRICT_QUERY = false;
 var STRICT_ENTITY = false;
-export var ShowSql = (str, param?: any) => { }
+export var ShowSql = null;
 export var PAGE_SIZE = 10;
 
 export const setup = (settings: Settings) => {
@@ -173,8 +164,8 @@ export const betweenNumber = (txt: string): [MagicSuffix, number][] => {
         }
     }
     return result;
-
 }
+
 export const betweenDate = (txt: string): [MagicSuffix, Date][] => {
     let range = between(txt);
     if (range == null) return null;
@@ -188,6 +179,22 @@ export const betweenDate = (txt: string): [MagicSuffix, Date][] => {
     }
     return result;
 }
+
+export const inString = (txt: string): string[] => {
+    return txt.split(',').map(_.trim);
+}
+export const inNumber = (txt: string): number[] => {
+    let result = [];
+    txt.split(',').map(item => {
+        try {
+            result.push(parseInt(_.trim(item)));
+        } catch {
+        }
+    })
+    return result;
+}
+
+
 
 
 const BOOLEAN_TEXT_IGNORE = new Set(['', 'null']);

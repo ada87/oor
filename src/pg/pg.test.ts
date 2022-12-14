@@ -25,13 +25,17 @@ test('Test : Query with QuerySchemma', async () => {
         count_: 5,
         order_: 'salary',
         by_: 'desc',
-        nameLike: '陆',
-        sex: false
+        // ageIn: '64,21',
+        nameIn:'秦磊,苏平'
+
+        // nameLike: '陆',
+        // sex: false
     });
     console.log(result);
 
 })
-    .skip()
+    // .skip()
+    // .pin()
     ;
 
 

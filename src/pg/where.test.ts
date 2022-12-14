@@ -75,15 +75,15 @@ test('Test : buildSQL', ({ assert }) => {
 
     ;
 
-test('Test : Suffix Coverage', ({ assert }) => {
-    try {
-        isCoverOrCoverError(where);
-    } catch (e) {
-        console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-        console.log(e)
-    }
-})
-    ;
+// test('Test : Suffix Coverage', ({ assert }) => {
+//     try {
+//         isCoverOrCoverError(where);
+//     } catch (e) {
+//         console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+//         console.log(e)
+//     }
+// })
+//     ;
 
 test('Test : Where', ({ assert }, txt) => {
     const condition: WhereParam = {

@@ -1,12 +1,64 @@
 import type { QueryDslQueryContainer, QueryDslBoolQuery, SearchRequest, Field } from '@elastic/elasticsearch/lib/api/types';
-import _ from 'lodash';
 import type { OrderByLimit } from './define'
-import { WhereParam, WhereItem, WhereCondition, MagicSuffix, FieldType, } from '../../base/types';
-import { throwErr, isSupport, NONE_PARAM, betweenDate, betweenNumber, boolValue } from '../../base/Util';
-import dayjs, { Dayjs } from 'dayjs';
+import type { Dayjs } from 'dayjs';
+
+import _ from 'lodash';
+import { WhereParam, WhereItem, WhereCondition, MagicSuffix, FieldType, Support } from '../../base/types';
+import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../../base/Util';
+import dayjs from 'dayjs';
 
 // https://www.elastic.co/guide/en/elasticsearch/reference/8.5/query-dsl.html
+const SUFFIX_SUPPORTS: Record<MagicSuffix, Support> = {
 
+    'Min': { string: false, number: true, date: true, boolean: true },
+    'MinThan': { string: false, number: true, date: true, boolean: false },
+    'Max': { string: false, number: true, date: true, boolean: true },
+    'MaxThan': { string: false, number: true, date: true, boolean: false },
+
+    'MinH': { string: false, number: false, date: true, boolean: false },
+    'MinD': { string: false, number: false, date: true, boolean: false },
+    'MinM': { string: false, number: false, date: true, boolean: false },
+    'MaxH': { string: false, number: false, date: true, boolean: false },
+    'MaxD': { string: false, number: false, date: true, boolean: false },
+    'MaxM': { string: false, number: false, date: true, boolean: false },
+
+    'Like': { string: true, number: false, date: false, boolean: false },
+    'Likel': { string: true, number: false, date: false, boolean: false },
+    'Liker': { string: true, number: false, date: false, boolean: false },
+
+    'Bt': { string: false, number: true, date: true, boolean: false },
+    'BtD': { string: false, number: false, date: true, boolean: false },
+    'BtY': { string: false, number: false, date: true, boolean: false },
+    'BtM': { string: false, number: false, date: true, boolean: false },
+
+    'Not': { string: true, number: true, date: true, boolean: true },
+
+
+    'In': { string: true, number: true, date: false, boolean: false },
+    'NotIn': { string: true, number: true, date: false, boolean: false },
+
+    'IsNull': { string: true, number: true, date: true, boolean: true },
+    'NotNull': { string: true, number: true, date: true, boolean: true },
+
+    'IsDistinct': { string: false, number: false, date: false, boolean: false },
+    'NotDistinct': { string: false, number: false, date: false, boolean: false },
+
+    '>': { string: false, number: true, date: true, boolean: true },
+    '>=': { string: false, number: true, date: true, boolean: false },
+    '<': { string: false, number: true, date: true, boolean: true },
+    '<=': { string: false, number: true, date: true, boolean: false },
+    '=': { string: true, number: true, date: true, boolean: true },
+    '!=': { string: true, number: true, date: true, boolean: true },
+    '<>': { string: true, number: true, date: true, boolean: true },
+
+}
+
+const isSupport = (item: WhereItem, err: string[]): boolean => {
+    let suffix = SUFFIX_SUPPORTS[item.fn] || SUFFIX_SUPPORTS['='];
+    if (suffix[item.type || 'string']) return true;
+    err.push(`${item.column}/(${item.type}) not support method ${item.fn}`)
+    return false;
+}
 
 type COMPARE = 'lt' | 'lte' | 'gt' | 'gte';
 
@@ -36,17 +88,10 @@ const setRange = (query: QueryDslQueryContainer[], column: string, value: any, c
     }
 }
 
-// ES Will Not Support  IsDistinct / NotDistinct Suffix
-const NotSuppportES = new Set<MagicSuffix>(['IsDistinct', 'NotDistinct']);
 
 const NullCondition = (item: WhereItem, query: QueryDslQueryContainer[], err: string[]): boolean => {
     if (!NONE_PARAM.has(item.fn)) return false;
-    if (NotSuppportES.has(item.fn)) {
-        err.push(`${item.column}/(${item.type}) not support method ${item.fn}`)
-        return true;
-    }
     let bool = boolValue(item.value)
-
     switch (item.fn) {
         case 'IsNull':
             break;
@@ -64,6 +109,12 @@ const NullCondition = (item: WhereItem, query: QueryDslQueryContainer[], err: st
 
 const whereText = (item: WhereItem, query: QueryDslQueryContainer[], err: string[]) => {
     switch (item.fn) {
+        case 'In':
+            query.push({ terms: { [item.column]: inString(item.value + '') } });
+            break;
+        case 'NotIn':
+            query.push({ bool: { must_not: { terms: { [item.column]: inString(item.value + '') } } } as QueryDslBoolQuery })
+            break;
         case 'Not':
             query.push({ bool: { must_not: { term: { [item.column]: item.value + '' } } } as QueryDslBoolQuery })
             break;
@@ -93,6 +144,7 @@ const whereNumber = (item: WhereItem, query: QueryDslQueryContainer[], err: stri
         setRange(query, item.column, value, compare)
         return;
     }
+    // if()
     if (item.fn == 'Bt') {
         let range = betweenNumber(item.value + '');
         range.map(ptn => {
@@ -104,6 +156,12 @@ const whereNumber = (item: WhereItem, query: QueryDslQueryContainer[], err: stri
         return;
     }
     switch (item.fn) {
+        case 'In':
+            query.push({ terms: { [item.column]: inNumber(item.value + '') } });
+            break;
+        case 'NotIn':
+            query.push({ bool: { must_not: { terms: { [item.column]: inNumber(item.value + '') } } } as QueryDslBoolQuery })
+            break;
         case '!=':
         case '<>':
             query.push({ bool: { must_not: { term: { [item.column]: item.value } } } as QueryDslBoolQuery })
@@ -217,10 +275,7 @@ const whereDate = (item: WhereItem, query: QueryDslQueryContainer[], err: string
 
 const ItemToWhere = (whereItem: WhereItem, query: QueryDslQueryContainer[], err: string[]) => {
     let item = { ...whereItem, fn: whereItem.fn ? whereItem.fn : '=', type: whereItem.type ? whereItem.type : 'string' }
-    if (!isSupport(item.type, item.fn) || NotSuppportES.has(item.fn)) {
-        err.push(`${item.column}/(${item.type}) not support method ${item.fn}`)
-        return;
-    }
+    if (!isSupport(item, err)) return;
     if (NullCondition(whereItem, query, err)) return;
     switch (item.type) {
         case 'number':
@@ -298,12 +353,7 @@ export const where = (condition: WhereParam): QueryDslQueryContainer => {
     return { constant_score: { filter: { bool: { filter: query } as QueryDslBoolQuery } } }
 }
 
-// sort: null,
-// mark: null,
-// fields_exclude: [],
-// pageSize: PAGE_SIZE,
-// FIELD_MAP: new Map<string, USchema>(),
-// globalFilter: null as QueryDslBoolQuery,
+
 
 /**
  * Global Filter Must postion on first Arg
@@ -366,4 +416,3 @@ export const buildSearch = (indexName: string, query: QueryDslQueryContainer, or
     param.query = fixQuery(globalFilter, query)
     return param;
 }
-

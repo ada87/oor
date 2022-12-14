@@ -6,7 +6,7 @@ import { setup } from '../../base/Util'
 
 // import { whereByQuery } from './QueryBuilder';
 // import { orderByLimit } from './QueryPagition';
-import { SUFFIX_COVER_TEST, isCoverOrCoverError } from '../../test/Const';
+import { isCoverOrCoverError } from '../../test/Const';
 
 
 test('Test : DSL', ({ }, suf) => {

@@ -20,13 +20,13 @@ export { UType } from '../base/Util';
 export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
 export type { Static } from '@sinclair/typebox';
 
-const PG: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
+const MY: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
 
 
 
 export class View<T extends TObject> extends BaseView<T, Pool> {
     protected _DB_TYPE: DB_TYPE = 'mysql';
-    protected _BUILDER: SqlBuilder = PG;
+    protected _BUILDER: SqlBuilder = MY;
     protected _EXECUTOR: SqlExecutor<T> = executor;
 
     protected init(schema: T, options?: TableOptions) {
@@ -77,7 +77,7 @@ export class View<T extends TObject> extends BaseView<T, Pool> {
 
 export class Table<T extends TObject> extends BaseTable<T, Pool> {
     protected _DB_TYPE: DB_TYPE = 'mysql';
-    protected _BUILDER: SqlBuilder = PG;
+    protected _BUILDER: SqlBuilder = MY;
     protected _EXECUTOR: SqlExecutor<T> = executor;
     protected init(schema: T, options?: TableOptions) {
         let fields_query = [];
@@ -125,11 +125,11 @@ export class Table<T extends TObject> extends BaseTable<T, Pool> {
     // }
 }
 
-export type PGSettings = Omit<Settings, 'provider'> & {
+export type MYSettings = Omit<Settings, 'provider'> & {
     provider: PoolOptions | (() => Pool)
 };
 
-export const setup = (settings: PGSettings, cb?: (err: Error) => void): Pool => {
+export const setup = (settings: MYSettings, cb?: (err: Error) => void): Pool => {
     if (_.isFunction(settings.provider)) {
         _setup({ ...settings, provider: ['mysql', settings.provider], })
         return settings.provider() as Pool;

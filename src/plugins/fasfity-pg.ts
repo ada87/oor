@@ -9,7 +9,7 @@ import { setup, PGSettings } from '../pg/index'
 const OOR_FASTIFY_PG: FastifyPluginCallback<PGSettings> = (fastify: FastifyInstance, options: PGSettings, next) => {
     let pool = setup(options, next);
     fastify.addHook('onClose', () => pool.end())
-    fastify.decorate('oor', pool);
+    fastify.decorate('opg', pool);
     pool.connect(next)
 }
 

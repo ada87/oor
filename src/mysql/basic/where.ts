@@ -8,9 +8,11 @@ import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, 
 import dayjs from 'dayjs';
 
 
-type QueryPos = { SQL: string[]; PARAM: any[], NUM: number; }
-
-// https://www.postgresql.org/docs/15/queries-table-expressions.html
+type QueryPos = { SQL: string[]; PARAM: any[], }
+// https://dev.mysql.com/doc/refman/8.0/en/data-types.html
+// https://dev.mysql.com/doc/refman/8.0/en/expressions.html
+// https://dev.mysql.com/doc/refman/8.0/en/functions.html
+// https://dev.mysql.com/doc/refman/8.0/en/where-optimization.html
 const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
 
     'Min': { string: true, number: true, date: true, boolean: true },
@@ -35,7 +37,7 @@ const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
     'BtM': { string: false, number: false, date: true, boolean: false },
 
     'Not': { string: true, number: true, date: true, boolean: true },
-    
+
     'In': { string: true, number: true, date: false, boolean: false },
     'NotIn': { string: true, number: true, date: false, boolean: false },
 
@@ -119,32 +121,30 @@ const compareSuffix = (suffix: MagicSuffix): MagicSuffix => {
 const whereText = (item: WhereItem, pos: QueryPos, err: string[]) => {
     const compare = compareSuffix(item.fn);
     if (compare != null) {
-        pos.SQL.push(`${item.column} ${compare} $${pos.NUM}`);
+        pos.SQL.push(`${item.column} ${compare} ?`);
         pos.PARAM.push(item.value)
-        pos.NUM++;
+        // pos.NUM++;
         return;
     }
     if (InFn.has(item.fn)) {
-        pos.SQL.push(`${item.column} ${InFn.get(item.fn)} ANY($${pos.NUM}::text[])`);
+        pos.SQL.push(`${item.column} ${InFn.get(item.fn)} ANY(?::text[])`);
         pos.PARAM.push(inString(item.value + ''))
-        pos.NUM++;
+        // pos.NUM++;
         return
     }
     switch (item.fn) {
         case 'Like':
-            pos.SQL.push(`${item.column} LIKE $${pos.NUM}`);
+            pos.SQL.push(`${item.column} LIKE ?`);
             pos.PARAM.push('%' + item.value + '%')
-            pos.NUM++;
             return;
         case 'Likel':
-            pos.SQL.push(`${item.column} LIKE $${pos.NUM}`);
+            pos.SQL.push(`${item.column} LIKE ?`);
             pos.PARAM.push(item.value + '%')
-            pos.NUM++;
+
             return;
         case 'Liker':
-            pos.SQL.push(`${item.column} LIKE $${pos.NUM}`);
+            pos.SQL.push(`${item.column} LIKE ?`);
             pos.PARAM.push('%' + item.value)
-            pos.NUM++;
             return;
         default:
             err.push(`${item.column}/ type : String not support method ${item.fn}`)
@@ -158,18 +158,16 @@ const whereNumber = (item: WhereItem, pos: QueryPos, err: string[]) => {
     if (compare != null) {
         try {
             let val = _.isNumber(item.value) ? item.value : parseFloat(item.value as string);
-            pos.SQL.push(`${item.column} ${compare} $${pos.NUM}`);
+            pos.SQL.push(`${item.column} ${compare} ?`);
             pos.PARAM.push(val)
-            pos.NUM++;
         } catch {
             err.push(`${item.column}/ type : Number value is not a Number ${item.value}`)
         }
         return;
     }
     if (InFn.has(item.fn)) {
-        pos.SQL.push(`${item.column} ${InFn.get(item.fn)} ANY($${pos.NUM}::int[])`);
+        pos.SQL.push(`${item.column} ${InFn.get(item.fn)} ANY(?::int[])`);
         pos.PARAM.push(inNumber(item.value + ''))
-        pos.NUM++;
         return
     }
     if (item.fn == 'Bt') {
@@ -179,9 +177,8 @@ const whereNumber = (item: WhereItem, pos: QueryPos, err: string[]) => {
             return;
         }
         range.map(oper => {
-            pos.SQL.push(`${item.column} ${oper[0]} $${pos.NUM}`)
+            pos.SQL.push(`${item.column} ${oper[0]} ?`)
             pos.PARAM.push(oper[1])
-            pos.NUM++;
         })
         return;
     }
@@ -225,9 +222,8 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
     }
     const compare = compareSuffix(item.fn);
     if (compare != null) {
-        pos.SQL.push(`${item.column} ${compare} $${pos.NUM}`);
+        pos.SQL.push(`${item.column} ${compare} ?`);
         pos.PARAM.push(val.toDate())
-        pos.NUM++;
         return;
     }
     let start = null, end = null;
@@ -252,9 +248,8 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
                 return;
             }
             range.map(oper => {
-                pos.SQL.push(`${item.column} ${oper[0]} $${pos.NUM}`)
+                pos.SQL.push(`${item.column} ${oper[0]} ?`)
                 pos.PARAM.push(oper[1])
-                pos.NUM++;
             })
             return;
     }
@@ -262,12 +257,10 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
         err.push(`${item.column}/(Date) : not support method ${item.fn}`);
         return;
     }
-    pos.SQL.push(`${item.column} >= $${pos.NUM}`)
+    pos.SQL.push(`${item.column} >= ?`)
     pos.PARAM.push(start)
-    pos.NUM++;
-    pos.SQL.push(`${item.column} <= $${pos.NUM}`)
+    pos.SQL.push(`${item.column} <= ?`)
     pos.PARAM.push(end)
-    pos.NUM++;
 }
 
 const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
@@ -326,11 +319,9 @@ const ConditionToWhere = (condition: WhereCondition, pos: QueryPos, err: string[
             let _pos: QueryPos = {
                 SQL: [],
                 PARAM: [],
-                NUM: pos.NUM
             }
             ConditionToWhere(group, _pos, err);
             if (_pos.SQL.length) {
-                if (_pos.NUM > pos.NUM) pos.NUM = _pos.NUM;
                 for (let param of _pos.PARAM) pos.PARAM.push(param);
                 // let link = group.link == 'NOT' ? 'AND NOT' : group.link;
                 pos.SQL.push('(' + _pos.SQL.join(' ' + group.link + ' ') + ')')
@@ -342,8 +333,8 @@ const ConditionToWhere = (condition: WhereCondition, pos: QueryPos, err: string[
 };
 
 
-export const where: SqlWhere = (condition: WhereParam, startIdx = 1): [string, any[]] => {
-    const pos: QueryPos = { SQL: [], PARAM: [], NUM: startIdx };
+export const where: SqlWhere = (condition: WhereParam): [string, any[]] => {
+    const pos: QueryPos = { SQL: [], PARAM: [] };
     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
     let err: string[] = [];
     ConditionToWhere(root, pos, err);

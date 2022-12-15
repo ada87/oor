@@ -7,15 +7,17 @@ import _ from 'lodash';
 import { PAGE_SIZE } from '../../base/Util';
 import { BaseQuery } from './BaseQuery'
 import { queryToCondition, getFieldType } from '../../base/QueryBuilder';
-import type { OrderByLimit } from './define';
-import { fxecutor as executor } from './executor';
+import type { OrderByLimit, ESQuery } from './define';
+
 import { where, fixWhere, buildSearch } from './dsl';
 
 const ES_MAX_SIZE = 10000;
 
-export class FlatView<T extends TObject> extends BaseQuery {
+export abstract class BaseView<T extends TObject, ROW> extends BaseQuery {
 
     protected _index: string;
+
+    protected abstract _EXECUTOR: ESQuery<T, ROW>
 
     private _F2C = new Map<string, string>(); // Field To Column
     private _C2F = new Map<string, string>(); // Column To Field
@@ -89,25 +91,32 @@ export class FlatView<T extends TObject> extends BaseQuery {
 
     };
 
-
-    all(): Promise<Static<T>[]> {
+    /**
+     * @returns return Type dependson Constructor and Entity :
+     *    Use View / Table ： Return Array< SearchHit<Entity> >
+     *    Use FlatView ： Return Array< Entity >
+    */
+    all(): Promise<ROW[]> {
         const orderBy = this.orderByLimit({ start_: 0, count_: ES_MAX_SIZE });
         return this._query(null, orderBy)
     }
 
 
-    private async _query(param: QueryDslQueryContainer, orderBy: OrderByLimit): Promise<Static<T>[]> {
-        const { _CONFIG: { fields_exclude, globalFilter } } = this;
+    private async _query(param: QueryDslQueryContainer, orderBy: OrderByLimit): Promise<ROW[]> {
+        const { _EXECUTOR, _CONFIG: { fields_exclude, globalFilter } } = this;
         const request = buildSearch(this._index, param, orderBy, fields_exclude, globalFilter)
-        return executor.query(this.getClient(), request)
+        return _EXECUTOR.query(this.getClient(), request)
     }
 
 
     /**
      * @see WhereCondition
-     * Use a WhereCondition Query Data 
+     *    Use a WhereCondition Query Data 
+     * @returns return Type dependson Constructor and Entity :
+     *    Use View / Table ： Return Array< SearchHit<Entity> >
+     *    Use FlatView ： Return Array< Entity >
     */
-    queryByCondition(condition?: WhereParam, query?: QuerySchema): Promise<Static<T>[]> {
+    queryByCondition(condition?: WhereParam, query?: QuerySchema): Promise<ROW[]> {
         const { _CONFIG: { pageSize } } = this;
         const param = where(condition);
         let orderBy: OrderByLimit;
@@ -122,9 +131,12 @@ export class FlatView<T extends TObject> extends BaseQuery {
 
     /**
      * @see QuerySchema
-     * Use a QuerySchema Query Data 
+     *      Use a QuerySchema Query Data 
+     * @returns return Type dependson Constructor and Entity :
+     *    Use View / Table ： Return Array< SearchHit<Entity> >
+     *    Use FlatView ： Return Array< Entity >
     */
-    query(query?: QuerySchema): Promise<Static<T>[]> {
+    query(query?: QuerySchema): Promise<ROW[]> {
         const { _QUERY_CACHE, _CONFIG: { FIELD_MAP, } } = this;
         const condition = queryToCondition(query, FIELD_MAP, _QUERY_CACHE);
         return this.queryByCondition(condition, query)
@@ -141,25 +153,43 @@ export class FlatView<T extends TObject> extends BaseQuery {
 
     /**
      * @see QuerySchema
-     * Use a QuerySchema Query Data With Page
-     * this will return a object with {total:number,list:any[]}
+     *    Use a QuerySchema Query Data With Page
+     *    this will return a object with {total:number,list:any[]}
+     * @returns return Type dependson Constructor and Entity :
+     *    property : list
+     *    Use View / Table ： Return Array < SearchHit <Entity> >
+     *    Use FlatView ： Return Array < Entity >
     */
-    async queryPager(query?: QuerySchema): Promise<{ total: number, list: Static<T>[] }> {
-
-        const { _QUERY_CACHE, _CONFIG: { FIELD_MAP, fields_exclude, globalFilter } } = this;
+    async queryPager(query?: QuerySchema): Promise<{ total: number, list: ROW[] }> {
+        const { _EXECUTOR, _QUERY_CACHE, _CONFIG: { FIELD_MAP, fields_exclude, globalFilter } } = this;
         const condition = queryToCondition(query, FIELD_MAP, _QUERY_CACHE);
         const orderBy = this.orderByLimit(query);
         const param = where(condition);
         const request = buildSearch(this._index, param, orderBy, fields_exclude, globalFilter);
-        return executor.queryPager(this.getClient(), request)
+        return _EXECUTOR.queryPager(this.getClient(), request)
+    }
+
+    protected getField(key: string) {
+        const { _F2C, _C2F } = this;
+        let field = _F2C.has(key) ? key : (_C2F.has(key) ? _C2F.get(key) : null);
+        if (field == null) {
+            throw new Error(`Index ${this._index} do not has field ${field}`);
+        }
+        return field;
+    }
+
+    protected getColumn(key: string) {
+        const { _F2C, _C2F } = this;
+        let column = _F2C.has(key) ? _F2C.get(key) : (_C2F.has(key) ? key : null);
+        if (column == null) {
+            throw new Error(`Index ${this._index} do not has field ${key}`);
+        }
+        return column;
     }
 
     protected byField(field: string, value?: string | number | boolean): QueryDslQueryContainer {
-        const { _CONFIG: { globalFilter, FIELD_MAP }, _F2C, _C2F } = this;
-        let column = _F2C.has(field) ? _F2C.get(field) : (_C2F.has(field) ? field : null);
-        if (column == null) {
-            throw new Error(`Index ${this._index} do not has field ${field}`);
-        }
+        const { _CONFIG: { FIELD_MAP }, _C2F } = this;
+        let column = this.getColumn(field);
         let schema = FIELD_MAP.get(_C2F.get(column));
         const type = getFieldType(schema);
         return where([{ column, type, value }]);
@@ -171,7 +201,7 @@ export class FlatView<T extends TObject> extends BaseQuery {
      * This method will return All column. Even if the IGNORE column.
     */
     getById(id: string): Promise<Static<T>> {
-        return executor.getById(this.getClient(), this._index, id);
+        return this._EXECUTOR.getById(this.getClient(), this._index, id);
     }
     /**
      * Get A record form Table / View By Specify Field = value.
@@ -179,23 +209,24 @@ export class FlatView<T extends TObject> extends BaseQuery {
      * Note : If result has multi records , return the first row
      *        Want return all records?  use `queryByField`
     */
-    getByField(field: string, value: string | number): Promise<Static<T>> {
-        const { _CONFIG: { globalFilter, } } = this;
+    getByField(field: string, value: string | number): Promise<ROW> {
+        const { _EXECUTOR, _CONFIG: { globalFilter, } } = this;
         const param = this.byField(field, value);
         const request = buildSearch(this._index, param, null, [], globalFilter)
-        return executor.getOne(this.getClient(), request);
+        return _EXECUTOR.getOne(this.getClient(), request);
     }
 
     /**
      * Get records form Table / View By Specify Property = value.
     */
-    queryByField(field: string, value?: string | number | boolean): Promise<Static<T>[]> {
+    queryByField(field: string, value?: string | number | boolean): Promise<ROW[]> {
         const param = this.byField(field, value);
         const orderBy = this.orderByLimit();
         return this._query(param, orderBy)
     }
 
 
+    //
     private orderByLimit(query?: QuerySchema): OrderByLimit {
         const { _CONFIG: { sort, pageSize, } } = this;
         let orderBy: OrderByLimit = {}
@@ -208,8 +239,7 @@ export class FlatView<T extends TObject> extends BaseQuery {
         orderBy.from = query.start_ || 0;
         orderBy.size = query.count_ || pageSize;
         if (this._F2C.has(query.order_)) {
-            let by = _.trim(query.by_) == 'asc' ? 'asc' : 'desc';
-            orderBy.sort = `${this._F2C.get(query.order_)}:${by}`
+            orderBy.sort = { [this._F2C.get(query.order_)]: _.trim(query.by_) == 'asc' ? 'asc' : 'desc' }
         }
         return orderBy
 

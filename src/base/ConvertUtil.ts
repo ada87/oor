@@ -1,9 +1,12 @@
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
+
 dayjs.extend(utc)
 dayjs.extend(timezone)
+
+const DEFAULT_TIMEZONE = dayjs.tz.guess();
 
 // export const tz=>{}
 // https://day.js.org/docs/en/display/as-iso-string
@@ -15,17 +18,18 @@ dayjs.extend(timezone)
 // https://stackoverflow.com/questions/58847869/utc-vs-iso-format-for-time
 
 
-
-// 'Etc/GMT+12',
-// 'America/Mexico_City',
-// 'Asia/Shanghai'
 const TZ_MAP = new Map<string, string>([
     ['Etc/GMT+12', 'YYYY/MM/DD HH:mm:ss'],
     ['America/Mexico_City', 'MM/DD/YYYY HH:mm:ss'],
     ['Asia/Shanghai', 'YYYY-MM-DD HH:mm:ss'],
 ]);
 
-export const formatDate = (date: string | Date | number, timezone: string): string => {
-    return dayjs(date).tz(timezone).format(TZ_MAP.get(timezone))
 
+export const setFormat = (timezone: string, formater: string) => {
+    TZ_MAP.set(timezone, formater)
+}
+
+// 
+export const convertDate = (date: string | Date | number | Dayjs, timezone: string = DEFAULT_TIMEZONE): string => {
+    return dayjs(date).tz(timezone).format(TZ_MAP.get(timezone))
 }

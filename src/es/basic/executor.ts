@@ -1,13 +1,12 @@
 import type { Client, } from '@elastic/elasticsearch';
-import type { SearchRequest, SearchHit, Field, QueryDslQueryContainer, IndexRequest, UpdateRequest, UpdateByQueryRequest, Script, DeleteRequest, DeleteByQueryRequest } from '@elastic/elasticsearch/lib/api/types';
-import type { ESExecutor, FlatExecutor } from './define';
-
+import type { SearchRequest, SearchHit, Field, QueryDslQueryContainer, IndexRequest, UpdateRequest, Script } from '@elastic/elasticsearch/lib/api/types';
+import type { ESQuery, ESAction } from './define';
 import _ from 'lodash';
 import { ShowSql } from '../../base/Util';
 
 
-const logSearch = (request: SearchRequest) => {
 
+const logSearch = (request: SearchRequest) => {
     if (ShowSql == null) return
     let url = ['POST /', request.index, '/_search'];
     if (request._source_excludes && request._source_excludes.length) {
@@ -22,7 +21,12 @@ const logExecuer = (method: string, url: string, param?: any) => {
     return ShowSql(`${method} ${url} ${param != null ? JSON.stringify(param) : ''}`);
 }
 
-export const executor: ESExecutor<any> = {
+
+
+
+
+
+export const querys: ESQuery<any, SearchHit<any>> = {
 
     query: async (client: Client, request: SearchRequest): Promise<SearchHit<any>[]> => {
         logSearch(request);
@@ -40,22 +44,6 @@ export const executor: ESExecutor<any> = {
             total = result.hits.total.value;
         }
         return { total, list: result.hits.hits };
-    },
-
-
-
-    add: async (client: Client, index: string, doc: any): Promise<any> => {
-        logExecuer('POST', '/' + index + '/_doc', doc);
-        const result = await client.index({ op_type: 'create', index, document: doc })
-        if (result.result == 'created') {
-            return {
-                _id: result._id,
-                _index: result._index,
-                _version: result._version,
-                _source: doc
-            };
-        }
-        throw new Error();
     },
 
     getById: async (client: Client, index: string, id: string): Promise<any> => {
@@ -77,6 +65,45 @@ export const executor: ESExecutor<any> = {
         return null;
     },
 
+
+
+
+
+}
+
+export const flatQuerys: ESQuery<any> = {
+
+    ...querys,
+
+    query: async (client: Client, request: SearchRequest): Promise<any[]> => {
+        const result = await querys.query(client, request);
+        return result.map(item => item._source);
+    },
+
+    queryPager: async (client: Client, request: SearchRequest): Promise<{ total: number, list: any[] }> => {
+        const result = await querys.queryPager(client, request);
+        return { total: result.total, list: result.list.map(item => item._source) };
+    },
+
+}
+
+
+
+export const actions: ESAction<any> = {
+
+    add: async (client: Client, index: string, doc: any): Promise<any> => {
+        logExecuer('POST', '/' + index + '/_doc', doc);
+        const result = await client.index({ op_type: 'create', index, document: doc })
+        if (result.result == 'created') {
+            return {
+                _id: result._id,
+                _index: result._index,
+                _version: result._version,
+                _source: doc
+            };
+        }
+        throw new Error();
+    },
 
     updateById: async (client: Client, index: string, id: string, entity: any, useIndex: boolean = false): Promise<number> => {
         if (useIndex) {
@@ -109,23 +136,5 @@ export const executor: ESExecutor<any> = {
         const result = await client.deleteByQuery({ index, query, })
         return result.deleted;
     },
-
-
-
 }
 
-export const fxecutor: FlatExecutor<any> = {
-
-    ...executor,
-
-    query: async (client: Client, request: SearchRequest): Promise<any[]> => {
-        const result = await executor.query(client, request);
-        return result.map(item => item._source);
-    },
-
-    queryPager: async (client: Client, request: SearchRequest): Promise<{ total: number, list: any[] }> => {
-        const result = await executor.queryPager(client, request);
-        return { total: result.total, list: result.list.map(item => item._source) };
-    },
-
-}

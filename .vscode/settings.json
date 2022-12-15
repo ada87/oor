@@ -4,7 +4,6 @@
         "build": true,
         "oor.svg": true,
         "script.ts": true,
-        "src/mysql": true,
         "src/test": true,
         "test.sql.7z": true,
         "tsconfig.json": true

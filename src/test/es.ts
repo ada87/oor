@@ -36,7 +36,7 @@ export const UserSchema = UType.Table({
 // export type User = Static<typeof UserSchema>;
 
 // Line 4 : Build a Table, it's ok for all
-export const User = new Table('user', UserSchema, {
+export const User = new FlatView('user', UserSchema, {
     key: 'register_date',
     // globalCondition: [{ fn: '>', column: 'age', value: 2 }]
 });

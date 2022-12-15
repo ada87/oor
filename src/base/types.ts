@@ -45,7 +45,6 @@ export type WhereItem = WhereDefine & {
 
 export type WhereCondition = {
     link: 'AND' | 'OR'
-    // | 'NOT', // 去掉 Not  的支持
     items: (WhereItem | WhereCondition)[]
 }
 

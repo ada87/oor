@@ -1,10 +1,10 @@
-// Not Now!
 // I was still thing is correct provide this feature ? 
+// import type { Pool, PoolClient } from 'pg'
 
-// import type { ClientBase } from 'pg'
-// const transactionFailedSymbol = Symbol('transactionFailed')
+// type TX = (conn: PoolClient, commit?: (err, res) => void) => (void | Promise<void>);
 
-// function transactionUtil(db: ClientBase, fn, cb) {
+// const WarpTransact = (db: Pool, fn: TX, cb: Function) => {
+
 //     db.connect((err, client, done) => {
 //         if (err) return cb(err)
 
@@ -39,28 +39,9 @@
 //     })
 // }
 
-// function transact(fn, cb) {
-//     if (cb && typeof cb === 'function') {
-//         return transactionUtil(this, fn, cb)
-//     }
+// const tx = (fn: TX) => new Promise((resolve, reject) => WarpTransact(this, fn, (err, res) => {
+//     if (err) return reject(err)
+//     return resolve(res)
+// }))
 
-//     return new Promise((resolve, reject) => {
-//         transactionUtil(this, fn, function (err, res) {
-//             if (err) return reject(err)
 
-//             return resolve(res)
-//         })
-//     })
-// }
-
-// function extractRequestClient(req, transact) {
-//     if (typeof transact !== 'string') {
-//         return req.pg
-//     }
-
-//     const requestClient = req.pg[transact]
-//     if (!requestClient) {
-//         throw new Error(`request client '${transact}' does not exist`)
-//     }
-//     return requestClient
-// }

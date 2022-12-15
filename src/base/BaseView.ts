@@ -55,7 +55,6 @@ export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
         pageSize: PAGE_SIZE,
         FIELD_MAP: new Map<string, USchema>(),
         WHERE_FIX: ['', ' WHERE '] as [string, string],
-        // globalCondition: [] as WhereItem[]
     }
 
     protected _QUERY_CACHE = new Map<string, WhereDefine>();
@@ -70,11 +69,9 @@ export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
     constructor(tableName: string, schema: T, options?: TableOptions) {
         super();
         this._table = tableName;
-        // this._table = DEFAULT_SCHEMA + '.' + tableName;
         let fields_query = [];
         let fields_get = [];
         this._CONFIG.FIELD_MAP = new Map<string, TSchema>();
-        // var WHERE = [];
         _.keys(schema.properties).map(field => {
             let properties = schema.properties[field];
             let column = properties.column || field;
@@ -116,7 +113,7 @@ export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
     };
 
 
-    private async _query(WHERE, PARAM: string[] = [], ORDER_BY = '', LIMIT = ''): Promise<Static<T>[]> {
+    private async _query(WHERE, PARAM: ArrayLike<string> = [], ORDER_BY = '', LIMIT = ''): Promise<Static<T>[]> {
         const { _BUILDER, _EXECUTOR, _table, _CONFIG: { fields_query } } = this;
         const SQL_QUERY = _BUILDER.select(_table, fields_query);
         const SQL = `${SQL_QUERY} ${WHERE} ${ORDER_BY} ${LIMIT}`;
@@ -153,7 +150,7 @@ export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
     /**
      * @see QuerySchema
      * Use a QuerySchema Query Data With Page
-     * this will return a object with {total:number,list:any[]}
+     * this will return a object with {total:number,list:ArrayLike<T>}
     */
     async queryPager(query?: QuerySchema): Promise<{ total: number, list: Static<T>[] }> {
         let total = 0;

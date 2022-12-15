@@ -4,19 +4,18 @@
 [参考文档](https://oor.xdnote.com/)  |  [English](README.md)  | ![npm version](https://img.shields.io/npm/v/oor.svg?style=flat)
 
 
-NodeJs ORM 工具包 , 目前仅支持 `Postgresql`
+NodeJs ORM 工具包 , 目前仅支持 `Postgresql`、 `Elastic Search`
 
 ## 特点
 
 1. 启动快，性能强 🚀。
 2. 强类型 TypeScript，即是 Type，又是 Code，还是 Schema!
-3. 克制且易用的 API。
-4. 内置魔法后缀📍, 极省代码行数。
-5. 支持分页，支持超强条件构造。
-6. 支持查询列过滤，逻辑删除，日期标识等。
-7. 自带插件，工具包（计划中）
-8. Promise
-9. NodeJS 14+
+3. 极简 API。
+4. 独特魔法后缀📍节省时间与代码行数。
+5. 支持 Elastic Search, 提供与 SQL 完全一致的 API！
+6. 业务性支持：分页、查询列过滤，逻辑删除，日期标识等。
+7. Promise
+
 
 
 ## 安装
@@ -31,7 +30,7 @@ npm install --save oor pg                           # PostgreSql
 ```
 
 
-## 设置数据源
+## 设置
 
 
 ```typescript
@@ -42,7 +41,7 @@ pg.connect();
 setup({ provider: () => pg })
 ```
 
-## 定义 Mapping Object & Type & Schema
+## 定义
 
 ```typescript
 // Line 1 : import oor
@@ -116,3 +115,30 @@ const result = await User.sql(
 );
 console.log(result);
 ```
+
+
+## Elastic Search & MySql
+
+Elastic Search has the same api with postgresql / mysql.  Here is how :
+
+
+```typescript
+// 使用 ES 时，将引入 'oor' 改为 'oor/es'
+import { Table, setup } from 'oor/es';
+import { Client } from '@elastic/elasticsearch';
+setup({
+    // ES 下 provider 设置参数为 ES Client 的构造参数
+    provider: {
+        node: 'https://localhost:9200',
+        auth: { username: 'elastic', password: 'changeme' },
+        tls: { ca: readFileSync('/home/ssh/pki/es_ca.crt'), rejectUnauthorized: false, }
+    },
+    showSQL: console.log
+})
+
+```
+
+一些不同点：
+
+1. Elastic Search 没有 Primary Key, 
+2. 在一些 *{action}ById* 的参数 `id` 指的是 Document 的`_id`， 而非 Source 的 `id` 字段。

@@ -8,7 +8,7 @@ import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, 
 import dayjs from 'dayjs';
 
 // https://www.elastic.co/guide/en/elasticsearch/reference/8.5/query-dsl.html
-const SUFFIX_SUPPORTS: Record<MagicSuffix, Support> = {
+const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
 
     'Min': { string: false, number: true, date: true, boolean: true },
     'MinThan': { string: false, number: true, date: true, boolean: false },
@@ -54,7 +54,7 @@ const SUFFIX_SUPPORTS: Record<MagicSuffix, Support> = {
 }
 
 const isSupport = (item: WhereItem, err: string[]): boolean => {
-    let suffix = SUFFIX_SUPPORTS[item.fn] || SUFFIX_SUPPORTS['='];
+    let suffix = SUFFIX_MATRIX[item.fn] || SUFFIX_MATRIX['='];
     if (suffix[item.type || 'string']) return true;
     err.push(`${item.column}/(${item.type}) not support method ${item.fn}`)
     return false;

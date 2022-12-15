@@ -10,7 +10,8 @@ import dayjs from 'dayjs';
 
 type QueryPos = { SQL: string[]; PARAM: any[], NUM: number; }
 
-const SUFFIX_SUPPORTS: Record<MagicSuffix, Support> = {
+// https://www.postgresql.org/docs/15/queries-table-expressions.html
+const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
 
     'Min': { string: true, number: true, date: true, boolean: true },
     'MinThan': { string: true, number: true, date: true, boolean: false },
@@ -34,8 +35,7 @@ const SUFFIX_SUPPORTS: Record<MagicSuffix, Support> = {
     'BtM': { string: false, number: false, date: true, boolean: false },
 
     'Not': { string: true, number: true, date: true, boolean: true },
-
-
+    
     'In': { string: true, number: true, date: false, boolean: false },
     'NotIn': { string: true, number: true, date: false, boolean: false },
 
@@ -56,7 +56,7 @@ const SUFFIX_SUPPORTS: Record<MagicSuffix, Support> = {
 }
 
 const isSupport = (item: WhereItem, err: string[]): boolean => {
-    let suffix = SUFFIX_SUPPORTS[item.fn] || SUFFIX_SUPPORTS['='];
+    let suffix = SUFFIX_MATRIX[item.fn] || SUFFIX_MATRIX['='];
     if (suffix[item.type || 'string']) return true;
     err.push(`${item.column}/(${item.type}) not support method ${item.fn}`)
     return false;
@@ -262,15 +262,12 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
         err.push(`${item.column}/(Date) : not support method ${item.fn}`);
         return;
     }
-
     pos.SQL.push(`${item.column} >= $${pos.NUM}`)
     pos.PARAM.push(start)
     pos.NUM++;
     pos.SQL.push(`${item.column} <= $${pos.NUM}`)
     pos.PARAM.push(end)
     pos.NUM++;
-
-
 }
 
 const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {

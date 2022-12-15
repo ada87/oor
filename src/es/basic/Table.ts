@@ -1,13 +1,14 @@
 import type { TObject, Static } from '@sinclair/typebox';
 import type { QuerySchema, WhereParam } from '../../base/types';
-import type { SearchRequest, SearchResponse, SearchHit, Field, QueryDslBoolQuery, QueryDslQueryContainer, DeleteRequest, UpdateRequest, IndexRequest } from '@elastic/elasticsearch/lib/api/types';
+import type { SearchHit } from '@elastic/elasticsearch/lib/api/types';
+
 import dayjs from 'dayjs';
 import _ from 'lodash';
 import { View } from './View'
 import { getFieldType, queryToCondition } from '../../base/QueryBuilder';
 import { boolValue } from '../../base/Util';
-import { executor } from './executor';
 import { where, fixQuery, buildSearch } from './dsl';
+import { actions } from './executor'
 
 export class Table<T extends TObject> extends View<T> {
 
@@ -42,7 +43,9 @@ export class Table<T extends TObject> extends View<T> {
         return clone;
     }
 
-
+    /**
+     * Delete documents by match {term:{filed,value}}
+    */
     deleteByField(field: string, value: string | number | boolean): Promise<number> {
         const { _CONFIG: { mark, FIELD_MAP } } = this;
         if (mark) return this.updateByField(mark, field, value)
@@ -51,6 +54,9 @@ export class Table<T extends TObject> extends View<T> {
         return this.deleteByCondition([{ column, value }])
     }
 
+    /**
+     * Delete documents by a QueryLike Schema
+    */
     deleteByQuery(query: QuerySchema): Promise<number> {
         const { _CONFIG: { mark } } = this;
         if (mark) return this.updateByQuery(mark, query)
@@ -63,24 +69,30 @@ export class Table<T extends TObject> extends View<T> {
         if (mark) return this.updateByCondition(mark, condition)
         const param = where(condition)
         const query = fixQuery(globalFilter, param)
-        return executor.deleteByQuery(this.getClient(), _index, query);
-    }
-
-
-    deleteById(id: string): Promise<number> {
-        const { _CONFIG: { mark } } = this;
-        if (mark) return this.update(id, { ...mark, })
-        return executor.deleteById(this.getClient(), this._index, id);
+        return actions.deleteByQuery(this.getClient(), _index, query);
     }
 
     /**
-     * Update a record, By Primary Key in the obj
+     * Delete documents by DOCUMENT._id 
+     *  (Not id field in Source) : Source id can use deleteByField('id',xxx);
+    */
+    deleteById(id: string): Promise<number> {
+        const { _CONFIG: { mark } } = this;
+        if (mark) return this.update(id, { ...mark, })
+        return actions.deleteById(this.getClient(), this._index, id);
+    }
+
+    /**
+     * Update a record,  by DOCUMENT._id 
+     * (Not id field in Source) : Source id can use updateByField(doc, 'id',xxx);
     */
     update(id: string, obj: Static<T>, useIndex = false): Promise<number> {
         const entity = this.checkEntity(obj, false);
-        return executor.updateById(this.getClient(), this._index, id, entity, useIndex);
+        return actions.updateById(this.getClient(), this._index, id, entity, useIndex);
     }
-
+    /**
+     * Update documents by match {term:{filed,value}}
+    */
     updateByField(obj: Static<T>, field: string, value: string | number | boolean): Promise<number> {
         let column = this.getColumn(field);
         return this.updateByCondition(obj, [{ column, value, fn: '=' }])
@@ -106,7 +118,7 @@ export class Table<T extends TObject> extends View<T> {
                     scripts.push(`ctx._source.${column}=${parseFloat(entity[key])};`)
                     break;
                 case 'date':
-                    // ISO8601
+                    // ISO 8601
                     scripts.push(`ctx._source.${column}='${dayjs(entity[key]).format()}';`);
                     break;
                 default:
@@ -116,7 +128,7 @@ export class Table<T extends TObject> extends View<T> {
         };
         const param = where(condition);
         const request = buildSearch(_index, param, null, null, globalFilter)
-        return executor.updateByQuery(
+        return actions.updateByQuery(
             this.getClient(),
             this._index,
             request.query,
@@ -132,7 +144,7 @@ export class Table<T extends TObject> extends View<T> {
     */
     insert(object: Static<T>): Promise<SearchHit<Static<T>>> {
         let entity = this.checkEntity(object, true)
-        return executor.add(this.getClient(), this._index, entity);
+        return actions.add(this.getClient(), this._index, entity);
     }
 }
 

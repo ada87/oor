@@ -1,4 +1,4 @@
-import type { WhereParam, QuerySchema } from './types';
+import type { WhereParam, QuerySchema, Sort } from './types';
 
 type Primitive = string | number | boolean | Date | null | undefined;
 export type PlainObject = Record<string, Primitive>;
@@ -12,7 +12,7 @@ export type SqlCount = (table: string) => string;
 export type SqlWhere = (condition: WhereParam, startIdx?: number) => [string, any[]];
 export type SqlByField = (field: string, value: string | number | boolean, startIdx?: number) => [string, any[]];
 
-export type SqlOrderBy = (fieldSet: Map<string, any>, query?: QuerySchema, default_order?: string, default_by?: string) => string;
+export type SqlOrderBy = (ftc: Map<string, string>, ctf: Map<string, string>, query?: QuerySchema, sort?: Sort) => string;
 export type SqlLimit = (query?: QuerySchema, pageSize?: number) => string;
 
 /**

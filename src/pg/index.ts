@@ -28,8 +28,31 @@ export class View<T extends TObject> extends BaseView<T, Connection> {
     protected _BUILDER: SqlBuilder = PG;
     protected _EXECUTOR: SqlExecutor<T> = executor;
 
-    constructor(tableName: string, schema: T, options?: TableOptions) {
-        super(tableName, schema, options);
+    /**
+     * 1. INIT  _CONFIG.fields_query  AND _CONFIG.fields_get
+     * 5. Fix Where Condition (NEED BUILDER?)
+    */
+    protected init(schema: T, options?: TableOptions) {
+        let fields_query = [];
+        let fields_get = [];
+        _.keys(schema.properties).map(field => {
+            let properties = schema.properties[field];
+            if (properties.column) {
+                fields_get.push(`"${properties.column}" AS "${field}"`);
+                if (properties.ignore === true) {
+                    return;
+                }
+                fields_query.push(`"${properties.column}" AS "${field}"`);
+            } else {
+                fields_get.push('"' + field + '"');
+                if (properties.ignore === true) {
+                    return;
+                }
+                fields_query.push('"' + field + '"');
+            }
+        });
+        this._CONFIG.fields_query = fields_query.join(',');
+        this._CONFIG.fields_get = fields_get.join(',')
         const WHERE = [];
         if (this._CONFIG.mark) {
             let column = _.keys(this._CONFIG.mark)[0];
@@ -45,20 +68,41 @@ export class View<T extends TObject> extends BaseView<T, Connection> {
                 }
             })
         }
-        this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, WHERE)
+        this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, WHERE);
     }
+
 
     sql(...args: any[]): Promise<QueryResult<T>> {
         return super.sql(...args);
     }
 }
 
-export class Table<T extends TObject> extends BaseTable<T, Connection> {
+export class Table<T extends TObject> extends BaseTable<T, Connection>{
     protected _DB_TYPE: DB_TYPE = 'pg';
     protected _BUILDER: SqlBuilder = PG;
     protected _EXECUTOR: SqlExecutor<T> = executor;
-    constructor(tableName: string, schema: T, options?: TableOptions) {
-        super(tableName, schema, options);
+
+    protected init(schema: T, options?: TableOptions) {
+        let fields_query = [];
+        let fields_get = [];
+        _.keys(schema.properties).map(field => {
+            let properties = schema.properties[field];
+            if (properties.column) {
+                fields_get.push(`"${properties.column}" AS "${field}"`);
+                if (properties.ignore === true) {
+                    return;
+                }
+                fields_query.push(`"${properties.column}" AS "${field}"`);
+            } else {
+                fields_get.push('"' + field + '"');
+                if (properties.ignore === true) {
+                    return;
+                }
+                fields_query.push('"' + field + '"');
+            }
+        });
+        this._CONFIG.fields_query = fields_query.join(',');
+        this._CONFIG.fields_get = fields_get.join(',')
         const WHERE = [];
         if (this._CONFIG.mark) {
             let column = _.keys(this._CONFIG.mark)[0];
@@ -74,8 +118,9 @@ export class Table<T extends TObject> extends BaseTable<T, Connection> {
                 }
             })
         }
-        this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, WHERE)
+        this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, WHERE);
     }
+
 
     sql(...args: any[]): Promise<QueryResult<T>> {
         return super.sql(...args);

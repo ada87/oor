@@ -1,7 +1,7 @@
 import type { TObject, Static, TSchema } from '@sinclair/typebox';
 import type { QuerySchema, WhereParam, WhereDefine, USchema } from '../../base/types';
 import type { TableOptions } from '../../base/BaseView'
-import type { SearchRequest, SearchResponse, Field, QueryDslQueryContainer } from '@elastic/elasticsearch/lib/api/types';
+import type { SearchRequest, SearchResponse, Field, QueryDslQueryContainer, Sort } from '@elastic/elasticsearch/lib/api/types';
 
 import _ from 'lodash';
 import { PAGE_SIZE } from '../../base/Util';
@@ -23,11 +23,15 @@ export abstract class BaseView<T extends TObject, ROW> extends BaseQuery {
     private _C2F = new Map<string, string>(); // Column To Field
 
     protected _CONFIG = {
-        sort: null,
+
+        timeField: null as string,
+
+        sort: null as Sort,
         mark: null,
-        fields_exclude: [],
         pageSize: PAGE_SIZE,
         FIELD_MAP: new Map<string, USchema>(),
+
+        fields_exclude: [],
         globalFilter: null as QueryDslQueryContainer,
     }
     protected _QUERY_CACHE = new Map<string, WhereDefine>();
@@ -49,33 +53,40 @@ export abstract class BaseView<T extends TObject, ROW> extends BaseQuery {
 
         this._CONFIG.FIELD_MAP = new Map<string, TSchema>();
         var WHERE = [];
+
+        let field: string = null, by = 'desc' as any;
+        let SortGuess: string[] = [];
+
         _.keys(schema.properties).map(field => {
             let properties = schema.properties[field];
             let column = properties.column || field;
             this._F2C.set(field, column);
             this._C2F.set(column, field);
             this._CONFIG.FIELD_MAP.set(field, properties);
+            if (properties.isModify) SortGuess.push(field);
             if (_.has(properties, 'delMark') && properties.delMark != null) {
                 this._CONFIG.mark = { [column]: properties.delMark };
                 WHERE.push({ field: column, value: properties.delMark, condition: '!=' });
             }
-            if (properties.ignore) {
-                this._CONFIG.fields_exclude.push(column)
-                return;
-            }
+            if (properties.ignore) this._CONFIG.fields_exclude.push(column);
         });
-
-        if (options == null) {
-            this._CONFIG.globalFilter = fixWhere(WHERE);
-            return;
-        }
-        if (options.key) {
-            if (this._CONFIG.sort == null) {
-                this._CONFIG.sort = { [options.key]: options.sortBy ? options.sortBy : 'desc' };
+        if (options != null) {
+            if (options.pageSize) this._CONFIG.pageSize = options.pageSize;
+            if (options.key) {
+                this._CONFIG.timeField = options.key;
+                SortGuess.unshift(options.key);
+            }
+            if (options.sort) {
+                field = options.sort.order;
+                by = options.sort.by;
             }
         }
-        if (options.sortOrder) this._CONFIG.sort = { [options.sortOrder]: options.sortBy ? options.sortBy : 'desc' };
-        if (options.pageSize) this._CONFIG.pageSize = options.pageSize;
+
+        if (field == null && SortGuess.length) field = SortGuess[0];
+        if (field != null) {
+            let column = this._F2C.has(field) ? this._F2C.get(field) : (this._C2F.has(field) ? field : null);
+            if (column) this._CONFIG.sort = { [column]: by }
+        }
         if (options.globalCondition && options.globalCondition.length) {
             options.globalCondition.map(item => {
                 let schema = this._CONFIG.FIELD_MAP.get(this._C2F.get(item.column))

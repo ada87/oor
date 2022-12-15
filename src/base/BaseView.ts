@@ -1,10 +1,10 @@
 import type { TObject, Static, TSchema } from '@sinclair/typebox';
-import type { QuerySchema, WhereParam, WhereDefine, USchema, WhereItem } from './types';
+import type { QuerySchema, WhereParam, WhereDefine, USchema, WhereItem, Sort } from './types';
 
 import _ from 'lodash';
 import { PAGE_SIZE } from './Util';
 import { BaseQuery } from './BaseQuery'
-import { queryToCondition, getFieldType } from './QueryBuilder';
+import { queryToCondition } from './QueryBuilder';
 
 
 
@@ -15,13 +15,9 @@ export type TableOptions = {
     */
     key?: string
     /**
-     * The Table's Default Sorting Rule / Order Field
+     * The Table's Default Sorting Rule : Order Field , By Method
     */
-    sortOrder?: string;
-    /**
-     * The Table's Default Sorting Rule / By Method
-    */
-    sortBy?: 'asc' | 'desc';
+    sort?: Sort
     /**
      * 1. PageSize , if not specified , use DEFAULT_PAGESIZE 
      * 2. DEFAULT_PAGESIZE can use setup to specified default : 10
@@ -46,14 +42,15 @@ export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
 
 
     protected _CONFIG = {
-        key: 'id',
-        order: 'id',
-        by: 'desc',
-        fields_query: '*',
-        fields_get: '*',
+
+        key: null as string,
+        sort: null as Sort,
         mark: null,
         pageSize: PAGE_SIZE,
-        FIELD_MAP: new Map<string, USchema>(),
+        FIELD_MAP: null as Map<string, USchema>,
+
+        fields_query: '*',
+        fields_get: '*',
         WHERE_FIX: ['', ' WHERE '] as [string, string],
     }
 
@@ -69,49 +66,44 @@ export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
     constructor(tableName: string, schema: T, options?: TableOptions) {
         super();
         this._table = tableName;
-        let fields_query = [];
-        let fields_get = [];
         this._CONFIG.FIELD_MAP = new Map<string, TSchema>();
+        let SortGuess: string[] = [];
+        let field: string = null, by = 'desc' as any;
         _.keys(schema.properties).map(field => {
             let properties = schema.properties[field];
             let column = properties.column || field;
             this._F2C.set(field, column);
             this._C2F.set(column, field);
             this._CONFIG.FIELD_MAP.set(field, properties);
+            if (column == 'id') SortGuess.push(field);
+            if (properties.isModify) SortGuess.unshift(field);
             if (_.has(properties, 'delMark') && properties.delMark != null) {
                 this._CONFIG.mark = { [column]: properties.delMark };
             }
-            if (properties.column) {
-                fields_get.push(`"${properties.column}" AS "${field}"`);
-                if (properties.ignore === true) {
-                    return;
-                }
-                fields_query.push(`"${properties.column}" AS "${field}"`);
-            } else {
-                fields_get.push('"' + field + '"');
-                if (properties.ignore === true) {
-                    return;
-                }
-                fields_query.push('"' + field + '"');
-            }
         });
-        this._CONFIG.fields_query = fields_query.join(',');
-        this._CONFIG.fields_get = fields_get.join(',')
-        if (options == null) {
-            return;
-        };
-        if (options.sortOrder) this._CONFIG.order = options.sortOrder;
-        if (options.sortBy) this._CONFIG.by = options.sortBy;
-        if (options.pageSize) this._CONFIG.pageSize = options.pageSize;
-        // if (options.globalCondition && options.globalCondition.length) {
-
-        // };
-        if (options.key) {
-            this._CONFIG.key = options.key;
-            this._CONFIG.order = options.key;
+        if (options != null) {
+            if (options.pageSize) this._CONFIG.pageSize = options.pageSize;
+            if (options.key) {
+                this._CONFIG.key = options.key;
+                SortGuess.push(this._CONFIG.key);
+            }
+            if (options.sort) {
+                field = options.sort.order;
+                by = options.sort.by;
+            }
         }
+        if (field == null && SortGuess.length) field = SortGuess[0];
+        if (field != null) {
+            let column = this._F2C.has(field) ? this._F2C.get(field) : (this._C2F.has(field) ? field : null);
+            if (column) {
+                this._CONFIG.sort = { order: column, by }
+            }
+        }
+        this.init(schema, options);
     };
 
+
+    protected abstract init(schema: T, options?: TableOptions): void;
 
     private async _query(WHERE, PARAM: ArrayLike<string> = [], ORDER_BY = '', LIMIT = ''): Promise<Static<T>[]> {
         const { _BUILDER, _EXECUTOR, _table, _CONFIG: { fields_query } } = this;
@@ -224,12 +216,16 @@ export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
     }
 
     private orderByLimit(query?: QuerySchema): [string, string] {
-        const { _BUILDER, _CONFIG: { FIELD_MAP, order, by, pageSize } } = this;
+        const { _BUILDER, _C2F, _F2C, _CONFIG: { sort, pageSize } } = this;
         return [
-            _BUILDER.orderBy(FIELD_MAP, query, order, by),
+            _BUILDER.orderBy(_F2C, _C2F, query, sort),
             _BUILDER.limit(query, pageSize)
         ]
     }
+
+
+
+
 
 
 }

@@ -1,4 +1,4 @@
-import type { SchemaOptions } from '@sinclair/typebox';
+import type { SchemaOptions, StringOptions, DateOptions, NumericOptions } from '@sinclair/typebox';
 
 export type DB_TYPE = 'pg' | 'es' | 'mysql';
 
@@ -47,6 +47,8 @@ export type WhereCondition = {
     link: 'AND' | 'OR'
     items: (WhereItem | WhereCondition)[]
 }
+
+export type Sort = { order: string, by: 'asc' | 'desc' };
 
 export type WhereParam = WhereCondition | (WhereCondition | WhereItem)[];
 
@@ -109,4 +111,37 @@ export type USchema = SchemaOptions & {
      * TODO The Funtion default call on this filed
     */
     // fn?: 'lower' | 'upper'
+}
+
+export type UStringOptions<Format extends string> = USchema & StringOptions<Format> & {
+    /**
+     * Defind a mark: 
+     *      1. Delete action will update this filed to mark 
+     *      2. Query  action will add conditon with != ${delMark}
+     *      3. Note : A table can only hava ONE delMark.
+    */
+    delMark?: string;
+}
+export type UNumericOptions = USchema & {
+    /**
+     * Defind a mark: 
+     *      1. Delete action will update this filed to mark 
+     *      2. Query  action will add conditon with != ${delMark}
+     *      3. Note : A table can only hava ONE delMark.
+    */
+    delMark?: number;
+} & NumericOptions;
+
+export type UDateOptions = USchema & DateOptions & {
+    /**
+     * 1. Create Time can not be modify
+     * 2. It will be auto fill with Current Time while INSERT
+     * 3. default；: flase
+    */
+    isCreate?: boolean;
+    /**
+     * 1. Last Modify Time will be fill with Current Time while UPDATE
+     * 2. default；: flase
+    */
+    isModify?: boolean;
 }

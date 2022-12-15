@@ -1,5 +1,5 @@
-import type { USchema, MagicSuffix, DB_TYPE } from './types';
-import type { TProperties, TPartial, TObject, StringOptions, StringFormatOption, DateOptions, NumericOptions } from '@sinclair/typebox';
+import type { USchema, MagicSuffix, DB_TYPE, UDateOptions, UNumericOptions, UStringOptions } from './types';
+import type { TProperties, TPartial, TObject, StringFormatOption, } from '@sinclair/typebox';
 
 import _ from 'lodash';
 import dayjs from 'dayjs';
@@ -33,37 +33,6 @@ export type Settings = {
 
 
 
-type UStringOptions<Format extends string> = USchema & StringOptions<Format> & {
-    /**
-     * Defind a mark: 
-     *      1. Delete action will update this filed to mark 
-     *      2. Query  action will add conditon with != ${delMark}
-     *      3. Note : A table can only hava ONE delMark.
-    */
-    delMark?: string;
-}
-type UNumericOptions = USchema & {
-    /**
-     * Defind a mark: 
-     *      1. Delete action will update this filed to mark 
-     *      2. Query  action will add conditon with != ${delMark}
-     *      3. Note : A table can only hava ONE delMark.
-    */
-    delMark?: number;
-} & NumericOptions;
-type UDateOptions = USchema & DateOptions & {
-    /**
-     * 1. Create Time can not be modify
-     * 2. It will be auto fill with Current Time while INSERT
-     * 3. default；: flase
-    */
-    isCreate?: boolean;
-    /**
-     * 1. Last Modify Time will be fill with Current Time while UPDATE
-     * 2. default；: flase
-    */
-    isModify?: boolean;
-}
 
 var STRICT_QUERY = false;
 var STRICT_ENTITY = false;

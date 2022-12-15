@@ -67,7 +67,7 @@ test('Test : Query with QuerySchemma', async () => {
 
 
 })
-    .pin()
+    // .pin()
     // .skip()
     ;
 

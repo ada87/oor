@@ -1,4 +1,4 @@
-import type { SqlDelete, SqlInsert, SqlOrderBy, SqlUpdate, SqlLimit, SqlSelect, SqlCount, SqlByField, } from '../../base/sql';
+import type { SqlDelete, SqlInsert, SqlOrderBy, SqlUpdate, SqlLimit, SqlSelect, SqlCount, SqlByField } from '../../base/sql';
 import type { QuerySchema, Sort } from '../../base/types';
 
 import _ from 'lodash';
@@ -72,7 +72,6 @@ export const orderBy: SqlOrderBy = (ftc: Map<string, any>, ctf: Map<string, stri
     }
     return ''
 }
-
 export const limit: SqlLimit = (query?: QuerySchema, pageSize: number = PAGE_SIZE) => {
     let start = _.has(query, 'start_') ? query.start_ : 0;
     let count = _.has(query, 'count_') ? query.count_ : pageSize;

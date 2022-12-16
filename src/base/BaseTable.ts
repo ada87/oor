@@ -117,7 +117,7 @@ export abstract class BaseTable<T extends TObject, C> extends BaseView<T, C> {
     /**
      * Insert a record
     */
-    insert(object: Static<T>): Promise<Static<T>> {
+    add(object: Static<T>): Promise<Static<T>> {
         const { _table, _BUILDER, _EXECUTOR } = this;
         let entity = this.checkEntity(object, true);
         const [SQL, PARAM] = _BUILDER.insert(_table, entity);

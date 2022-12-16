@@ -4,9 +4,9 @@ import type { QuerySchema, Sort } from '../../base/types';
 import _ from 'lodash';
 import { PAGE_SIZE } from '../../base/Util';
 
-export const select: SqlSelect = (table: string, fields: string = '*'): string => `SELECT ${fields || '*'} FROM ${table} `;
+export const select: SqlSelect = (table: string, fields: string = '*'): string => `SELECT ${fields || '*'} FROM \`${table}\` `;
 
-export const count: SqlCount = (table: string) => `SELECT count(0) AS total FROM ${table}`;
+export const count: SqlCount = (table: string) => `SELECT count(0) AS total FROM \`${table}\``;
 
 export const insert: SqlInsert = (table: string, obj: any): [string, any[]] => {
     const fields = _.keys(obj);
@@ -26,7 +26,7 @@ export const insert: SqlInsert = (table: string, obj: any): [string, any[]] => {
         idx.push("$" + (i + 1));
         param.push(val)
     })
-    return [`INSERT INTO ${table} (${query.join(',')}) VALUES (${idx.join(',')}) RETURNING *`, param];
+    return [`INSERT INTO \`${table}\` (${query.join(',')}) VALUES (${idx.join(',')}) RETURNING *`, param];
 }
 
 export const update: SqlUpdate = (table: string, obj: any, key = 'id'): [string, any[]] => {
@@ -50,7 +50,7 @@ export const update: SqlUpdate = (table: string, obj: any, key = 'id'): [string,
     return [`UPDATE  ${table} SET ${query.join(',')}`, param];
 }
 
-export const del: SqlDelete = (table: string): string => `DELETE FROM ${table} `
+export const del: SqlDelete = (table: string): string => `DELETE FROM \`${table}\` `
 
 const BY_SET = new Set<string>(['asc', 'desc']);
 

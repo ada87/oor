@@ -98,7 +98,7 @@ test(`${MODE} Test : Query With Some Condition`, async () => {
 
 test(`${MODE} Test : CRUD`, async () => {
     // Insert
-    const insertResult = await User.insert({
+    const insertResult = await User.add({
         name: 'test',
         age: 23,
         sex: false,

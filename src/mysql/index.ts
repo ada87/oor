@@ -1,7 +1,7 @@
 // https://github.com/sidorares/node-mysql2
 import type { TObject } from '@sinclair/typebox';
 import type { DB_TYPE } from '../base/types';
-import type { PoolOptions } from 'mysql2/promise'
+import type { PoolOptions, FieldPacket } from 'mysql2/promise'
 
 import _ from 'lodash';
 import { createPool, Pool } from 'mysql2/promise';
@@ -69,10 +69,12 @@ export class View<T extends TObject> extends BaseView<T, Pool> {
         this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, WHERE);
     }
 
-
-    // sql(...args: any[]): Promise<QueryResult<T>> {
-    //     return super.sql(...args);
-    // }
+    /**
+     * same arguments as mysql.query()
+     * */
+    exec(...args: any[]): Promise<[any, FieldPacket[]]> {
+        return this.getClient().query.call(this.getClient(), ...args);
+    }
 }
 
 export class Table<T extends TObject> extends BaseTable<T, Pool> {
@@ -119,10 +121,12 @@ export class Table<T extends TObject> extends BaseTable<T, Pool> {
     }
 
 
-
-    // sql(...args: any[]): Promise<QueryResult<T>> {
-    //     return super.sql(...args);
-    // }
+    /**
+     * same arguments as mysql.query()
+     * */
+    exec(...args: any[]): Promise<[any, FieldPacket[]]> {
+        return this.getClient().query.call(this.getClient(), ...args);
+    }
 }
 
 export type MYSettings = Omit<Settings, 'provider'> & {
@@ -130,13 +134,12 @@ export type MYSettings = Omit<Settings, 'provider'> & {
 };
 
 export const setup = (settings: MYSettings, cb?: (err: Error) => void): Pool => {
+    let pool: Pool;
     if (_.isFunction(settings.provider)) {
-        _setup({ ...settings, provider: ['mysql', settings.provider], })
-        return settings.provider() as Pool;
+        pool = settings.provider();
     } else {
-        const pool = createPool(settings.provider);
-        _setup({ ...settings, provider: ['mysql', () => pool], })
-        // cb();
-        return pool;
+        pool = createPool(settings.provider);
     }
+    _setup({ ...settings, provider: ['mysql', () => pool], })
+    return pool;
 }

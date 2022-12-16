@@ -72,8 +72,11 @@ export class View<T extends TObject> extends BaseView<T, Connection> {
     }
 
 
-    sql(...args: any[]): Promise<QueryResult<T>> {
-        return super.sql(...args);
+    /**
+     * same arguments as pg.query()
+     * */
+    exec(...args: any[]): Promise<QueryResult<T>> {
+        return this.getClient().query.call(this.getClient(), ...args);
     }
 }
 
@@ -121,9 +124,11 @@ export class Table<T extends TObject> extends BaseTable<T, Connection>{
         this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, WHERE);
     }
 
-
-    sql(...args: any[]): Promise<QueryResult<T>> {
-        return super.sql(...args);
+    /**
+     * same arguments as pg.query()
+     * */
+    exec(...args: any[]): Promise<QueryResult<T>> {
+        return this.getClient().query.call(this.getClient(), ...args);
     }
 }
 
@@ -132,13 +137,13 @@ export type PGSettings = Omit<Settings, 'provider'> & {
 };
 
 export const setup = (settings: PGSettings, cb?: (err: Error) => void): Pool => {
+    let pool: Pool;
     if (_.isFunction(settings.provider)) {
-        _setup({ ...settings, provider: ['pg', settings.provider], })
-        return settings.provider() as Pool;
+        pool = settings.provider() as Pool;
     } else {
-        const pool = new Pool(settings.provider);
+        pool = new Pool(settings.provider);
         pool.connect(cb);
-        _setup({ ...settings, provider: ['pg', () => pool], })
-        return pool;
     }
+    _setup({ ...settings, provider: ['pg', () => pool], })
+    return pool;
 }

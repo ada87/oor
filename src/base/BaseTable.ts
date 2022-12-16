@@ -66,9 +66,12 @@ export abstract class BaseTable<T extends TObject, C> extends BaseView<T, C> {
         return _EXECUTOR.execute(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
     }
 
-
+    /**
+     * Delete a row by primary id
+    */
     deleteById(id: number | string): Promise<number> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key, mark } } = this;
+        if (key == null) throw new Error(`Table ${_table} do not have a Primary Key`);
         if (mark) return this.update({ ...mark, [key]: id })
         const SQL = _BUILDER.delete(_table);
         const [WHERE, PARAM] = _BUILDER.byField(key, id);
@@ -80,9 +83,8 @@ export abstract class BaseTable<T extends TObject, C> extends BaseView<T, C> {
     */
     update(obj: Static<T>): Promise<number> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
-        if (!_.has(obj, key)) {
-            throw new Error(`Update Action must have a key`);
-        }
+        // if (key == null) throw new Error(`Table ${_table} do not have a Primary Key`);
+        if (!_.has(obj, key)) throw new Error(`Update Action must have a key`);
         let entity = this.checkEntity(obj, false);
         const [SQL, FIELD_SET] = _BUILDER.update(_table, entity, key);
         if (FIELD_SET.length == 0) {

@@ -1,9 +1,14 @@
 import { test as jtest, Test, TestContext } from '@japa/runner';
 import { createPool, Pool } from 'mysql2/promise';
 import { TestExecutor } from '@japa/core';
-import { setup, Table, UType, Static } from '../mysql/index';
+import { setup, Table, } from '../mysql/index';
+export { SUFFIX_MATRIX } from '../mysql/basic/where';
 import * as _ from 'lodash';
+import { UserSchema, } from './Const';
 
+
+
+export const MODE = 'MYSQL';
 
 export var mysql: Pool = createPool({
     host: process.env.MY_HOST as string,
@@ -33,23 +38,6 @@ export const test = (title: string, callback: TestExecutor<TestContext, undefine
     });
 
 
-// Line 2 : Build a Schema , 
-//          Schema can be used for validate、check, @see @sinclair/typebox
-//          Some FrameWork support this schema derectly , like fastify 
-export const UserSchema = UType.Table({
-    id: UType.Number(),
-    name: UType.String({ maxLength: 32 }),
-    age: UType.Number({ minimum: 0, maximum: 128 }),
-    sex: UType.Boolean(),
-    profile: UType.String({ ignore: true }),
-    address: UType.String({ maxLength: 128 }),
-    salary: UType.Number(),
-    registerDate: UType.Date({ column: 'register_date', isCreate: true }),
-    lastModify: UType.Date({ column: 'last_modify', isModify: true })
-},);
-
-// Line 3 : Define a Type, you can avoid if not need this type.
-export type User = Static<typeof UserSchema>;
 
 // Line 4 : Build a Table, it's ok for all
 export const User = new Table('user', UserSchema, {

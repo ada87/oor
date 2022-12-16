@@ -22,17 +22,14 @@ export const executor: SqlExecutor<any> = {
 
     get: async (conn: Pool, SQL: string, PARAM: any = []): Promise<any> => {
         log(SQL, PARAM);
-        const result = await conn.query(SQL, PARAM);
-        // if (result.rowCount > 0) return result.rows[0]
+        const [rows] = await conn.query<any[]>(SQL, PARAM);
+        if (rows.length > 0) return rows[0]
         return null;
     },
 
     query: async (conn: Pool, SQL: string, PARAM: any = []): Promise<any[]> => {
         log(SQL, PARAM);
-        const [rows, fields] = await conn.query(SQL, PARAM);
-        // console.log(rows)
-        // console.log(fields)
-        // return rows;
+        const [rows] = await conn.query<any[]>(SQL, PARAM);
         return rows as any[];
     },
 

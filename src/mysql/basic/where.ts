@@ -7,13 +7,13 @@ import { Kind } from '@sinclair/typebox';
 import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../../base/Util';
 import dayjs from 'dayjs';
 
-
 type QueryPos = { SQL: string[]; PARAM: any[], }
+// DOCS
 // https://dev.mysql.com/doc/refman/8.0/en/data-types.html
 // https://dev.mysql.com/doc/refman/8.0/en/expressions.html
 // https://dev.mysql.com/doc/refman/8.0/en/functions.html
 // https://dev.mysql.com/doc/refman/8.0/en/where-optimization.html
-const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
+export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
 
     'Min': { string: true, number: true, date: true, boolean: true },
     'MinThan': { string: true, number: true, date: true, boolean: false },
@@ -44,8 +44,8 @@ const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
     'IsNull': { string: true, number: true, date: true, boolean: true },
     'NotNull': { string: true, number: true, date: true, boolean: true },
 
-    'IsDistinct': { string: true, number: true, date: false, boolean: false },
-    'NotDistinct': { string: true, number: true, date: false, boolean: false },
+    // 'IsDistinct': { string: false, number: false, date: false, boolean: false },
+    // 'NotDistinct': { string: false, number: false, date: false, boolean: false },
 
     '>': { string: true, number: true, date: true, boolean: true },
     '>=': { string: true, number: true, date: true, boolean: false },
@@ -74,12 +74,12 @@ const NullCondition = (item: WhereItem, pos: QueryPos,): boolean => {
         case 'NotNull':
             pos.SQL.push(`${item.column} IS ${bool ? 'NOT' : ''} NULL`);
             return true;
-        case 'IsDistinct':
-            pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} DISTINCT`);
-            return true;
-        case 'NotDistinct':
-            pos.SQL.push(`${item.column} IS ${bool ? 'NOT' : ''} DISTINCT`);
-            return true;
+        // case 'IsDistinct':
+        //     pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} DISTINCT`);
+        //     return true;
+        // case 'NotDistinct':
+        //     pos.SQL.push(`${item.column} IS ${bool ? 'NOT' : ''} DISTINCT`);
+        //     return true;
 
     }
 
@@ -117,17 +117,17 @@ const compareSuffix = (suffix: MagicSuffix): MagicSuffix => {
 }
 
 
+const InFn = new Map<MagicSuffix, string>([['In', 'IN'], ['NotIn', 'NOT IN']]);
 
 const whereText = (item: WhereItem, pos: QueryPos, err: string[]) => {
     const compare = compareSuffix(item.fn);
     if (compare != null) {
         pos.SQL.push(`${item.column} ${compare} ?`);
         pos.PARAM.push(item.value)
-        // pos.NUM++;
         return;
     }
     if (InFn.has(item.fn)) {
-        pos.SQL.push(`${item.column} ${InFn.get(item.fn)} ANY(?::text[])`);
+        pos.SQL.push(`${item.column} ${InFn.get(item.fn)} ( ? )`);
         pos.PARAM.push(inString(item.value + ''))
         // pos.NUM++;
         return
@@ -152,7 +152,6 @@ const whereText = (item: WhereItem, pos: QueryPos, err: string[]) => {
     }
 }
 
-const InFn = new Map<MagicSuffix, MagicSuffix>([['In', '='], ['NotIn', '!=']]);
 const whereNumber = (item: WhereItem, pos: QueryPos, err: string[]) => {
     const compare = compareSuffix(item.fn);
     if (compare != null) {
@@ -166,7 +165,7 @@ const whereNumber = (item: WhereItem, pos: QueryPos, err: string[]) => {
         return;
     }
     if (InFn.has(item.fn)) {
-        pos.SQL.push(`${item.column} ${InFn.get(item.fn)} ANY(?::int[])`);
+        pos.SQL.push(`${item.column} ${InFn.get(item.fn)} ( ? )`);
         pos.PARAM.push(inNumber(item.value + ''))
         return
     }
@@ -284,7 +283,7 @@ const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
         default:
             break;
     }
-    pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} TRUE`)
+    pos.SQL.push(`${item.column} ${bool ? '!=' : '='} 0`)
 
 
 }

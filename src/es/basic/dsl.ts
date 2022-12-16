@@ -7,8 +7,10 @@ import { WhereParam, WhereItem, WhereCondition, MagicSuffix, FieldType, Support 
 import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../../base/Util';
 import dayjs from 'dayjs';
 
+// DOCS
 // https://www.elastic.co/guide/en/elasticsearch/reference/8.5/query-dsl.html
-const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
+// https://www.elastic.co/guide/en/elasticsearch/painless/8.5/painless-api-reference.html
+export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
 
     'Min': { string: false, number: true, date: true, boolean: true },
     'MinThan': { string: false, number: true, date: true, boolean: false },
@@ -40,8 +42,8 @@ const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
     'IsNull': { string: true, number: true, date: true, boolean: true },
     'NotNull': { string: true, number: true, date: true, boolean: true },
 
-    'IsDistinct': { string: false, number: false, date: false, boolean: false },
-    'NotDistinct': { string: false, number: false, date: false, boolean: false },
+    // 'IsDistinct': { string: false, number: false, date: false, boolean: false },
+    // 'NotDistinct': { string: false, number: false, date: false, boolean: false },
 
     '>': { string: false, number: true, date: true, boolean: true },
     '>=': { string: false, number: true, date: true, boolean: false },

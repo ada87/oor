@@ -2,8 +2,13 @@ import { test as jtest, Test, TestContext } from '@japa/runner';
 import { Client } from 'pg';
 import type { ClientConfig } from 'pg';
 import { TestExecutor } from '@japa/core';
-import { setup, Table, UType, Static } from '../pg/index';
+import { setup, Table, } from '../pg/index';
 import * as _ from 'lodash';
+import { UserSchema, } from './Const';
+export { SUFFIX_MATRIX } from '../pg/basic/where';
+
+
+
 
 const config: ClientConfig = {
     host: process.env.PG_HOST as string,
@@ -13,6 +18,7 @@ const config: ClientConfig = {
     password: process.env.PG_PASS || undefined,
 };
 
+export const MODE = 'PG';
 
 export var pg: Client = new Client(config);
 
@@ -42,23 +48,6 @@ export const test = (title: string, callback: TestExecutor<TestContext, undefine
     });
 
 
-// Line 2 : Build a Schema , 
-//          Schema can be used for validate、check, @see @sinclair/typebox
-//          Some FrameWork support this schema derectly , like fastify 
-export const UserSchema = UType.Table({
-    id: UType.Number(),
-    name: UType.String({ maxLength: 32 }),
-    age: UType.Number({ minimum: 0, maximum: 128 }),
-    sex: UType.Boolean(),
-    profile: UType.String({ ignore: true }),
-    address: UType.String({ maxLength: 128 }),
-    salary: UType.Number(),
-    registerDate: UType.Date({ column: 'register_date', isCreate: true }),
-    lastModify: UType.Date({ column: 'last_modify', isModify: true })
-},);
-
-// Line 3 : Define a Type, you can avoid if not need this type.
-export type User = Static<typeof UserSchema>;
 
 // Line 4 : Build a Table, it's ok for all
 export const User = new Table('public.user', UserSchema, {

@@ -11,7 +11,7 @@ import dayjs from 'dayjs';
 type QueryPos = { SQL: string[]; PARAM: any[], NUM: number; }
 
 // https://www.postgresql.org/docs/15/queries-table-expressions.html
-const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
+export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
 
     'Min': { string: true, number: true, date: true, boolean: true },
     'MinThan': { string: true, number: true, date: true, boolean: false },
@@ -42,8 +42,8 @@ const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
     'IsNull': { string: true, number: true, date: true, boolean: true },
     'NotNull': { string: true, number: true, date: true, boolean: true },
 
-    'IsDistinct': { string: true, number: true, date: false, boolean: false },
-    'NotDistinct': { string: true, number: true, date: false, boolean: false },
+    // 'IsDistinct': { string: true, number: true, date: false, boolean: false },
+    // 'NotDistinct': { string: true, number: true, date: false, boolean: false },
 
     '>': { string: true, number: true, date: true, boolean: true },
     '>=': { string: true, number: true, date: true, boolean: false },
@@ -72,12 +72,12 @@ const NullCondition = (item: WhereItem, pos: QueryPos,): boolean => {
         case 'NotNull':
             pos.SQL.push(`${item.column} IS ${bool ? 'NOT' : ''} NULL`);
             return true;
-        case 'IsDistinct':
-            pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} DISTINCT`);
-            return true;
-        case 'NotDistinct':
-            pos.SQL.push(`${item.column} IS ${bool ? 'NOT' : ''} DISTINCT`);
-            return true;
+        // case 'IsDistinct':
+        //     pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} DISTINCT`);
+        //     return true;
+        // case 'NotDistinct':
+        //     pos.SQL.push(`${item.column} IS ${bool ? 'NOT' : ''} DISTINCT`);
+        //     return true;
 
     }
 

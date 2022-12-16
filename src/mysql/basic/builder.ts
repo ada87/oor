@@ -78,4 +78,4 @@ export const limit: SqlLimit = (query?: QuerySchema, pageSize: number = PAGE_SIZ
     return `LIMIT ${count} OFFSET ${start}`
 }
 
-export const byField: SqlByField = (field: string, id: string | number, startIdx: number = 1) => [` ${field} = $${startIdx} `, [id]];
+export const byField: SqlByField = (field: string, id: string | number) => [` ${field} = ? `, [id]];

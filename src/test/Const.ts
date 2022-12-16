@@ -1,9 +1,53 @@
-import { MagicSuffix, SUFFIX, WhereItem, FieldType, Support } from '../base/types';
-import { SqlWhere } from '../base/sql'
+import type { MagicSuffix, WhereItem, FieldType, Support } from '../base/types';
+
 import _ from 'lodash';
-// import { Assert } from '@japa/assert'
+import { SUFFIX } from '../base/types'
+import { SqlWhere, } from '../base/sql'
+import { UType } from '../base/Util';
+
+// Line 2 : Build a Schema , 
+//          Schema can be used for validate、check, @see @sinclair/typebox
+//          Some FrameWork support this schema derectly , like fastify 
+export const UserSchema = UType.Table({
+    id: UType.Number(),
+    name: UType.String({ maxLength: 32 }),
+    age: UType.Number({ minimum: 0, maximum: 128 }),
+    sex: UType.Boolean(),
+    profile: UType.String({ ignore: true }),
+    address: UType.String({ maxLength: 128 }),
+    salary: UType.Number(),
+    registerDate: UType.Date({ column: 'register_date', isCreate: true }),
+    lastModify: UType.Date({ column: 'last_modify', isModify: true })
+});
 
 
+// Line 3 : Define a Type, you can avoid if not need this type.
+// export type User = Static<typeof UserSchema>;
+// const FIELD_MAP = new Map<string, TSchema>(_.keys(UserSchema.properties).map(field => [field, UserSchema.properties[field]]));
+
+// console.log(FIELD_MAP)
+
+
+// type Cover = Record<MagicSuffix, { support?: boolean, values: any }>
+
+const TEXT_WHERE: { field: string, type: FieldType }[] = [
+    { field: 'name', type: 'string' },
+    { field: 'age', type: 'number' },
+    { field: 'sex', type: 'boolean' },
+    { field: 'registerDate', type: 'date' },
+]
+
+
+
+type ASSERT_ITEM = [any, boolean];
+
+export const QueryCover = (MARTIX: Record<MagicSuffix, Support>): ASSERT_ITEM[] => {
+
+    let ASSERTS: ASSERT_ITEM[] = [];
+    TEXT_WHERE.map(item => SUFFIX.map(suffix => ASSERTS.push([{ [item.field + suffix]: randomValue(item.type, suffix) }, MARTIX[suffix][item.type]])))
+    return ASSERTS
+
+}
 
 /**
  * Where Coverage Tester
@@ -15,21 +59,27 @@ const randomBt = (type: FieldType): string => {
     }
     return '4,6';
 }
+const randomIn = (type: FieldType): string => {
+    if (type == 'number') {
+        return '34,67,11'
+    }
+    return '秦磊,苏平';
+}
 
 const randomValue = (type: FieldType, suffix: MagicSuffix): boolean | number | string | Date => {
 
     if (suffix == 'Bt') return randomBt(type)
+    if (suffix == 'In' || suffix == 'NotIn') return randomIn(type)
+
     switch (type) {
         case 'number':
-            return _.random(1000);
+            return _.random(12, 66);
         case 'boolean':
             return _.sample([true, false]) as boolean;
         case 'date':
             return new Date(_.random(1660000000000, 1670374864438))
         case 'string':
-            return _.sample(['a', 'b', 'c', 'd']) as string;
-
-
+            return _.sample(['秦', '苏', '赵', '高']) as string;
     }
 
 }

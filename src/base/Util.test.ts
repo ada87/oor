@@ -1,7 +1,7 @@
 import { test } from '@japa/runner';
 import '@japa/assert';
 import _ from 'lodash';
-import { UserSchema } from '../test/pg';
+import { UserSchema } from '../test/Const';
 import { checkEntity } from './Util';
 
 // id: UType.Number(),

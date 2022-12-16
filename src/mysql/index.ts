@@ -91,11 +91,11 @@ export class Table<T extends TObject> extends BaseTable<T, Pool> {
                 }
                 fields_query.push(`\`${properties.column}\` AS \`${field}\``);
             } else {
-                fields_get.push('"' + field + '"');
+                fields_get.push('`' + field + '`');
                 if (properties.ignore === true) {
                     return;
                 }
-                fields_query.push('"' + field + '"');
+                fields_query.push('`' + field + '`');
             }
         });
         this._CONFIG.fields_query = fields_query.join(',');

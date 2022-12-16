@@ -1,16 +1,20 @@
-import { test, User } from '../test/pg';
+import '@japa/assert';
+import { test, User, MODE, SUFFIX_MATRIX } from './test/pg';
+// import { test, User, MODE, SUFFIX_MATRIX } from './test/mysql';
+// import { test, User, MODE,SUFFIX_MATRIX } from './test/es';
+import { QueryCover } from './test/Const';
+import { setup } from './base/Util';
 
-test('Test : Query With SQL', async () => {
+
+test(`${MODE} Test : Query With SQL`, async () => {
     const result = await User.sql(`SELECT * FROM  public.user WHERE name='陆磊'`);
     console.log(result);
-
-
 })
     // .skip();
     ;
 
 
-test('Test : Basic', async () => {
+test(`${MODE} Test : Basic`, async () => {
     const result = await User.all();
 
     console.log(result);
@@ -19,27 +23,61 @@ test('Test : Basic', async () => {
 
 
 
-test('Test : Query with QuerySchemma', async () => {
-    // const result = await User.query({
-    const result = await User.queryPager({
-        count_: 5,
-        order_: 'salary',
-        by_: 'desc',
-        // ageIn: '64,21',
-        nameIn:'秦磊,苏平'
+test(`${MODE} Test : Query with QuerySchemma`, async ({ assert }) => {
 
-        // nameLike: '陆',
-        // sex: false
-    });
-    console.log(result);
+    // @ts-ignore
+    setup({ strict: true })
+    // await assert.rejects(async () => {
+    //     const result = await User.query({ nameMinH: '赵' });
+    //     console.log(result)
+    // })
+
+    // return;
+
+
+
+
+    const asserts = QueryCover(SUFFIX_MATRIX)
+    for (let [query, support] of asserts) {
+
+        if (support) {
+            console.log(`${MODE} should support : `, query)
+            await assert.doesNotRejects(async () => {
+                let result = await User.query({ ...query, count_: 1 });
+                console.log(result)
+            })
+        } else {
+            console.log(`${MODE} should not support : `, query)
+            await assert.rejects(async () => {
+                let result = await User.query({ ...query, count_: 1 });
+                console.log(result)
+            })
+        }
+
+        // console.log(query, support)
+    }
+    // console.log(asserts)
+
+    // const result = await User.query({
+    // const result = await User.query({
+    //     count_: 5,
+    //     order_: 'salary',
+    //     by_: 'desc',
+    //     ageIn: '64,21',
+    //     // nameIn: '秦磊,苏平'
+
+    //     // nameLike: '陆',
+    //     // sex: false
+    // });
+    // console.log(result);
 
 })
     // .skip()
-    // .pin()
+    .pin()
     ;
 
 
-test('Test : Query With Some Condition', async () => {
+test(`${MODE} Test : Query With Some Condition`, async () => {
     // const result = await User.getById(1);
     const result = await User.getById(4);
     // const result = await User.getByProperties('name', '陆磊');
@@ -58,7 +96,7 @@ test('Test : Query With Some Condition', async () => {
 
 
 
-test('Test : CRUD', async () => {
+test(`${MODE} Test : CRUD`, async () => {
     // Insert
     const insertResult = await User.insert({
         name: 'test',
@@ -96,7 +134,7 @@ test('Test : CRUD', async () => {
 
 
 
-test('Test : Update 2', async () => {
+test(`${MODE} Test : Update 2`, async () => {
 
     const result = await User.update({ id: 1 });
     // const result = await User.update({ id: 2 });
@@ -109,7 +147,7 @@ test('Test : Update 2', async () => {
     ;
 
 
-test('Test : Delete 2', async () => {
+test(`${MODE} Test : Delete 2`, async () => {
 
     // const result = await User.deleteById(1);
     // const result = await User.deleteById(2);

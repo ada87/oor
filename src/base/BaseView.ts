@@ -6,6 +6,7 @@ import { PAGE_SIZE } from './Util';
 import { BaseQuery } from './BaseQuery'
 import { queryToCondition } from './QueryBuilder';
 
+const GLOBAL_ID_FIELD = new Set<string>(['id', 'guid']);
 
 
 export type TableOptions = {
@@ -75,7 +76,10 @@ export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
             this._F2C.set(field, column);
             this._C2F.set(column, field);
             this._CONFIG.FIELD_MAP.set(field, properties);
-            if (column == 'id') SortGuess.push(field);
+            if (GLOBAL_ID_FIELD.has(column) && this._CONFIG.key == null) {
+                this._CONFIG.key = column;
+                SortGuess.push(field)
+            };
             if (properties.isModify) SortGuess.unshift(field);
             if (_.has(properties, 'delMark') && properties.delMark != null) {
                 this._CONFIG.mark = { [column]: properties.delMark };
@@ -182,6 +186,7 @@ export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
     */
     getById(id: number | string): Promise<Static<T>> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key, fields_get } } = this;
+        if (key == null) throw new Error(`Table ${_table} do not have a Primary Key`);
         const SQL = _BUILDER.select(_table, fields_get);
         const [WHERE, PARAM] = _BUILDER.byField(key, id);
         return _EXECUTOR.get(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);

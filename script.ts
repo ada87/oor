@@ -27,7 +27,7 @@ const RunTest = () => {
     ],
     reporters: [specReporter()],
     importer: (filePath) => import(filePath),
-    timeout: 2000,
+    timeout: 20000,
   });
   run();
 }

@@ -10,7 +10,8 @@ import { setProvider } from './Providers';
 
 
 
-export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull', 'IsDistinct', 'NotDistinct']);
+// export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull', 'IsDistinct', 'NotDistinct']);
+export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull']);
 
 export type Settings = {
     provider: [DB_TYPE, () => any] | (() => any),

@@ -44,9 +44,6 @@ export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
     'IsNull': { string: true, number: true, date: true, boolean: true },
     'NotNull': { string: true, number: true, date: true, boolean: true },
 
-    // 'IsDistinct': { string: false, number: false, date: false, boolean: false },
-    // 'NotDistinct': { string: false, number: false, date: false, boolean: false },
-
     '>': { string: true, number: true, date: true, boolean: true },
     '>=': { string: true, number: true, date: true, boolean: false },
     '<': { string: true, number: true, date: true, boolean: true },
@@ -54,7 +51,6 @@ export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
     '=': { string: true, number: true, date: true, boolean: true },
     '!=': { string: true, number: true, date: true, boolean: true },
     '<>': { string: true, number: true, date: true, boolean: true },
-
 }
 
 const isSupport = (item: WhereItem, err: string[]): boolean => {

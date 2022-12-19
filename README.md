@@ -103,7 +103,7 @@ console.log('After Delete', afterDelete)
 
 // Execue custom SQL Sentence.
 // sql method will call (pgClient).query(...arguments)
-const result = await User.sql(
+const result = await User.exec(
     `SELECT XXX FROM YYY WHERE ZZZ = $1 ORDER BY $2 $3`, 
     ['value','id','DESC']
 );
@@ -130,11 +130,6 @@ setup({
 })
 
 ```
-
-Some Difference :
-
-1. Elastic Search do not have a Primary Key.
-2. Param `id` in *{action}ById* is `_id` in `Document`, not `id` field in `Source`
 
 
 

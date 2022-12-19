@@ -109,7 +109,7 @@ const afterDelete = await User.getById(userId);
 console.log('After Delete', afterDelete)
 
 // 执行一个自定义SQL语句，将会调用 [pgClient].query 方法
-const result = await User.sql(
+const result = await User.exec(
     `SELECT XXX FROM YYY WHERE ZZZ = $1 ORDER BY $2 $3`, 
     ['value','id','DESC']
 );
@@ -137,8 +137,3 @@ setup({
 })
 
 ```
-
-一些不同点：
-
-1. Elastic Search 没有 Primary Key, 
-2. 在一些 *{action}ById* 的参数 `id` 指的是 Document 的`_id`， 而非 Source 的 `id` 字段。

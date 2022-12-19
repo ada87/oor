@@ -7,7 +7,7 @@ import { setup } from './base/Util';
 
 
 test(`${MODE} Test : Query With SQL`, async () => {
-    const result = await User.sql(`SELECT * FROM  public.user WHERE name='陆磊'`);
+    const result = await User.exec(`SELECT * FROM  public.user WHERE name='陆磊'`);
     console.log(result);
 })
     // .skip();

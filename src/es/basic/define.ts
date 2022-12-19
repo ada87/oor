@@ -1,5 +1,5 @@
 import type { Client } from '@elastic/elasticsearch';
-import type { SearchRequest, QueryDslQueryContainer, IndexRequest, UpdateByQueryRequest, Script } from '@elastic/elasticsearch/lib/api/types';
+import type { SearchRequest, QueryDslQueryContainer, IndexRequest, Script } from '@elastic/elasticsearch/lib/api/types';
 
 export type OrderByLimit = Pick<SearchRequest, 'sort' | 'from' | 'size'>;
 

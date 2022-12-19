@@ -117,6 +117,9 @@ export class Table<T extends TObject> extends View<T> {
                 case 'number':
                     scripts.push(`ctx._source.${column}=${parseFloat(entity[key])};`)
                     break;
+                case 'int':
+                    scripts.push(`ctx._source.${column}=${parseInt(entity[key])};`)
+                    break;
                 case 'date':
                     // ISO 8601
                     scripts.push(`ctx._source.${column}='${dayjs(entity[key]).format()}';`);

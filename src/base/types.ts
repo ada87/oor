@@ -6,7 +6,7 @@ export type Support = { string: boolean, number: boolean, date: boolean, boolean
 /**
  * Where 判断条件
 */
-export type FieldType = 'string' | 'number' | 'boolean' | 'date';
+export type FieldType = 'string' | 'number' | 'int' | 'boolean' | 'date';
 
 // https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP
 

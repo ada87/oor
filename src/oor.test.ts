@@ -1,6 +1,6 @@
 import '@japa/assert';
-import { test, User, MODE, SUFFIX_MATRIX } from './test/pg';
-// import { test, User, MODE, SUFFIX_MATRIX } from './test/mysql';
+// import { test, User, MODE, SUFFIX_MATRIX } from './test/pg';
+import { test, User, MODE, SUFFIX_MATRIX } from './test/mysql';
 // import { test, User, MODE,SUFFIX_MATRIX } from './test/es';
 import { QueryCover } from './test/Const';
 import { setup } from './base/Util';
@@ -73,13 +73,16 @@ test(`${MODE} Test : Query with QuerySchemma`, async ({ assert }) => {
 
 })
     // .skip()
-    .pin()
+    // .pin()
     ;
 
 
 test(`${MODE} Test : Query With Some Condition`, async () => {
+
     // const result = await User.getById(1);
-    const result = await User.getById(4);
+
+    const result = await User.query({ order_: 'age', by_: 'desc', start_: 12, count_: 5 })
+    // const result = await User.getById(1);
     // const result = await User.getByProperties('name', '陆磊');
 
     // this three is same
@@ -87,32 +90,33 @@ test(`${MODE} Test : Query With Some Condition`, async () => {
     // const result = await User.queryByCondition([{ field: 'name', value: '陆磊' }]);
     // const result = await User.queryByCondition({ link: 'AND', items: [{ field: 'name', value: '陆磊' }]});
 
+
     console.log(result);
     // console.log(result.length)
 
 })
-    .skip()
+    .pin()
     ;
 
 
 
 test(`${MODE} Test : CRUD`, async () => {
-    // Insert
-    const insertResult = await User.add({
+    // add
+    const addResult = await User.add({
         name: 'test',
         age: 23,
         sex: false,
         address: 'randmo',
         salary: 1221.2,
     });
-    console.log('Insert Result', insertResult)
-    let userId = insertResult.id as number;
+    // console.log('Add Result', addResult)
+    let userId = addResult.id as number;
 
 
-    const afterInsert = await User.getById(userId);
-    console.log('After Insert', afterInsert)
+    const afterAdd = await User.getById(userId);
+    console.log('After Add', afterAdd)
 
-    // Update
+    // // Update
     await new Promise(r => setTimeout(r, 1200)); // wait , notice last_update value
     let isUpdate = await User.update({ id: userId, age: 60, });    // change Age
     console.log('Update is Success ? : ', isUpdate == 1);
@@ -128,6 +132,7 @@ test(`${MODE} Test : CRUD`, async () => {
     const afterDelete = await User.getById(userId);
     console.log('After Delete', afterDelete)
 })
+// .pin()
 // .skip();
 
 

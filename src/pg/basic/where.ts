@@ -35,7 +35,7 @@ export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
     'BtM': { string: false, number: false, date: true, boolean: false },
 
     'Not': { string: true, number: true, date: true, boolean: true },
-    
+
     'In': { string: true, number: true, date: false, boolean: false },
     'NotIn': { string: true, number: true, date: false, boolean: false },
 
@@ -153,11 +153,11 @@ const whereText = (item: WhereItem, pos: QueryPos, err: string[]) => {
 }
 
 const InFn = new Map<MagicSuffix, MagicSuffix>([['In', '='], ['NotIn', '!=']]);
-const whereNumber = (item: WhereItem, pos: QueryPos, err: string[]) => {
+const whereNumber = (item: WhereItem, pos: QueryPos, err: string[], parseFn) => {
     const compare = compareSuffix(item.fn);
     if (compare != null) {
         try {
-            let val = _.isNumber(item.value) ? item.value : parseFloat(item.value as string);
+            let val = _.isNumber(item.value) ? item.value : parseFn(item.value as string);
             pos.SQL.push(`${item.column} ${compare} $${pos.NUM}`);
             pos.PARAM.push(val)
             pos.NUM++;
@@ -173,7 +173,7 @@ const whereNumber = (item: WhereItem, pos: QueryPos, err: string[]) => {
         return
     }
     if (item.fn == 'Bt') {
-        let range = betweenNumber(item.value + '');
+        let range = betweenNumber(item.value + '', parseFn);
         if (range == null) {
             err.push(`${item.column}/(Number) :  Between Value invalidated ${item.value}`)
             return;
@@ -302,7 +302,8 @@ const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
     if (NullCondition(item, pos)) return;
     switch (item.type) {
         case 'number':
-            whereNumber(item, pos, err);
+        case 'int':
+            whereNumber(item, pos, err, item.type == 'int' ? parseInt : parseFloat);
             return;
         case 'string':
             whereText(item, pos, err);

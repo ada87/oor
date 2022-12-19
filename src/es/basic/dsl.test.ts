@@ -69,9 +69,9 @@ test('fix Where', ({ }, param: any) => {
     console.log(JSON.stringify(fixWhere(param)))
 })
     .with([
-        [{ column: 'age', type: 'number', value: 12 }],
-        [{ column: 'age', type: 'number', fn: '<', value: 12 }],
-        [{ column: 'age', type: 'number', fn: '<>', value: 12 }],
+        [{ column: 'age', type: 'int', value: 12 }],
+        [{ column: 'age', type: 'int', fn: '<', value: 12 }],
+        [{ column: 'age', type: 'int', fn: '<>', value: 12 }],
     ])
     // .pin()
     ;

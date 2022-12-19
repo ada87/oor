@@ -52,9 +52,9 @@ import { Table, UType, Static } from 'oor';
 //          也有一些工具支持此 Schema 如 fastify/ajv 等。
 //          参考：  https://www.npmjs.com/package/@sinclair/typebox
 export const UserSchema = UType.Table({
-    id: UType.Number(),
+    id: UType.Integer(),
     name: UType.String({ maxLength: 32 }),
-    age: UType.Number({ minimum: 0, maximum: 128 }),
+    age: UType.Integer({ minimum: 0, maximum: 128 }),
     sex: UType.Boolean(),
     profile: UType.String({ ignore: true }),
     address: UType.String({ maxLength: 128 }),
@@ -78,20 +78,20 @@ export const User = new Table('public.user', UserSchema);
 const result = await User.all();
 console.log(result);
 
-// Insert
-const insertResult = await User.insert({
+// Add
+const addResult = await User.add({
     name: 'test',
     age: 23,
     sex: false,
     address: 'address',
     salary: 1221.2,
 });
-console.log('Insert Result', insertResult)
-let userId = insertResult.id;
+console.log('Add Result', addResult)
+let userId = addResult.id;
 
 
-const afterInsert = await User.getById(userId);
-console.log('After Insert', afterInsert)
+const afterAdd = await User.getById(userId);
+console.log('After Add', afterAdd)
 
 // Update
 await new Promise(r => setTimeout(r, 1234)); // 等待时间会影响到 "last_modify" 字段

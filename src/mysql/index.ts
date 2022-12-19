@@ -1,5 +1,5 @@
 // https://github.com/sidorares/node-mysql2
-import type { TObject } from '@sinclair/typebox';
+import type { Static, TObject } from '@sinclair/typebox';
 import type { DB_TYPE } from '../base/types';
 import type { PoolOptions, FieldPacket } from 'mysql2/promise'
 
@@ -22,6 +22,15 @@ export type { Static } from '@sinclair/typebox';
 
 const MY: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
 
+const SelectField = (field: string, schema: any) => {
+    const type = getFieldType(schema)
+    if (type == 'boolean') {
+        if (schema.column) return `IF(\`${schema.column}\`= 1, TRUE, FALSE) AS \`${field}\``;
+        return `IF(\`${field}\`= 1, TRUE, FALSE) AS \`${field}\``;
+    }
+    if (schema.column) return `\`${schema.column}\` AS \`${field}\``;
+    return '`' + field + '`';
+}
 
 
 export class View<T extends TObject> extends BaseView<T, Pool> {
@@ -32,22 +41,12 @@ export class View<T extends TObject> extends BaseView<T, Pool> {
     protected init(schema: T, options?: TableOptions) {
         let fields_query = [];
         let fields_get = [];
-
         _.keys(schema.properties).map(field => {
             let properties = schema.properties[field];
-            if (properties.column) {
-                fields_get.push(`\`${properties.column}\` AS \`${field}\``);
-                if (properties.ignore === true) {
-                    return;
-                }
-                fields_query.push(`\`${properties.column}\` AS \`${field}\``);
-            } else {
-                fields_get.push('`' + field + '`');
-                if (properties.ignore === true) {
-                    return;
-                }
-                fields_query.push('`' + field + '`');
-            }
+            let select = SelectField(field, properties);
+            fields_get.push(select);
+            if (properties.ignore === true) return;
+            fields_query.push(select);
         });
         this._CONFIG.fields_query = fields_query.join(',');
         this._CONFIG.fields_get = fields_get.join(',')
@@ -86,19 +85,10 @@ export class Table<T extends TObject> extends BaseTable<T, Pool> {
         let fields_get = [];
         _.keys(schema.properties).map(field => {
             let properties = schema.properties[field];
-            if (properties.column) {
-                fields_get.push(`\`${properties.column}\` AS \`${field}\``);
-                if (properties.ignore === true) {
-                    return;
-                }
-                fields_query.push(`\`${properties.column}\` AS \`${field}\``);
-            } else {
-                fields_get.push('`' + field + '`');
-                if (properties.ignore === true) {
-                    return;
-                }
-                fields_query.push('`' + field + '`');
-            }
+            let select = SelectField(field, properties);
+            fields_get.push(select);
+            if (properties.ignore === true) return;
+            fields_query.push(select);
         });
         this._CONFIG.fields_query = fields_query.join(',');
         this._CONFIG.fields_get = fields_get.join(',')
@@ -120,6 +110,11 @@ export class Table<T extends TObject> extends BaseTable<T, Pool> {
         this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, WHERE);
     }
 
+    async add(object: Static<T>): Promise<Static<T>> {
+        const result = await super.add(object)
+        return await this.getById(result['id'] as any)
+
+    }
 
     /**
      * same arguments as mysql.query()

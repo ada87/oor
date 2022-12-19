@@ -7,10 +7,6 @@ import { Type } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
 import { setProvider } from './Providers';
 
-
-
-
-// export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull', 'IsDistinct', 'NotDistinct']);
 export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull']);
 
 export type Settings = {
@@ -64,6 +60,7 @@ export const setup = (settings: Settings) => {
     if (settings.pageSize) PAGE_SIZE = settings.pageSize;
     if (settings.showSQL && _.isFunction(settings.showSQL)) ShowSql = settings.showSQL;
 }
+
 
 export const UType = {
     Table: <T extends TProperties>(properties: T): TPartial<TObject<T>> => Type.Partial(Type.Object(properties)),
@@ -121,13 +118,13 @@ const between = (txt: string): [MagicSuffix, string][] => {
     return result;
 }
 
-export const betweenNumber = (txt: string): [MagicSuffix, number][] => {
+export const betweenNumber = (txt: string, parseFn): [MagicSuffix, number][] => {
     let range = between(txt);
     if (range == null) return null;
     let result = [];
     for (let item of range) {
         try {
-            let num = parseFloat(item[1]);
+            let num = parseFn(item[1]);
             result.push([item[0], num]);
         } catch {
             return null;

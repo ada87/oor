@@ -9,9 +9,9 @@ import { UType } from '../base/Util';
 //          Schema can be used for validate、check, @see @sinclair/typebox
 //          Some FrameWork support this schema derectly , like fastify 
 export const UserSchema = UType.Table({
-    id: UType.Number(),
+    id: UType.Integer(),
     name: UType.String({ maxLength: 32 }),
-    age: UType.Number({ minimum: 0, maximum: 128 }),
+    age: UType.Integer({ minimum: 0, maximum: 128 }),
     sex: UType.Boolean(),
     profile: UType.String({ ignore: true }),
     address: UType.String({ maxLength: 128 }),

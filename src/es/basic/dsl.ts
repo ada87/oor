@@ -139,16 +139,16 @@ const whereText = (item: WhereItem, query: QueryDslQueryContainer[], err: string
 }
 
 
-const whereNumber = (item: WhereItem, query: QueryDslQueryContainer[], err: string[]) => {
+const whereNumber = (item: WhereItem, query: QueryDslQueryContainer[], err: string[], parseFn) => {
     let compare = RANGE_MAP.get(item.fn);
     if (compare) {
-        let value = parseFloat(item.value as any);
+        let value = parseFn(item.value as any);
         setRange(query, item.column, value, compare)
         return;
     }
     // if()
     if (item.fn == 'Bt') {
-        let range = betweenNumber(item.value + '');
+        let range = betweenNumber(item.value + '', parseFn);
         range.map(ptn => {
             let compare = RANGE_MAP.get(ptn[0]);
             if (compare) {
@@ -281,7 +281,8 @@ const ItemToWhere = (whereItem: WhereItem, query: QueryDslQueryContainer[], err:
     if (NullCondition(whereItem, query, err)) return;
     switch (item.type) {
         case 'number':
-            whereNumber(item, query, err);
+        case 'int':
+            whereNumber(item, query, err, item.type == 'int' ? parseInt : parseFloat);
             return;
         case 'string':
             whereText(item, query, err);

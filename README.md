@@ -45,7 +45,7 @@ import { Table, UType, Static } from 'oor';
 //          Schema can be used for validate、check, @see @sinclair/typebox
 //          Some web framework support this schema, like fastify 
 export const UserSchema = UType.Table({
-    id: UType.Number(),
+    id: UType.Integer(),
     name: UType.String({ maxLength: 32 }),
     age: UType.Integer({ minimum: 0, maximum: 128 }),
     sex: UType.Boolean(),
@@ -71,20 +71,20 @@ export const User = new Table('public.user', UserSchema);
 const result = await User.all();
 console.log(result);
 
-// Insert
-const insertResult = await User.insert({
+// Add
+const addResult = await User.add({
     name: 'test',
     age: 23,
     sex: false,
     address: 'address',
     salary: 1221.2,
 });
-console.log('Insert Result', insertResult)
-let userId = insertResult.id;
+console.log('Add Result', addResult)
+let userId = addResult.id;
 
 
-const afterInsert = await User.getById(userId);
-console.log('After Insert', afterInsert)
+const afterAdd= await User.getById(userId);
+console.log('After Add', afterAdd)
 
 // Update
 await new Promise(r => setTimeout(r, 1234)); // WaitTime effect column "last_modify"

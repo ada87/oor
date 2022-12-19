@@ -11,8 +11,9 @@ export const getFieldType = (schema: any): FieldType => {
         case 'String':
             return 'string';
         case 'Number':
-        case 'Integer':
             return 'number';
+        case 'Integer':
+            return 'int';
         case 'Boolean':
             return 'boolean';
         case 'Date':

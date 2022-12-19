@@ -23,10 +23,10 @@ export const insert: SqlInsert = (table: string, obj: any): [string, any[]] => {
             return
         }
         query.push(field)
-        idx.push("$" + (i + 1));
+        idx.push("?");
         param.push(val)
     })
-    return [`INSERT INTO \`${table}\` (${query.join(',')}) VALUES (${idx.join(',')}) RETURNING *`, param];
+    return [`INSERT INTO \`${table}\` (${query.join(',')}) VALUES (${idx.join(',')}) ;`, param];
 }
 
 export const update: SqlUpdate = (table: string, obj: any, key = 'id'): [string, any[]] => {
@@ -43,11 +43,11 @@ export const update: SqlUpdate = (table: string, obj: any, key = 'id'): [string,
             return;
         }
         let val = obj[field];
-        query.push(`${field} = $${i + diff}`)
+        query.push(`${field} = ?`)
         param.push(val)
     });
 
-    return [`UPDATE  ${table} SET ${query.join(',')}`, param];
+    return [`UPDATE \`${table}\` SET ${query.join(',')}`, param];
 }
 
 export const del: SqlDelete = (table: string): string => `DELETE FROM \`${table}\` `

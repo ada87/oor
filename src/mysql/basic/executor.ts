@@ -21,14 +21,10 @@ export const executor: SqlExecutor<any> = {
                 return lastResult[0];
             }
             throw new Error('Insert Error')
-
-
-
-
         } catch (e) {
             throw new Error(e);
         } finally {
-            console.log('release')
+            // console.log('release')
             conn.release();
         }
 

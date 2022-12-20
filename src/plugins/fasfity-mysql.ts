@@ -10,7 +10,6 @@ const OOR_FASTIFY_MY: FastifyPluginCallback<MYSettings> = (fastify: FastifyInsta
     let pool = setup(options, next);
     fastify.addHook('onClose', () => pool.end())
     fastify.decorate('omy', pool);
-
 }
 
 declare module 'fastify' {

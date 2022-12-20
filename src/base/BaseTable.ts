@@ -21,7 +21,6 @@ export abstract class BaseTable<T extends TObject, C> extends BaseView<T, C> {
     private checkEntity(obj: any, isAdd = false): any {
         // checkEntity(this.schema)
         let clone: any = {}
-        // console.log(obj);
         this._CONFIG.FIELD_MAP.forEach((schema, key) => {
             let field = schema.column || key;
             if (_.has(obj, key)) clone[field] = obj[key];

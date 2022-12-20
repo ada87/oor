@@ -24,9 +24,6 @@ test('Test : DSL', ({ }, suf) => {
     // console.log('DSL BUILDER')
 })
     .with(SUFFIX as any)
-
-    // .pin();
-
     ;
 
 test('Test : DSL', () => {
@@ -61,7 +58,6 @@ test('Test : DSL', () => {
     // console.log(root)
     // console.log('DSL BUILDER')
 })
-    // .pin();
 
     ;
 
@@ -73,5 +69,4 @@ test('fix Where', ({ }, param: any) => {
         [{ column: 'age', type: 'int', fn: '<', value: 12 }],
         [{ column: 'age', type: 'int', fn: '<>', value: 12 }],
     ])
-    // .pin()
     ;

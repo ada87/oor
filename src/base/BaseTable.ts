@@ -5,6 +5,10 @@ import _ from 'lodash';
 import { BaseView } from './BaseView'
 import { getFieldType, queryToCondition } from './QueryBuilder';
 import { SqlExecutor } from './sql';
+import dayjs from 'dayjs';
+const toDate = (txt: string | number): Date => {
+    return dayjs(txt).toDate();
+}
 
 export abstract class BaseTable<T extends TObject, C> extends BaseView<T, C> {
 
@@ -19,9 +23,7 @@ export abstract class BaseTable<T extends TObject, C> extends BaseView<T, C> {
         let clone: any = {}
         this._CONFIG.FIELD_MAP.forEach((schema, key) => {
             let field = schema.column || key;
-            if (_.has(obj, key)) {
-                clone[field] = obj[key];
-            }
+            if (_.has(obj, key)) clone[field] = obj[key];
             let type = getFieldType(schema);
             if (type == 'date') {
                 if (schema.isCreate) {
@@ -36,8 +38,10 @@ export abstract class BaseTable<T extends TObject, C> extends BaseView<T, C> {
                     clone[field] = new Date();
                     return;
                 }
+                clone[field] = toDate(obj[key]);
             }
         })
+        console.log(clone)
         return clone;
     }
 

@@ -19,8 +19,7 @@
     "node_modules",
     "**/*.test.ts",
     "script.ts",
-    "src/test",
-    "src/tool"
+    "src/test"
   ],
   "typeRoots": [
     "node_modules/@types"

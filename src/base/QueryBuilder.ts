@@ -7,6 +7,8 @@ import { throwErr } from './Util';
 const DEFAULT_QUERY_KEY = new Set<string>(['start_', 'count_', 'order_', 'by_', 'keyword_']);
 
 export const getFieldType = (schema: any): FieldType => {
+    // union date type : string/number/date
+    if (schema.__DATE) return 'date';
     switch (schema[Kind]) {
         case 'String':
             return 'string';

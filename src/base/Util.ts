@@ -66,7 +66,7 @@ export const UType = {
     Table: <T extends TProperties>(properties: T): TPartial<TObject<T>> => Type.Partial(Type.Object(properties)),
     Number: (options?: UNumericOptions) => Type.Number(options),
     String: <Format extends string>(options?: UStringOptions<StringFormatOption | Format>) => Type.String(options),
-    Date: (options?: UDateOptions) => Type.Date(options),
+    Date: (options?: UDateOptions) => Type.Union([Type.Date(options), Type.String(), Type.Number()], { ...options, __DATE: true }),
     Boolean: (options?: USchema) => Type.Boolean(options),
     Integer: (options?: UNumericOptions) => Type.Integer(options),
 }

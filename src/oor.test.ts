@@ -18,10 +18,15 @@ test(`${MODE} Test : Basic`, async () => {
     const result = await User.all();
 
     console.log(result);
+});
+
+
+test(`${MODE} Test : Query`, async () => {
+    const result = await User.query({ count_: 3, nameLiker: '伟' })
+
+    console.log(result);
 })
-    .skip();
-
-
+    ;
 
 test(`${MODE} Test : Query with QuerySchemma`, async ({ assert }) => {
 
@@ -73,7 +78,6 @@ test(`${MODE} Test : Query with QuerySchemma`, async ({ assert }) => {
 
 })
     // .skip()
-    // .pin()
     ;
 
 
@@ -95,7 +99,6 @@ test(`${MODE} Test : Query With Some Condition`, async () => {
     // console.log(result.length)
 
 })
-    .pin()
     ;
 
 
@@ -148,7 +151,6 @@ test(`${MODE} Test : Update 2`, async () => {
     // const result = await User.updateByQuery({ age: 38 }, { idMax: 10, sex: false });
     console.log(result)
 })
-    .skip()
     ;
 
 

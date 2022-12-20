@@ -9,9 +9,9 @@ import _ from 'lodash';
 let isPub = (process.argv[process.argv.length - 1] == '--build');
 
 const RunTest = () => {
-  // Load Env
-  if (existsSync('.env')) {
-    let lines = readFileSync('.env', 'utf-8').split(/\r?\n/);
+  let env_file = process.env.MY_ENV_FILE;
+  if (env_file && existsSync(env_file)) {
+    let lines = readFileSync(env_file, 'utf-8').split(/\r?\n/);
     lines.map(line => {
       let ptn = line.split('=');
       if (ptn.length = 2) {
@@ -27,7 +27,7 @@ const RunTest = () => {
     ],
     reporters: [specReporter()],
     importer: (filePath) => import(filePath),
-    timeout: 20000,
+    timeout: 2000,
   });
   run();
 }

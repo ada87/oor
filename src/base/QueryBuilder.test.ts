@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { test } from '@japa/runner'
 import '@japa/assert'
+import { test } from '@japa/runner'
 
 import { FIELD_MAP } from '../test/pg';
 import { queryToCondition } from './QueryBuilder';
@@ -36,18 +36,18 @@ test('Test : buildQuery', ({ assert }) => {
         count_: 20,
         order_: 'id',
         by_: 'desc',
-        idRN: '(1,2]',
+        idBt: '(1,2]',
         sex: false,                                 // sex = false
         idMin: 200,                                 // id > 200
         idNot: 300,                                 // id != 300
         registerDateMin: '2022-01-01',              // registerDate > 2022-01-01
         registerDateMax: new Date('2022-02-01'),    // registerDate < 2022-02-01
-        lastModifyRD: '2022-01-01',                 //
-        lastModifyRM: '2022-01',                    //
-        lastModifyRY: '2022',                       //
+        lastModifyBtD: '2022-01-01',                 //
+        lastModifyBtM: '2022-01',                    //
+        lastModifyBtY: '2022',                       //
         nameLike: 'name',                           // name like %name%
         name: 'oor',                                // name = oor (No Suffix, No Magic )
-        namea: 'oor',                               // will be ignored because field "namea" not exists
+        // namea: 'oor',                               // will be ignored because field "namea" not exists
     };
 
     let condition = queryToCondition(query, FIELD_MAP, new Map());
@@ -68,7 +68,6 @@ test('Test : buildQuery', ({ assert }) => {
     // buildQuery({ a: '1' })
 })
 
-    // .pin()
     ;
 
 

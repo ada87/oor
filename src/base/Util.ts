@@ -1,5 +1,5 @@
 import type { USchema, MagicSuffix, DB_TYPE, UDateOptions, UNumericOptions, UStringOptions } from './types';
-import type { TProperties, TPartial, TObject, StringFormatOption, } from '@sinclair/typebox';
+import type { TProperties, TPartial, TObject, StringFormatOption, TSchema } from '@sinclair/typebox';
 
 import _ from 'lodash';
 import dayjs from 'dayjs';
@@ -61,12 +61,11 @@ export const setup = (settings: Settings) => {
     if (settings.showSQL && _.isFunction(settings.showSQL)) ShowSql = settings.showSQL;
 }
 
-
 export const UType = {
     Table: <T extends TProperties>(properties: T): TPartial<TObject<T>> => Type.Partial(Type.Object(properties)),
     Number: (options?: UNumericOptions) => Type.Number(options),
     String: <Format extends string>(options?: UStringOptions<StringFormatOption | Format>) => Type.String(options),
-    Date: (options?: UDateOptions) => Type.Union([Type.Date(options), Type.String(), Type.Number()], { ...options, __DATE: true }),
+    Date: (options?: UDateOptions) => Type.Union([Type.Date(options), Type.Number(), Type.String()], options),
     Boolean: (options?: USchema) => Type.Boolean(options),
     Integer: (options?: UNumericOptions) => Type.Integer(options),
 }

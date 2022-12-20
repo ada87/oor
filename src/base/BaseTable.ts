@@ -21,6 +21,7 @@ export abstract class BaseTable<T extends TObject, C> extends BaseView<T, C> {
     private checkEntity(obj: any, isAdd = false): any {
         // checkEntity(this.schema)
         let clone: any = {}
+        // console.log(obj);
         this._CONFIG.FIELD_MAP.forEach((schema, key) => {
             let field = schema.column || key;
             if (_.has(obj, key)) clone[field] = obj[key];
@@ -38,7 +39,11 @@ export abstract class BaseTable<T extends TObject, C> extends BaseView<T, C> {
                     clone[field] = new Date();
                     return;
                 }
-                clone[field] = toDate(obj[key]);
+                if (obj[key] === null || obj[key] === 0) {
+                    clone[field] = null;
+                } else {
+                    clone[field] = toDate(obj[key]);
+                }
             }
         })
         return clone;

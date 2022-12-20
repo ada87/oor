@@ -41,7 +41,6 @@ export abstract class BaseTable<T extends TObject, C> extends BaseView<T, C> {
                 clone[field] = toDate(obj[key]);
             }
         })
-        console.log(clone)
         return clone;
     }
 

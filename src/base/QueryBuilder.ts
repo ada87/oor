@@ -95,6 +95,23 @@ export const queryToCondition = (query: QuerySchema, FIELD_MAP: Map<string, USch
         }
         ROOT.items.push(queryItem);
     });
+    // let keyword = _.trim(query.keyword_);
+    // if (keyword) {
+    //     let OR: WhereCondition = { link: 'OR', items: [] }
+    //     for (let [key, value] of FIELD_MAP) {
+    //         if (value.ignore) continue;
+    //         let type = getFieldType(value);
+    //         if (type != 'string') continue;
+    //         OR.items.push({ column: value.column || key, value: keyword, fn: 'Like' });
+    //     }
+    //     if (OR.items.length) {
+    //         if (OR.items.length == 1) {
+    //             ROOT.items.push(OR.items[0])
+    //         } else { 
+    //             ROOT.items.push(OR)
+    //         }
+    //     }
+    // }
     throwErr(err, 'Some SQL Error Occur')
     return ROOT;
 }

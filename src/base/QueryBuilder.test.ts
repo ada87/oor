@@ -8,11 +8,14 @@ import { SUFFIX } from './types';
 import type { QuerySchema } from './types';
 
 test('Test : Suffix Cover', ({ assert }) => {
-    let query: any = {};
-    for (let suffix of SUFFIX) {
-        query['age' + suffix] = 12;
-        // query['name' + suffix] = 'abc';
-    }
+    let query: any = {
+        age: 1,
+        keyword_: 'fdsa'
+    };
+    // for (let suffix of SUFFIX) {
+    //     query['age' + suffix] = 12;
+    //     // query['name' + suffix] = 'abc';
+    // }
     // console.log(query)
     let condition = queryToCondition(query, FIELD_MAP, new Map());
     console.log(condition)
@@ -23,7 +26,8 @@ test('Test : Suffix Cover', ({ assert }) => {
     // let [ORDERBY, LIMIT] = orderByLimit(FIELD_MAP, query);
 
 })
-    .skip()
+    // .skip()
+    .pin()
     ;
 
 

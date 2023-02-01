@@ -10,7 +10,6 @@ const OOR_FASTIFY_PG: FastifyPluginCallback<PGSettings> = (fastify: FastifyInsta
     let pool = setup(options, next);
     fastify.addHook('onClose', () => pool.end())
     fastify.decorate('opg', pool);
-    pool.connect(next)
 }
 
 declare module 'fastify' {

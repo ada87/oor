@@ -1,6 +1,4 @@
 import _ from 'lodash';
-import type { TObject } from '@sinclair/typebox';
-import type { DB_TYPE } from '../base/types';
 
 import { ClientBase, Pool, PoolConfig, QueryResult } from 'pg';
 import { Settings, setup as _setup } from '../base/Util'
@@ -8,15 +6,17 @@ import { SqlBuilder, SqlExecutor } from '../base/sql';
 import { getFieldType } from '../base/QueryBuilder';
 import { BaseView, TableOptions } from '../base/BaseView';
 import { BaseTable } from '../base/BaseTable';
-
 import { insert, update, del, select, count, byField, orderBy, limit } from './basic/builder';
 import { where, fixWhere } from './basic/where'
 import { executor } from './basic/executor'
 
+export type { Static } from '@sinclair/typebox';
+import type { Static, TObject } from '@sinclair/typebox';
+import type { DB_TYPE } from '../base/types';
+
 // Export Some useful global apis/types.
 export { UType } from '../base/Util';
 export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
-export type { Static } from '@sinclair/typebox';
 
 const PG: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
 
@@ -83,7 +83,7 @@ export class View<T extends TObject> extends BaseView<T, Connection> {
 export class Table<T extends TObject> extends BaseTable<T, Connection>{
     protected _DB_TYPE: DB_TYPE = 'pg';
     protected _BUILDER: SqlBuilder = PG;
-    protected _EXECUTOR: SqlExecutor<T> = executor;
+    protected _EXECUTOR: SqlExecutor<Static<T>> = executor;
 
     protected init(schema: T, options?: TableOptions) {
         let fields_query = [];

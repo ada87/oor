@@ -1,5 +1,4 @@
-import type { USchema, MagicSuffix, DB_TYPE, UDateOptions, UNumericOptions, UStringOptions } from './types';
-import type { TProperties, TPartial, TObject, StringFormatOption, TSchema } from '@sinclair/typebox';
+
 
 import _ from 'lodash';
 import dayjs from 'dayjs';
@@ -7,8 +6,12 @@ import { Type } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
 import { setProvider } from './Providers';
 
-export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull']);
+import type {  MagicSuffix, DB_TYPE, UDateOptions, UNumericOptions, UStringOptions, USchema } from './types';
+import type { TProperties, TPartial, TObject, StringFormatOption } from '@sinclair/typebox';
 
+
+
+export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull']);
 export type Settings = {
     provider: [DB_TYPE, () => any] | (() => any),
     pageSize?: number,
@@ -27,8 +30,8 @@ export type Settings = {
     //     parseRuleFormat?: string,
     // }
 }
-
-
+// 
+Type.Number({ maximum: 1, minimum: 33 })
 
 
 var STRICT_QUERY = false;
@@ -63,12 +66,14 @@ export const setup = (settings: Settings) => {
 
 export const UType = {
     Table: <T extends TProperties>(properties: T): TPartial<TObject<T>> => Type.Partial(Type.Object(properties)),
-    Number: (options?: UNumericOptions) => Type.Number(options),
-    String: <Format extends string>(options?: UStringOptions<StringFormatOption | Format>) => Type.String(options),
+    Number: (options?: UNumericOptions<number>) => Type.Number(options),
+    String: (options?: UStringOptions) => Type.String(options),
     Date: (options?: UDateOptions) => Type.Union([Type.Date(options), Type.Number(), Type.String()], options),
     Boolean: (options?: USchema) => Type.Boolean(options),
-    Integer: (options?: UNumericOptions) => Type.Integer(options),
+    Integer: (options?: UNumericOptions<number>) => Type.Integer(options),
 }
+
+// UType.Number({delMark:'dfa',ignore:true})
 
 export const throwErr = (err: string[], message?: string) => {
     if (err.length == 0) return;
@@ -85,9 +90,10 @@ export const checkEntity = (T: TObject, val: any) => {
         return;
     }
     const result = Value.Errors(T, val);
-    let err = result.next();
+    let err = result.First();
     if (err) {
-        throw new Error('Entity Has Some value')
+
+        throw new Error('Entity Has Some Error')
     }
 
 }

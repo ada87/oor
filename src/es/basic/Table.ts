@@ -1,7 +1,3 @@
-import type { TObject, Static } from '@sinclair/typebox';
-import type { QuerySchema, WhereParam } from '../../base/types';
-import type { SearchHit } from '@elastic/elasticsearch/lib/api/types';
-
 import dayjs from 'dayjs';
 import _ from 'lodash';
 import { View } from './View'
@@ -9,6 +5,12 @@ import { getFieldType, queryToCondition } from '../../base/QueryBuilder';
 import { boolValue } from '../../base/Util';
 import { where, fixQuery, buildSearch } from './dsl';
 import { actions } from './executor'
+
+
+import type { TObject, Static } from '@sinclair/typebox';
+import type { QuerySchema, WhereParam } from '../../base/types';
+import type { SearchHit } from '@elastic/elasticsearch/lib/api/types';
+
 
 export class Table<T extends TObject> extends View<T> {
 

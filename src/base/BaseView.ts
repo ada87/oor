@@ -1,13 +1,13 @@
-import type { TObject, Static, TSchema } from '@sinclair/typebox';
-import type { QuerySchema, WhereParam, WhereDefine, USchema, WhereItem, Sort } from './types';
-
 import _ from 'lodash';
 import { PAGE_SIZE } from './Util';
 import { BaseQuery } from './BaseQuery'
 import { queryToCondition } from './QueryBuilder';
 
-const GLOBAL_ID_FIELD = new Set<string>(['id', 'guid']);
+import type { TObject, Static, TSchema } from '@sinclair/typebox';
+import type { QuerySchema, WhereParam, WhereDefine, USchema, WhereItem, Sort } from './types';
 
+
+const GLOBAL_ID_FIELD = new Set<string>(['id', 'uuid', 'guid']);
 
 export type TableOptions = {
     /**

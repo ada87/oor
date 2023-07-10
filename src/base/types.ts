@@ -1,6 +1,6 @@
-import type { SchemaOptions, StringOptions, DateOptions, NumericOptions } from '@sinclair/typebox';
+import { type SchemaOptions, type StringOptions, type DateOptions, type NumericOptions, Type } from '@sinclair/typebox';
 
-export type DB_TYPE = 'pg' | 'es' | 'mysql';
+export type DB_TYPE = 'pg' | 'es' | 'mysql' | 'sqlite';
 
 export type Support = { string: boolean, number: boolean, date: boolean, boolean: boolean }
 /**
@@ -96,7 +96,7 @@ export type QuerySchema = {
 
 
 
-export type USchema = SchemaOptions & {
+export interface USchema extends SchemaOptions {
     /**
      * 1. if ignore = true , query SELECT will not include this field
      * 2. `table.getById()` will return this field. Actually `table.getById()` aways use SELECT * !
@@ -113,7 +113,9 @@ export type USchema = SchemaOptions & {
     // fn?: 'lower' | 'upper'
 }
 
-export type UStringOptions<Format extends string> = USchema & StringOptions<Format> & {
+
+
+export interface UStringOptions extends USchema, StringOptions {
     /**
      * Defind a mark: 
      *      1. Delete action will update this filed to mark 
@@ -122,7 +124,9 @@ export type UStringOptions<Format extends string> = USchema & StringOptions<Form
     */
     delMark?: string;
 }
-export type UNumericOptions = USchema & {
+
+
+export interface UNumericOptions<T extends number | bigint> extends USchema, NumericOptions<T> {
     /**
      * Defind a mark: 
      *      1. Delete action will update this filed to mark 
@@ -130,9 +134,11 @@ export type UNumericOptions = USchema & {
      *      3. Note : A table can only hava ONE delMark.
     */
     delMark?: number;
-} & NumericOptions;
+}
 
-export type UDateOptions = USchema & DateOptions & {
+
+
+export interface UDateOptions extends USchema, DateOptions {
     /**
      * 1. Create Time can not be modify
      * 2. It will be auto fill with Current Time while INSERT

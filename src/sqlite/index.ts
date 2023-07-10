@@ -1,25 +1,22 @@
-// https://github.com/sidorares/node-mysql2
 import _ from 'lodash';
-import { createPool } from 'mysql2/promise';
-import { Settings, setup as _setup } from '../base/Util'
+import { insert, update, del, select, count, byField, orderBy, limit } from './basic/builder';
+import { where, fixWhere } from '../mysql/basic/where'
+import { executor } from './basic/executor'
 import { getFieldType } from '../base/QueryBuilder';
 import { BaseView } from '../base/BaseView';
 import { BaseTable } from '../base/BaseTable';
-export { UType } from '../base/Util';
-
-import { insert, update, del, select, count, byField, orderBy, limit } from './basic/builder';
-import { where, fixWhere } from './basic/where'
-import { executor } from './basic/executor'
-
+import { Settings, setup as _setup } from '../base/Util'
 // Export Some useful global apis/types.
+import { verbose } from 'sqlite3';
+import { _query } from './basic/toPromise'
 
 export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
 export type { Static } from '@sinclair/typebox';
 import type { Static, TObject } from '@sinclair/typebox';
 import type { DB_TYPE } from '../base/types';
-import type { PoolOptions, FieldPacket, Pool } from 'mysql2/promise'
 import type { SqlBuilder, SqlExecutor } from '../base/sql';
 import type { TableOptions } from '../base/BaseView';
+import type { Database } from 'sqlite3';
 
 const MY: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
 
@@ -34,7 +31,7 @@ const SelectField = (field: string, schema: any) => {
 }
 
 
-export class View<T extends TObject> extends BaseView<T, Pool> {
+export class View<T extends TObject> extends BaseView<T, Database> {
     protected _DB_TYPE: DB_TYPE = 'mysql';
     protected _BUILDER: SqlBuilder = MY;
     protected _EXECUTOR: SqlExecutor<T> = executor;
@@ -72,12 +69,12 @@ export class View<T extends TObject> extends BaseView<T, Pool> {
     /**
      * same arguments as mysql.query()
      * */
-    exec(...args: any[]): Promise<[any, FieldPacket[]]> {
-        return this.getClient().query.call(this.getClient(), ...args);
+    exec(sql, ...args: any[]): Promise<T[]> {
+        return _query(this.getClient(), sql, args)
     }
 }
 
-export class Table<T extends TObject> extends BaseTable<T, Pool> {
+export class Table<T extends TObject> extends BaseTable<T, Database> {
     protected _DB_TYPE: DB_TYPE = 'mysql';
     protected _BUILDER: SqlBuilder = MY;
     protected _EXECUTOR: SqlExecutor<Static<T>> = executor;
@@ -120,22 +117,25 @@ export class Table<T extends TObject> extends BaseTable<T, Pool> {
     /**
      * same arguments as mysql.query()
      * */
-    exec(...args: any[]): Promise<[any, FieldPacket[]]> {
-        return this.getClient().query.call(this.getClient(), ...args);
+    exec(sql, ...args: any[]): Promise<T[]> {
+        return _query(this.getClient(), sql, args);
     }
 }
 
-export type MYSettings = Omit<Settings, 'provider'> & {
-    provider: PoolOptions | (() => Pool)
+export type SqliteSettings = Omit<Settings, 'provider'> & {
+    provider: string | (() => Database)
 };
 
-export const setup = (settings: MYSettings, cb?: (err: Error) => void): Pool => {
-    let pool: Pool;
+export const setup = (settings: SqliteSettings, cb?: (err: Error) => void): Database => {
+    let db: Database;
     if (_.isFunction(settings.provider)) {
-        pool = settings.provider();
+        db = settings.provider();
     } else {
-        pool = createPool(settings.provider);
+        const sql = verbose();
+        db = new sql.Database(settings.provider);
+        db.serialize();
+        // db = createPool(settings.provider);
     }
-    _setup({ ...settings, provider: ['mysql', () => pool], })
-    return pool;
+    _setup({ ...settings, provider: ['sqlite', () => db], })
+    return db;
 }

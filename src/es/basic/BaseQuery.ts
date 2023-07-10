@@ -1,7 +1,8 @@
+import { PROVIDERS } from '../../base/Providers';
+
 import type { Client } from '@elastic/elasticsearch';
 import type { SearchResponse, SearchRequest } from '@elastic/elasticsearch/lib/api/types';
 
-import { PROVIDERS } from '../../base/Providers';
 
 export abstract class BaseQuery {
 

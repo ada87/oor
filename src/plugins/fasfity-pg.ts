@@ -1,10 +1,10 @@
-import type { FastifyInstance, FastifyPluginCallback } from 'fastify';
-
 import _ from 'lodash';
 import fp from 'fastify-plugin';
-import { Pool } from 'pg';
-import { setup, PGSettings } from '../pg/index'
+import { setup } from '../pg/index'
 
+import type { PGSettings } from '../pg/index'
+import type { Pool } from 'pg';
+import type { FastifyInstance, FastifyPluginCallback } from 'fastify';
 
 const OOR_FASTIFY_PG: FastifyPluginCallback<PGSettings> = (fastify: FastifyInstance, options: PGSettings, next) => {
     let pool = setup(options, next);

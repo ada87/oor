@@ -1,4 +1,6 @@
-import { DB_TYPE } from './types'
+import type { DB_TYPE } from './types';
+
+
 export const PROVIDERS: Record<DB_TYPE, Function> = {
     pg: () => {
         throw new Error('Must specfy a Postgresql DataBase provider');
@@ -8,6 +10,9 @@ export const PROVIDERS: Record<DB_TYPE, Function> = {
     },
     mysql: () => {
         throw new Error('Must specfy a Mysql DataBase provider');
+    },
+    sqlite: () => {
+        throw new Error('Must specfy a Sqlite DataBase provider');
     },
 }
 

@@ -1,7 +1,8 @@
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
+import type { Dayjs } from 'dayjs'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -29,7 +30,7 @@ export const setFormat = (timezone: string, formater: string) => {
     TZ_MAP.set(timezone, formater)
 }
 
-// 
+
 export const convertDate = (date: string | Date | number | Dayjs, timezone: string = DEFAULT_TIMEZONE): string => {
     return dayjs(date).tz(timezone).format(TZ_MAP.get(timezone))
 }

@@ -1,15 +1,14 @@
-import type { TObject, Static, TSchema } from '@sinclair/typebox';
-import type { QuerySchema, WhereParam, WhereDefine, USchema } from '../../base/types';
-import type { TableOptions } from '../../base/BaseView'
-import type { SearchRequest, SearchResponse, Field, QueryDslQueryContainer, Sort } from '@elastic/elasticsearch/lib/api/types';
-
 import _ from 'lodash';
 import { PAGE_SIZE } from '../../base/Util';
 import { BaseQuery } from './BaseQuery'
 import { queryToCondition, getFieldType } from '../../base/QueryBuilder';
-import type { OrderByLimit, ESQuery } from './define';
-
 import { where, fixWhere, buildSearch } from './dsl';
+
+import type { TObject, Static, TSchema } from '@sinclair/typebox';
+import type { QuerySchema, WhereParam, WhereDefine, USchema } from '../../base/types';
+import type { TableOptions } from '../../base/BaseView'
+import type { SearchRequest, SearchResponse, Field, QueryDslQueryContainer, Sort } from '@elastic/elasticsearch/lib/api/types';
+import type { OrderByLimit, ESQuery } from './define';
 
 const ES_MAX_SIZE = 10000;
 
@@ -17,7 +16,7 @@ export abstract class BaseView<T extends TObject, ROW> extends BaseQuery {
 
     protected _index: string;
 
-    protected abstract _EXECUTOR: ESQuery<T, ROW>
+    protected abstract _EXECUTOR: ESQuery<Static<T>, ROW>
 
     private _F2C = new Map<string, string>(); // Field To Column
     private _C2F = new Map<string, string>(); // Column To Field

@@ -1,10 +1,9 @@
-import type { Client, } from '@elastic/elasticsearch';
-import type { SearchRequest, SearchHit, Field, QueryDslQueryContainer, IndexRequest, UpdateRequest, Script } from '@elastic/elasticsearch/lib/api/types';
-import type { ESQuery, ESAction } from './define';
 import _ from 'lodash';
 import { ShowSql } from '../../base/Util';
 
-
+import type { Client } from '@elastic/elasticsearch';
+import type { SearchRequest, SearchHit, Field, QueryDslQueryContainer, IndexRequest, UpdateRequest, Script } from '@elastic/elasticsearch/lib/api/types';
+import type { ESQuery, ESAction } from './define';
 
 const logSearch = (request: SearchRequest) => {
     if (ShowSql == null) return

@@ -1,8 +1,8 @@
-import type { Pool, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
-import type { SqlExecutor, } from '../../base/sql';
-
 import _ from 'lodash';
 import { ShowSql } from '../../base/Util';
+
+import type { Pool, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
+import type { SqlExecutor, } from '../../base/sql';
 
 const log = (SQL: string, PARAM: any[]) => {
     if (ShowSql == null) return;

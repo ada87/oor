@@ -1,13 +1,13 @@
 import { test as jtest, Test, TestContext } from '@japa/runner';
 import { Client } from 'pg';
-import type { ClientConfig } from 'pg';
 import { TestExecutor } from '@japa/core';
 import { setup, Table, } from '../pg/index';
-import * as _ from 'lodash';
-import { UserSchema, } from './Const';
+import _ from 'lodash';
+import { UserSchema } from './Const';
 export { SUFFIX_MATRIX } from '../pg/basic/where';
 
 
+import type { ClientConfig } from 'pg';
 
 
 const config: ClientConfig = {

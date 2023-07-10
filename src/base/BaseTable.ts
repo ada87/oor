@@ -1,18 +1,19 @@
-import type { TObject, Static } from '@sinclair/typebox';
-import type { QuerySchema, WhereParam } from './types';
-
 import _ from 'lodash';
 import { BaseView } from './BaseView'
 import { getFieldType, queryToCondition } from './QueryBuilder';
-import { SqlExecutor } from './sql';
 import dayjs from 'dayjs';
+
+import type { TObject, Static } from '@sinclair/typebox';
+import type { QuerySchema, WhereParam } from './types';
+import type { SqlExecutor } from './sql';
+
 const toDate = (txt: string | number): Date => {
     return dayjs(txt).toDate();
 }
 
 export abstract class BaseTable<T extends TObject, C> extends BaseView<T, C> {
 
-    protected abstract _EXECUTOR: SqlExecutor<T>;
+    protected abstract _EXECUTOR: SqlExecutor<Static<T>>;
 
     /**
      * Auto convert data

@@ -1,11 +1,11 @@
+import _ from 'lodash';
+import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../../base/Util';
+import dayjs from 'dayjs';
+
 import type { QueryDslQueryContainer, QueryDslBoolQuery, SearchRequest, Field } from '@elastic/elasticsearch/lib/api/types';
 import type { OrderByLimit } from './define'
 import type { Dayjs } from 'dayjs';
-
-import _ from 'lodash';
-import { WhereParam, WhereItem, WhereCondition, MagicSuffix, FieldType, Support } from '../../base/types';
-import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../../base/Util';
-import dayjs from 'dayjs';
+import type { WhereParam, WhereItem, WhereCondition, MagicSuffix, Support } from '../../base/types';
 
 // DOCS
 // https://www.elastic.co/guide/en/elasticsearch/reference/8.5/query-dsl.html

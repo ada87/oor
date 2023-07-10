@@ -1,10 +1,10 @@
-import type { FastifyInstance, FastifyPluginCallback } from 'fastify';
-
 import _ from 'lodash';
 import fp from 'fastify-plugin';
-import { Pool } from 'mysql2/promise';
-import { setup, MYSettings } from '../mysql/index'
+import { setup } from '../mysql/index'
 
+import type { MYSettings } from '../mysql/index';
+import type { FastifyInstance, FastifyPluginCallback } from 'fastify';
+import type { Pool } from 'mysql2/promise';
 
 const OOR_FASTIFY_MY: FastifyPluginCallback<MYSettings> = (fastify: FastifyInstance, options: MYSettings, next) => {
     let pool = setup(options, next);

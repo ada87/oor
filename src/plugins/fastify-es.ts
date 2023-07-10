@@ -1,9 +1,10 @@
-import type { FastifyInstance, FastifyPluginCallback } from 'fastify';
-
 import _ from 'lodash';
 import fp from 'fastify-plugin';
 import { Client } from '@elastic/elasticsearch';
-import { setup, ESSettings } from '../es/index'
+import { setup } from '../es/index'
+
+import type { FastifyInstance, FastifyPluginCallback } from 'fastify';
+import type { ESSettings } from '../es/index';
 
 
 const OOR_FASTIFY_ES: FastifyPluginCallback<ESSettings> = (fastify: FastifyInstance, options: ESSettings, next) => {

@@ -27,7 +27,7 @@ test('Test : Suffix Cover', ({ assert }) => {
 
 })
     // .skip()
-    .pin()
+    // .pin()
     ;
 
 

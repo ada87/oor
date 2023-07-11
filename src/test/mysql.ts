@@ -2,10 +2,10 @@ import { test as jtest, Test, TestContext } from '@japa/runner';
 import { createPool, Pool } from 'mysql2/promise';
 import { TestExecutor } from '@japa/core';
 import { setup, Table, } from '../mysql/index';
-export { SUFFIX_MATRIX } from '../mysql/basic/where';
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { UserSchema, } from './Const';
 
+export { SUFFIX_MATRIX } from '../mysql/basic/where';
 
 
 export const MODE = 'MYSQL';

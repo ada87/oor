@@ -1,13 +1,11 @@
-
-
 import _ from 'lodash';
 import dayjs from 'dayjs';
 import { Type } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
 import { setProvider } from './Providers';
 
-import type {  MagicSuffix, DB_TYPE, UDateOptions, UNumericOptions, UStringOptions, USchema } from './types';
-import type { TProperties, TPartial, TObject, StringFormatOption } from '@sinclair/typebox';
+import type { MagicSuffix, DB_TYPE, UDateOptions, UNumericOptions, UStringOptions, USchema } from './types';
+import type { TProperties, TPartial, TObject } from '@sinclair/typebox';
 
 
 
@@ -73,7 +71,6 @@ export const UType = {
     Integer: (options?: UNumericOptions<number>) => Type.Integer(options),
 }
 
-// UType.Number({delMark:'dfa',ignore:true})
 
 export const throwErr = (err: string[], message?: string) => {
     if (err.length == 0) return;

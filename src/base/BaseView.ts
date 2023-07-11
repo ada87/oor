@@ -33,6 +33,14 @@ export type TableOptions = {
 
 // const WHERE_TO_STRING = ();
 
+
+/**
+ * @constructor
+ * @param tableName TableName in database, (with schema in postgresql, eg: 'shcema.xxx')
+ * @param schema  @see TObject define Table , use UType.Table
+ * @param options  optional @see TableOptions smoe
+ * 
+*/
 export abstract class BaseView<T extends TObject, C> extends BaseQuery<C> {
 
     protected _table: string;

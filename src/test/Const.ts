@@ -78,7 +78,8 @@ const randomValue = (type: FieldType, suffix: MagicSuffix): boolean | number | s
             return _.sample([true, false]) as boolean;
         case 'date':
             return new Date(_.random(1660000000000, 1670374864438))
-        case 'string':
+        // case 'string':
+        default:
             return _.sample(['秦', '苏', '赵', '高']) as string;
     }
 

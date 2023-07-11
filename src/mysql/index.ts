@@ -11,17 +11,22 @@ import { insert, update, del, select, count, byField, orderBy, limit } from './b
 import { where, fixWhere } from './basic/where'
 import { executor } from './basic/executor'
 
-// Export Some useful global apis/types.
 
-export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
-export type { Static } from '@sinclair/typebox';
 import type { Static, TObject } from '@sinclair/typebox';
 import type { DB_TYPE } from '../base/types';
 import type { PoolOptions, FieldPacket, Pool } from 'mysql2/promise'
 import type { SqlBuilder, SqlExecutor } from '../base/sql';
 import type { TableOptions } from '../base/BaseView';
 
-const MY: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
+
+export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
+/**
+ * A Quick Ref
+*/
+export type { Static } from '@sinclair/typebox';
+
+
+const MYSQL: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
 
 const SelectField = (field: string, schema: any) => {
     const type = getFieldType(schema)
@@ -33,10 +38,13 @@ const SelectField = (field: string, schema: any) => {
     return '`' + field + '`';
 }
 
-
+/**
+ * View Object is use for data_table(query only) / data_view
+ * Want update/delete/add ? use @see Table
+*/
 export class View<T extends TObject> extends BaseView<T, Pool> {
     protected _DB_TYPE: DB_TYPE = 'mysql';
-    protected _BUILDER: SqlBuilder = MY;
+    protected _BUILDER: SqlBuilder = MYSQL;
     protected _EXECUTOR: SqlExecutor<T> = executor;
 
     protected init(schema: T, options?: TableOptions) {
@@ -76,10 +84,13 @@ export class View<T extends TObject> extends BaseView<T, Pool> {
         return this.getClient().query.call(this.getClient(), ...args);
     }
 }
-
+/**
+ * Table Object is use for data_table.
+ * Provide CRUD method to manager table records.
+*/
 export class Table<T extends TObject> extends BaseTable<T, Pool> {
     protected _DB_TYPE: DB_TYPE = 'mysql';
-    protected _BUILDER: SqlBuilder = MY;
+    protected _BUILDER: SqlBuilder = MYSQL;
     protected _EXECUTOR: SqlExecutor<Static<T>> = executor;
     protected init(schema: T, options?: TableOptions) {
         let fields_query = [];
@@ -111,10 +122,9 @@ export class Table<T extends TObject> extends BaseTable<T, Pool> {
         this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, WHERE);
     }
 
-    async add(object) {
+    async add(object: Static<T>): Promise<Static<T>> {
         const result = await super.add(object)
-        return await this.getById(result['id'] as any)
-
+        return await this.getById(result['id'] as string)
     }
 
     /**
@@ -137,5 +147,6 @@ export const setup = (settings: MYSettings, cb?: (err: Error) => void): Pool => 
         pool = createPool(settings.provider);
     }
     _setup({ ...settings, provider: ['mysql', () => pool], })
+    if (cb) cb(null);
     return pool;
 }

@@ -1,56 +1,54 @@
 import _ from 'lodash';
-
-import { ClientBase, Pool, PoolConfig, QueryResult } from 'pg';
-import { Settings, setup as _setup } from '../base/Util'
-import { SqlBuilder, SqlExecutor } from '../base/sql';
-import { getFieldType } from '../base/QueryBuilder';
-import { BaseView, TableOptions } from '../base/BaseView';
-import { BaseTable } from '../base/BaseTable';
 import { insert, update, del, select, count, byField, orderBy, limit } from './basic/builder';
-import { where, fixWhere } from './basic/where'
+import { where, fixWhere } from '../mysql/basic/where'
 import { executor } from './basic/executor'
-
-import type { DB_TYPE } from '../base/types';
-import type { Static, TObject } from '@sinclair/typebox';
-
+import { getFieldType } from '../base/QueryBuilder';
+import { BaseView } from '../base/BaseView';
+import { BaseTable } from '../base/BaseTable';
+import { Settings, setup as _setup } from '../base/Util'
 // Export Some useful global apis/types.
+import { InitSqlJsStatic } from 'sql.js';
+import { _query } from './basic/toPromise'
+
+
+import type { Static, TObject } from '@sinclair/typebox';
+import type { DB_TYPE } from '../base/types';
+import type { SqlBuilder, SqlExecutor } from '../base/sql';
+import type { TableOptions } from '../base/BaseView';
+import type { Database } from 'sql.js';
+
 export { UType } from '../base/Util';
 export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
-
 export type { Static } from '@sinclair/typebox';
 
-const PG: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
+
+const SQLITE: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
+
+const SelectField = (field: string, schema: any) => {
+    const type = getFieldType(schema)
+    if (type == 'boolean') {
+        if (schema.column) return `IF(\`${schema.column}\`= 1, TRUE, FALSE) AS \`${field}\``;
+        return `IF(\`${field}\`= 1, TRUE, FALSE) AS \`${field}\``;
+    }
+    if (schema.column) return `\`${schema.column}\` AS \`${field}\``;
+    return '`' + field + '`';
+}
 
 
-type Connection = ClientBase | Pool;
-
-export class View<T extends TObject> extends BaseView<T, Connection> {
-    protected _DB_TYPE: DB_TYPE = 'pg';
-    protected _BUILDER: SqlBuilder = PG;
+export class View<T extends TObject> extends BaseView<T, Database> {
+    protected _DB_TYPE: DB_TYPE = 'sqlite';
+    protected _BUILDER: SqlBuilder = SQLITE;
     protected _EXECUTOR: SqlExecutor<T> = executor;
 
-    /**
-     * 1. INIT  _CONFIG.fields_query  AND _CONFIG.fields_get
-     * 5. Fix Where Condition (NEED BUILDER?)
-    */
     protected init(schema: T, options?: TableOptions) {
         let fields_query = [];
         let fields_get = [];
         _.keys(schema.properties).map(field => {
             let properties = schema.properties[field];
-            if (properties.column) {
-                fields_get.push(`"${properties.column}" AS "${field}"`);
-                if (properties.ignore === true) {
-                    return;
-                }
-                fields_query.push(`"${properties.column}" AS "${field}"`);
-            } else {
-                fields_get.push('"' + field + '"');
-                if (properties.ignore === true) {
-                    return;
-                }
-                fields_query.push('"' + field + '"');
-            }
+            let select = SelectField(field, properties);
+            fields_get.push(select);
+            if (properties.ignore === true) return;
+            fields_query.push(select);
         });
         this._CONFIG.fields_query = fields_query.join(',');
         this._CONFIG.fields_get = fields_get.join(',')
@@ -72,38 +70,27 @@ export class View<T extends TObject> extends BaseView<T, Connection> {
         this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, WHERE);
     }
 
-
     /**
-     * same arguments as pg.query()
+     * same arguments as mysql.query()
      * */
-    exec(...args: any[]): Promise<QueryResult<T>> {
-        return this.getClient().query.call(this.getClient(), ...args);
+    exec(sql, ...args: any[]): Promise<T[]> {
+        return _query(this.getClient(), sql, args)
     }
 }
 
-export class Table<T extends TObject> extends BaseTable<T, Connection>{
-    protected _DB_TYPE: DB_TYPE = 'pg';
-    protected _BUILDER: SqlBuilder = PG;
+export class Table<T extends TObject> extends BaseTable<T, Database> {
+    protected _DB_TYPE: DB_TYPE = 'sqlite';
+    protected _BUILDER: SqlBuilder = SQLITE;
     protected _EXECUTOR: SqlExecutor<Static<T>> = executor;
-
     protected init(schema: T, options?: TableOptions) {
         let fields_query = [];
         let fields_get = [];
         _.keys(schema.properties).map(field => {
             let properties = schema.properties[field];
-            if (properties.column) {
-                fields_get.push(`"${properties.column}" AS "${field}"`);
-                if (properties.ignore === true) {
-                    return;
-                }
-                fields_query.push(`"${properties.column}" AS "${field}"`);
-            } else {
-                fields_get.push('"' + field + '"');
-                if (properties.ignore === true) {
-                    return;
-                }
-                fields_query.push('"' + field + '"');
-            }
+            let select = SelectField(field, properties);
+            fields_get.push(select);
+            if (properties.ignore === true) return;
+            fields_query.push(select);
         });
         this._CONFIG.fields_query = fields_query.join(',');
         this._CONFIG.fields_get = fields_get.join(',')
@@ -125,26 +112,34 @@ export class Table<T extends TObject> extends BaseTable<T, Connection>{
         this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, WHERE);
     }
 
+    async add(object) {
+        const result = await super.add(object)
+        return await this.getById(result['id'] as any)
+
+    }
+
     /**
-     * same arguments as pg.query()
+     * same arguments as mysql.query()
      * */
-    exec(...args: any[]): Promise<QueryResult<T>> {
-        return this.getClient().query.call(this.getClient(), ...args);
+    exec(sql, ...args: any[]): Promise<T[]> {
+        return _query(this.getClient(), sql, args);
     }
 }
 
-export type PGSettings = Omit<Settings, 'provider'> & {
-    provider: PoolConfig | (() => ClientBase | Pool)
+export type SqliteSettings = Omit<Settings, 'provider'> & {
+    provider: string | (() => Database)
 };
 
-export const setup = (settings: PGSettings, cb?: (err: Error) => void): Pool => {
-    let pool: Pool;
+export const setup = (settings: SqliteSettings, cb?: (err: Error) => void): Database => {
+    let db: Database;
     if (_.isFunction(settings.provider)) {
-        pool = settings.provider() as Pool;
+        db = settings.provider();
     } else {
-        pool = new Pool(settings.provider);
-        pool.connect(cb);
+        // const sql = verbose();
+        // db = new sql.Database(settings.provider);
+        // db.serialize();
+        // db = createPool(settings.provider);
     }
-    _setup({ ...settings, provider: ['pg', () => pool], })
-    return pool;
+    _setup({ ...settings, provider: ['sqlite', () => db], })
+    return db;
 }

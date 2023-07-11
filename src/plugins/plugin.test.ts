@@ -1,6 +1,6 @@
 import { test } from '@japa/runner';
 import { Pool, Client } from 'pg';
-import * as _ from 'lodash';
+import _ from 'lodash';
 
 test('Test : Pg Connection', async () => {
     var pg = new Client({

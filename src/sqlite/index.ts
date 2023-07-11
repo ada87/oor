@@ -10,15 +10,19 @@ import { Settings, setup as _setup } from '../base/Util'
 import { verbose } from 'sqlite3';
 import { _query } from './basic/toPromise'
 
-export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
-export type { Static } from '@sinclair/typebox';
+
 import type { Static, TObject } from '@sinclair/typebox';
 import type { DB_TYPE } from '../base/types';
 import type { SqlBuilder, SqlExecutor } from '../base/sql';
 import type { TableOptions } from '../base/BaseView';
 import type { Database } from 'sqlite3';
 
-const MY: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
+export { UType } from '../base/Util';
+export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
+export type { Static } from '@sinclair/typebox';
+
+
+const SQLITE: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
 
 const SelectField = (field: string, schema: any) => {
     const type = getFieldType(schema)
@@ -32,8 +36,8 @@ const SelectField = (field: string, schema: any) => {
 
 
 export class View<T extends TObject> extends BaseView<T, Database> {
-    protected _DB_TYPE: DB_TYPE = 'mysql';
-    protected _BUILDER: SqlBuilder = MY;
+    protected _DB_TYPE: DB_TYPE = 'sqlite';
+    protected _BUILDER: SqlBuilder = SQLITE;
     protected _EXECUTOR: SqlExecutor<T> = executor;
 
     protected init(schema: T, options?: TableOptions) {
@@ -75,8 +79,8 @@ export class View<T extends TObject> extends BaseView<T, Database> {
 }
 
 export class Table<T extends TObject> extends BaseTable<T, Database> {
-    protected _DB_TYPE: DB_TYPE = 'mysql';
-    protected _BUILDER: SqlBuilder = MY;
+    protected _DB_TYPE: DB_TYPE = 'sqlite';
+    protected _BUILDER: SqlBuilder = SQLITE;
     protected _EXECUTOR: SqlExecutor<Static<T>> = executor;
     protected init(schema: T, options?: TableOptions) {
         let fields_query = [];

@@ -17,3 +17,4 @@ export const PROVIDERS: Record<DB_TYPE, Function> = {
 }
 
 export const setProvider = (type: DB_TYPE, fn: Function) => PROVIDERS[type] = fn;
+

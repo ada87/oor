@@ -22,7 +22,7 @@ export type ESSettings = Omit<Settings, 'provider'> & {
 /**
  * Setup Elastic Search Connection with config
 */
-export const setup = (settings: ESSettings): Client => {
+export const setup = async (settings: ESSettings): Promise<Client> => {
     let client: Client;
     if (_.isFunction(settings.provider)) {
         client = settings.provider();

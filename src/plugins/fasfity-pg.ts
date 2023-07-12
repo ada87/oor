@@ -4,10 +4,10 @@ import { setup } from '../pg/index'
 
 import type { PGSettings } from '../pg/index'
 import type { Pool } from 'pg';
-import type { FastifyInstance, FastifyPluginCallback } from 'fastify';
+import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 
-const OOR_FASTIFY_PG: FastifyPluginCallback<PGSettings> = (fastify: FastifyInstance, options: PGSettings, next) => {
-    let pool = setup(options, next);
+const OOR_FASTIFY_PG: FastifyPluginAsync<PGSettings> = async (fastify: FastifyInstance, options: PGSettings,) => {
+    const pool = await setup(options);
     fastify.addHook('onClose', () => pool.end())
     fastify.decorate('opg', pool);
 }

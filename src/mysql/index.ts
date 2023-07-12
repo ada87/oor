@@ -140,7 +140,7 @@ export type MySqlSettings = Omit<Settings, 'provider'> & {
     provider: PoolOptions | (() => Pool)
 };
 
-export const setup = (settings: MySqlSettings, cb?: (err: Error) => void): Pool => {
+export const setup = async (settings: MySqlSettings): Promise<Pool> => {
     let pool: Pool;
     if (_.isFunction(settings.provider)) {
         pool = settings.provider();
@@ -148,6 +148,5 @@ export const setup = (settings: MySqlSettings, cb?: (err: Error) => void): Pool 
         pool = createPool(settings.provider);
     }
     _setup({ ...settings, provider: ['mysql', () => pool], })
-    if (cb) cb(null);
     return pool;
 }

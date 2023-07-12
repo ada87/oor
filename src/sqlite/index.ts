@@ -134,15 +134,14 @@ export type SqliteSettings = Omit<Settings, 'provider'> & {
     provider: string | (() => Database)
 };
 
-export const setup = (settings: SqliteSettings, cb?: (err: Error) => void): Database => {
+export const setup = async (settings: SqliteSettings): Promise<Database> => {
     let db: Database;
     if (_.isFunction(settings.provider)) {
         db = settings.provider();
     } else {
         const sql = verbose();
         db = new sql.Database(settings.provider);
-        db.serialize();
-        // db = createPool(settings.provider);
+        await db.serialize();
     }
     _setup({ ...settings, provider: ['sqlite', () => db], })
     return db;

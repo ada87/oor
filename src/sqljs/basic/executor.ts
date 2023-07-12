@@ -1,6 +1,7 @@
+// https://github.com/TryGhost/node-sqlite3
 import _ from 'lodash';
 import { ShowSql } from '../../base/Util';
-// https://github.com/TryGhost/node-sqlite3
+import { save } from './save';
 import type { Database, QueryExecResult } from 'sql.js';
 import type { SqlExecutor, } from '../../base/sql';
 
@@ -21,6 +22,8 @@ export const executor: SqlExecutor<any> = {
             if (effectedRows == 0) throw new Error('Insert Error');
             const stmt = db.prepare(`SELECT last_insert_rowid() AS id;`);
             var newId = stmt.getAsObject();
+            let result = await save(db.export());
+            if (!result) throw new Error('Save DB Error');
             return newId.id;
         } catch (e) {
             throw new Error(e);
@@ -52,7 +55,8 @@ export const executor: SqlExecutor<any> = {
         log(SQL, PARAM);
         db.run(SQL, PARAM);
         let effectedRows = db.getRowsModified();
-        // fs.writeFileSync(DATABASE, db.export());
+        let result = await save(db.export());
+        if (!result) throw new Error('Save DB Error');
         return effectedRows;
     },
 }

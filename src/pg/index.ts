@@ -137,13 +137,13 @@ export type PGSettings = Omit<Settings, 'provider'> & {
     provider: PoolConfig | (() => ClientBase | Pool)
 };
 
-export const setup = (settings: PGSettings, cb?: (err: Error) => void): Pool => {
+export const setup = async (settings: PGSettings): Promise<Pool> => {
     let pool: Pool;
     if (_.isFunction(settings.provider)) {
         pool = settings.provider() as Pool;
     } else {
         pool = new Pool(settings.provider);
-        pool.connect(cb);
+        await pool.connect();
     }
     _setup({ ...settings, provider: ['pg', () => pool], })
     return pool;

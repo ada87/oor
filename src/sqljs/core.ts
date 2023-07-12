@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { insert, update, del, select, count, byField, orderBy, limit } from './basic/builder';
+import { insert, update, del, select, count, byField, orderBy, limit } from '../sqlite/basic/builder';
 import { where, fixWhere } from '../mysql/basic/where'
 import { executor } from './basic/executor'
 import { getFieldType } from '../base/QueryBuilder';
@@ -8,7 +8,6 @@ import { BaseTable } from '../base/BaseTable';
 import { Settings, setup as _setup } from '../base/Util'
 // Export Some useful global apis/types.
 // import { _query } from './basic/toPromise'
-
 // import initSqlJs from 'sql.js'; 
 
 import type { Static, TObject } from '@sinclair/typebox';
@@ -17,10 +16,6 @@ import type { SqlBuilder, SqlExecutor } from '../base/sql';
 import type { TableOptions } from '../base/BaseView';
 import type { Database } from 'sql.js';
 
-
-export { UType } from '../base/Util';
-export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
-export type { Static } from '@sinclair/typebox';
 
 
 const SQLITE: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
@@ -122,25 +117,4 @@ export class Table<T extends TObject> extends BaseTable<T, Database> {
 
     }
 
-}
-
-export type SqliteSettings = Omit<Settings, 'provider'> & {
-    provider: string | (() => Database)
-};
-
-export const setup = (settings: SqliteSettings, cb?: (err: Error) => void): Database => {
-    let db: Database;
-    if (_.isFunction(settings.provider)) {
-        db = settings.provider();
-    } else {
-
-        // const sql =  initSqlJs({ locateFile: () => join(homedir(), process.env.sqlite_db || 'tool_test.db') });
-        // db = new sql.Database();
-        // const sql = verbose();
-        // db = new sql.Database(settings.provider);
-        // db.serialize();
-        // db = createPool(settings.provider);
-    }
-    _setup({ ...settings, provider: ['sqlite', () => db], })
-    return db;
 }

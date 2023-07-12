@@ -1,6 +1,6 @@
 import { test as jtest, Test, TestContext } from '@japa/runner';
 import { TestExecutor } from '@japa/core';
-import { setup, } from '../sqljs';
+import { setup, } from '../sqljs/node';
 import _ from 'lodash';
 // import { UserSchema } from './Const';
 // export { SUFFIX_MATRIX } from '../pg/basic/where';

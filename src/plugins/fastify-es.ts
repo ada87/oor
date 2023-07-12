@@ -3,14 +3,13 @@ import fp from 'fastify-plugin';
 import { Client } from '@elastic/elasticsearch';
 import { setup } from '../es/index'
 
-import type { FastifyInstance, FastifyPluginCallback } from 'fastify';
+import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import type { ESSettings } from '../es/index';
 
 
-const OOR_FASTIFY_ES: FastifyPluginCallback<ESSettings> = (fastify: FastifyInstance, options: ESSettings, next) => {
-    const client = setup(options);
+const OOR_FASTIFY_ES: FastifyPluginAsync<ESSettings> = async (fastify: FastifyInstance, options: ESSettings) => {
+    const client = await setup(options)
     fastify.decorate('oes', client);
-    next()
 }
 
 declare module 'fastify' {

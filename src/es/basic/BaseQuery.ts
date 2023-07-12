@@ -16,7 +16,7 @@ export abstract class BaseQuery {
     /**
      * Execute a custom search Request
     */
-    exec(requset: SearchRequest): Promise<SearchResponse> {
+    search(requset: SearchRequest): Promise<SearchResponse> {
         return this.getClient().search(requset);
     }
 }

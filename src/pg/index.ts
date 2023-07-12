@@ -76,7 +76,7 @@ export class View<T extends TObject> extends BaseView<T, Connection> {
     /**
      * same arguments as pg.query()
      * */
-    exec(...args: any[]): Promise<QueryResult<T>> {
+    sql: ClientBase['query'] = (...args: any[]) => {
         return this.getClient().query.call(this.getClient(), ...args);
     }
 }
@@ -128,7 +128,7 @@ export class Table<T extends TObject> extends BaseTable<T, Connection>{
     /**
      * same arguments as pg.query()
      * */
-    exec(...args: any[]): Promise<QueryResult<T>> {
+    sql: ClientBase['query'] = (...args: any[]) => {
         return this.getClient().query.call(this.getClient(), ...args);
     }
 }

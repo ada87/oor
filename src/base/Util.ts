@@ -10,8 +10,18 @@ import type { TProperties, TPartial, TObject } from '@sinclair/typebox';
 
 
 export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull']);
+/**
+ * Data Source Config
+*/
 export type Settings = {
+    /**
+     * DataBase Instace or  DataBase Connection Config
+     * use 'setup' function in sepific DataBase
+    */
     provider: [DB_TYPE, () => any] | (() => any),
+    /**
+     * Default pageSize for  Table/View Pagition,
+    */
     pageSize?: number,
     /**
      * A log Function Example : default :null
@@ -19,6 +29,18 @@ export type Settings = {
      *      logger.log
      */
     showSQL?: Function;
+    /**
+     * Check Param strict match Table Schema Define
+     * "query" use for db.query param
+     * "entity" use for add/update  param
+     * 
+     * Default : false
+     * false : Do not validate the param schema 
+     * true : Validate param schema 
+     * example : UType.Table({id:UType.Integer({min:1, max:10})})
+     *   can validate a range
+     * 
+    */
     strict?: boolean | {
         query?: boolean
         entity?: boolean,

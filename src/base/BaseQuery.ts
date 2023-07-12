@@ -36,9 +36,9 @@ export abstract class BaseQuery<Conn> {
     /**
      * Exec A Senctence
     */
-    sql(...args: any[]): Promise<any> {
-        return this._EXECUTOR.query.call(this, this.getClient(), ...args)
-    }
+    // sql(...args: any[]): Promise<any> {
+    //     return this._EXECUTOR.query.call(this, this.getClient(), ...args)
+    // }
 
 
 }

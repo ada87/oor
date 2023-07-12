@@ -19,7 +19,9 @@ export type ESSettings = Omit<Settings, 'provider'> & {
 
 
 
-
+/**
+ * Setup Elastic Search Connection with config
+*/
 export const setup = (settings: ESSettings): Client => {
     let client: Client;
     if (_.isFunction(settings.provider)) {

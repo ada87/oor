@@ -5,7 +5,6 @@ import { Settings, setup as _setup } from '../base/Util'
 import { getFieldType } from '../base/QueryBuilder';
 import { BaseView } from '../base/BaseView';
 import { BaseTable } from '../base/BaseTable';
-export { UType } from '../base/Util';
 
 import { insert, update, del, select, count, byField, orderBy, limit } from './basic/builder';
 import { where, fixWhere } from './basic/where'
@@ -23,6 +22,7 @@ export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, }
 /**
  * A Quick Ref
 */
+export { UType } from '../base/Util';
 export type { Static } from '@sinclair/typebox';
 
 
@@ -80,9 +80,10 @@ export class View<T extends TObject> extends BaseView<T, Pool> {
     /**
      * same arguments as mysql.query()
      * */
-    exec(...args: any[]): Promise<[any, FieldPacket[]]> {
+    sql: Pool['query'] = (...args: any[]) => {
         return this.getClient().query.call(this.getClient(), ...args);
     }
+
 }
 /**
  * Table Object is use for data_table.
@@ -128,18 +129,18 @@ export class Table<T extends TObject> extends BaseTable<T, Pool> {
     }
 
     /**
-     * same arguments as mysql.query()
-     * */
-    exec(...args: any[]): Promise<[any, FieldPacket[]]> {
+      * same arguments as mysql.query()
+      * */
+    sql: Pool['query'] = (...args: any[]) => {
         return this.getClient().query.call(this.getClient(), ...args);
     }
 }
 
-export type MYSettings = Omit<Settings, 'provider'> & {
+export type MySqlSettings = Omit<Settings, 'provider'> & {
     provider: PoolOptions | (() => Pool)
 };
 
-export const setup = (settings: MYSettings, cb?: (err: Error) => void): Pool => {
+export const setup = (settings: MySqlSettings, cb?: (err: Error) => void): Pool => {
     let pool: Pool;
     if (_.isFunction(settings.provider)) {
         pool = settings.provider();

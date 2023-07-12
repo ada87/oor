@@ -17,6 +17,7 @@
   "exclude": [
     "dist",
     "node_modules",
+    "node_modules/.store/@types+sql.js@1.4.4/node_modules/@types/node",
     "**/*.test.ts",
     "script.ts",
     "src/test"

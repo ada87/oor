@@ -2,6 +2,10 @@ import type { Database, RunResult } from 'sqlite3';
 
 type ExecResult = Pick<RunResult, 'lastID' | 'changes'>;
 
+// export const _run = (db:Database)=>{
+// db.run('')
+// }
+
 export const _exec = (db: Database, sql: string, param?: (string | number)[]) => new Promise<ExecResult>((r, j) => db.prepare(sql, function (err) {
     if (err != null) return j(err);
 

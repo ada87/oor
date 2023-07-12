@@ -54,6 +54,7 @@ export const User = new Table('public.user', UserSchema, {
     // globalCondition: [{ column: 'id', fn: '!=', 'value': 1 }]
 });
 
+
 // @ts-ignore
 export const FIELD_MAP = User._CONFIG.FIELD_MAP as Map<string, USchema>;
 

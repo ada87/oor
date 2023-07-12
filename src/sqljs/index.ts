@@ -7,15 +7,16 @@ import { BaseView } from '../base/BaseView';
 import { BaseTable } from '../base/BaseTable';
 import { Settings, setup as _setup } from '../base/Util'
 // Export Some useful global apis/types.
-import { InitSqlJsStatic } from 'sql.js';
-import { _query } from './basic/toPromise'
+// import { _query } from './basic/toPromise'
 
+// import initSqlJs from 'sql.js'; 
 
 import type { Static, TObject } from '@sinclair/typebox';
 import type { DB_TYPE } from '../base/types';
 import type { SqlBuilder, SqlExecutor } from '../base/sql';
 import type { TableOptions } from '../base/BaseView';
 import type { Database } from 'sql.js';
+
 
 export { UType } from '../base/Util';
 export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
@@ -71,10 +72,13 @@ export class View<T extends TObject> extends BaseView<T, Database> {
     }
 
     /**
-     * same arguments as mysql.query()
+     * same arguments as sqljs.query()
      * */
-    exec(sql, ...args: any[]): Promise<T[]> {
-        return _query(this.getClient(), sql, args)
+    sqlQuery(sql, ...args: any[]): Promise<T[]> {
+        return this._EXECUTOR.query(this.getClient(), sql, args);
+    }
+    sqlRun(sql, ...args: any[]): Promise<number> {
+        return this._EXECUTOR.execute(this.getClient(), sql, args);
     }
 }
 
@@ -118,12 +122,6 @@ export class Table<T extends TObject> extends BaseTable<T, Database> {
 
     }
 
-    /**
-     * same arguments as mysql.query()
-     * */
-    exec(sql, ...args: any[]): Promise<T[]> {
-        return _query(this.getClient(), sql, args);
-    }
 }
 
 export type SqliteSettings = Omit<Settings, 'provider'> & {
@@ -135,6 +133,9 @@ export const setup = (settings: SqliteSettings, cb?: (err: Error) => void): Data
     if (_.isFunction(settings.provider)) {
         db = settings.provider();
     } else {
+
+        // const sql =  initSqlJs({ locateFile: () => join(homedir(), process.env.sqlite_db || 'tool_test.db') });
+        // db = new sql.Database();
         // const sql = verbose();
         // db = new sql.Database(settings.provider);
         // db.serialize();

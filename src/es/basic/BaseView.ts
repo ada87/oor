@@ -154,14 +154,6 @@ export abstract class BaseView<T extends TObject, ROW> extends BaseQuery {
 
 
     /**
-     * Exec A Senctence
-    */
-    sql(request?: SearchRequest): Promise<SearchResponse<Static<T>>> {
-        return this.getClient().search(request);
-    }
-
-
-    /**
      * @see QuerySchema
      *    Use a QuerySchema Query Data With Page
      *    this will return a object with {total:number,list:any[]}

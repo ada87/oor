@@ -73,9 +73,13 @@ export class View<T extends TObject> extends BaseView<T, Database> {
     /**
      * same arguments as mysql.query()
      * */
-    exec(sql, ...args: any[]): Promise<T[]> {
-        return _query(this.getClient(), sql, args)
-    }
+    // all(sql, ...args: any[]): Promise<T[]> {
+    //     // this.getClient().all
+    //     // this.getClient().exec
+    //     // this.getClient().get
+    //     // this.getClient().run
+    //     return _query(this.getClient(), sql, args)
+    // }
 }
 
 export class Table<T extends TObject> extends BaseTable<T, Database> {

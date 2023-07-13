@@ -22,18 +22,21 @@ export type SqliteSettings = Omit<Settings, 'provider'> & {
 import { writeFileSync } from 'fs';
 
 export const setup = async (settings: SqliteSettings): Promise<Database> => {
-    let db: Database;
-
+    // let db: Database;
     const dbPath = settings.provider.db;
-
     const save: SaveFunction = async (data) => {
         writeFileSync(dbPath, data);
         return true;
     }
     setSaveFunction(save);
-
     const SQL = await initSqlJs({ wasmBinary: readFileSync(settings.provider.wasm) });;
-    db = new SQL.Database(readFileSync(settings.provider.db));
-    _setup({ ...settings, provider: ['sqlite', () => db], })
-    return db;
+    _setup({
+        ...settings,
+        provider: ['sqlite', () => {
+            const buffer = readFileSync(settings.provider.db);
+            return new SQL.Database(buffer)
+        }],
+    })
+    const buffer = readFileSync(settings.provider.db);
+    return new SQL.Database(buffer);
 }

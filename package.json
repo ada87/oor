@@ -1,12 +1,13 @@
 {
   "name": "oor",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "author": "ada87",
   "keywords": [
     "nodejs",
     "postgres",
     "postgresql",
     "sqlite3",
+    "sql.js",
     "orm",
     "mysql",
     "elasticsearch"

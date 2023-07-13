@@ -113,8 +113,7 @@ export class Table<T extends TObject> extends BaseTable<T, Database> {
 
     async add(object) {
         const result = await super.add(object)
-        return await this.getById(result['id'] as any)
-
+        return await this.getById(result as any)
     }
 
 }

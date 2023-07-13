@@ -2,10 +2,9 @@
 import _ from 'lodash';
 import { ShowSql } from '../../base/Util';
 import { save } from './save';
-import type { Database, QueryExecResult } from 'sql.js';
+import type { Database } from 'sql.js';
 import type { SqlExecutor, } from '../../base/sql';
 
-// import { _exec, _get, _query } from './toPromise';
 
 const log = (SQL: string, PARAM: any[]) => {
     if (ShowSql == null) return;
@@ -21,42 +20,83 @@ export const executor: SqlExecutor<any> = {
             let effectedRows = db.getRowsModified();
             if (effectedRows == 0) throw new Error('Insert Error');
             const stmt = db.prepare(`SELECT last_insert_rowid() AS id;`);
-            var newId = stmt.getAsObject();
+            var newId = null;
+            stmt.bind();
+            if (stmt.step()) newId = stmt.getAsObject().id;
+            if (newId == null) throw new Error('Insert Error');
             let result = await save(db.export());
             if (!result) throw new Error('Save DB Error');
-            return newId.id;
+            return newId;
         } catch (e) {
             throw new Error(e);
+        } finally {
+            try {
+                db.close();
+            } catch {
+
+            }
         }
 
     },
 
     get: async (db: Database, SQL: string, PARAM: any = []): Promise<any> => {
         log(SQL, PARAM);
-        const stmt = db.prepare(SQL);
-        if (PARAM && PARAM.length > 0) stmt.bind(PARAM);
-        return stmt.getAsObject();
+        try {
+            const stmt = db.prepare(SQL);
+            if (PARAM && PARAM.length > 0) stmt.bind(PARAM);
+            if (stmt.step()) {
+                return stmt.getAsObject()
+            }
+            return null;
+        } catch (e) {
+            throw new Error(e);
+        } finally {
+            try {
+                db.close();
+            } catch {
+
+            }
+        }
     },
 
     query: async (db: Database, SQL: string, PARAM: any = []): Promise<any[]> => {
         log(SQL, PARAM);
-        const stmt = db.prepare(SQL);
-        if (PARAM && PARAM.length > 0) stmt.bind(PARAM);
-        let result = [];
-        while (stmt.step()) { //
-            var row = stmt.getAsObject();
-            result.push(row);
-        }
-        return result;
+        try {
+            const stmt = db.prepare(SQL);
+            if (PARAM && PARAM.length > 0) stmt.bind(PARAM);
+            let result = [];
+            while (stmt.step()) { //
+                var row = stmt.getAsObject();
+                result.push(row);
+            }
+            return result;
+        } catch (e) {
+            throw new Error(e);
+        } finally {
+            try {
+                db.close();
+            } catch {
 
+            }
+        }
     },
 
     execute: async (db: Database, SQL: string, PARAM: any = []): Promise<number> => {
         log(SQL, PARAM);
-        db.run(SQL, PARAM);
-        let effectedRows = db.getRowsModified();
-        let result = await save(db.export());
-        if (!result) throw new Error('Save DB Error');
-        return effectedRows;
-    },
+        try {
+            db.run(SQL, PARAM);
+            let effectedRows = db.getRowsModified();
+            let result = await save(db.export());
+            if (!result) throw new Error('Save DB Error');
+            return effectedRows;
+        } catch (e) {
+            throw new Error(e);
+        } finally {
+            try {
+                db.close();
+            } catch {
+
+            }
+        }
+    }
 }

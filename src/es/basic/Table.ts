@@ -148,8 +148,9 @@ export class Table<T extends TObject> extends View<T> {
      * Insert a record
     */
     add(object: Static<T>): Promise<SearchHit<Static<T>>> {
+        let index = _.isFunction(this.getIndex) ? this.getIndex(object) : this._index;
         let entity = this.checkEntity(object, true)
-        return actions.add(this.getClient(), this._index, entity);
+        return actions.add(this.getClient(), index, entity);
     }
 }
 

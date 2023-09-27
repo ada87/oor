@@ -7,12 +7,12 @@ import _ from 'lodash';
 import init, { Database } from 'sql.js'
 
 import { homedir } from 'os'
-import { join } from 'path';
+import { join,resolve } from 'path';
 
 // export const MODE = 'sqlite';
 // const sql = 
 // const db = new sql.Database();
-
+// describe
 
 
 
@@ -25,7 +25,10 @@ export const test = (title: string, callback: TestExecutor<TestContext, undefine
         const sql = await init({ locateFile: () => join(homedir(), process.env.sqlite_db || 'tool_test.db') });
         db = new sql.Database();
         setup({
-            provider: () => db,
+            provider: {
+                wasm: resolve('./node_modules/sql.js/s.sam'),
+                db: '',
+            },
             strict: true,
             showSQL: console.log
         })

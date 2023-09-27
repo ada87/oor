@@ -1,13 +1,12 @@
 import _ from 'lodash';
-import '@japa/assert'
-import { test } from '@japa/runner'
+import { test } from 'node:test'
 
 import { FIELD_MAP } from '../test/pg';
 import { queryToCondition } from './QueryBuilder';
 import { SUFFIX } from './types';
 import type { QuerySchema } from './types';
 
-test('Test : Suffix Cover', ({ assert }) => {
+test('Test : Suffix Cover', () => {
     let query: any = {
         age: 1,
         keyword_: 'fdsa'
@@ -34,7 +33,7 @@ test('Test : Suffix Cover', ({ assert }) => {
 
 
 
-test('Test : buildQuery', ({ assert }) => {
+test('Test : buildQuery', () => {
     let query: QuerySchema = {
         start_: 0,
         count_: 20,

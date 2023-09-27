@@ -1,29 +1,29 @@
-import { test } from '@japa/runner'
+import { test, describe, beforeEach, afterEach } from 'node:test'
+import assert from 'node:assert'
 import { WhereParam, QuerySchema, SUFFIX } from '../../base/types'
 import { where, fixWhere, buildSearch } from './dsl'
 import { setup } from '../../base/Util'
 
+beforeEach
+// beforeEach(())
+test('A', (ctx) => {
+    ctx.before()
+})
 
 // import { whereByQuery } from './QueryBuilder';
 // import { orderByLimit } from './QueryPagition';
 import { isCoverOrCoverError } from '../../test/Const';
 
 
-test('Test : DSL', ({ }, suf) => {
+test('Test : DSL', () => {
+    for (let suf of SUFFIX) {
 
-    // @ts-ignore
-    setup({ strict: false })
-    // isCoverOrCoverError(where)
-    const root: WhereParam = [
-        //@ts-ignore
-        { column: 'last_modify', value: '2021-12-12 12:12:12', type: 'date', fn: suf },
-    ]
-    console.log(JSON.stringify(where(root)));
-    // console.log(JSON.stringify(where(root).constant_score?.filter.bool, null, 1))
-    // console.log(root)
-    // console.log('DSL BUILDER')
+        const root: WhereParam = [
+            { column: 'last_modify', value: '2021-12-12 12:12:12', type: 'date', fn: suf },
+        ]
+        console.log(JSON.stringify(where(root)));
+    }
 })
-    .with(SUFFIX as any)
     ;
 
 test('Test : DSL', () => {

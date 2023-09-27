@@ -1,6 +1,6 @@
 {
   "name": "oor",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "author": "ada87",
   "keywords": [
     "nodejs",
@@ -24,31 +24,29 @@
   "license": "MIT",
   "main": "pg/index.js",
   "scripts": {
-    "test": "node -r ts-node/register script.ts",
+    "test": "node -r ts-node/register node_modules/tsest/run",
+    "watch": "node -r ts-node/register node_modules/tsest/run --watch",
     "build": "node -r ts-node/register script.ts --build"
   },
   "devDependencies": {
-    "@elastic/elasticsearch": "^8.8.1",
-    "@japa/assert": "^1.4.1",
-    "@japa/core": "^7.3.3",
-    "@japa/runner": "^2.5.1",
-    "@japa/spec-reporter": "^1.3.3",
-    "@types/lodash": "^4.14.195",
-    "@types/node": "^20.4.1",
-    "@types/pg": "^8.10.2",
-    "@types/sql.js": "^1.4.4",
-    "fastify": "^4.19.2",
-    "fastify-plugin": "^4.5.0",
-    "mysql2": "^3.5.1",
-    "pg": "^8.11.1",
+    "@elastic/elasticsearch": "^8.10.0",
+    "@types/lodash": "^4.14.199",
+    "@types/node": "^20.7.0",
+    "@types/pg": "^8.10.3",
+    "@types/sql.js": "^1.4.5",
+    "fastify": "^4.23.2",
+    "fastify-plugin": "^4.5.1",
+    "mysql2": "^3.6.1",
+    "pg": "^8.11.3",
     "sql.js": "^1.8.0",
     "sqlite3": "^5.1.6",
     "ts-node": "^10.9.1",
-    "typescript": "^5.1.6"
+    "tsest": "^0.0.7",
+    "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@sinclair/typebox": "^0.29.4",
-    "dayjs": "^1.11.9",
+    "@sinclair/typebox": "^0.31.17",
+    "dayjs": "^1.11.10",
     "lodash": "^4.17.21"
   }
 }

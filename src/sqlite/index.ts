@@ -116,7 +116,7 @@ export class Table<T extends TObject> extends BaseTable<T, Database> {
         this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, WHERE);
     }
 
-    async add(object) {
+    async add(object: Static<T>) {
         const result = await super.add(object)
         return await this.getById(result['id'] as any)
 

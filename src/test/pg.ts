@@ -1,6 +1,6 @@
-import { test as jtest, Test, TestContext } from '@japa/runner';
+// import { test as jtest, Test, TestContext } from '@japa/runner';
 import { Client } from 'pg';
-import { TestExecutor } from '@japa/core';
+// import { TestExecutor } from '@japa/core';
 import { setup, Table, } from '../pg/index';
 import _ from 'lodash';
 import { UserSchema } from './Const';
@@ -33,23 +33,23 @@ setup({
 let pid: any = null;
 
 
-export const test = (title: string, callback: TestExecutor<TestContext, undefined>): Test<undefined> => jtest(title, callback)
-    .setup(async () => {
+// export const test = (title: string, callback: TestExecutor<TestContext, undefined>): Test<undefined> => jtest(title, callback)
+//     .setup(async () => {
 
-        clearTimeout(pid);
-        // @ts-ignore
-        if (!pg._connected) {
-            await pg.connect()
-        }
+//         clearTimeout(pid);
+//         // @ts-ignore
+//         if (!pg._connected) {
+//             await pg.connect()
+//         }
 
-    }).teardown(() => {
-        pid = setTimeout(() => pg.end(), 200);
-        // pg.end();
-    });
+//     }).teardown(() => {
+//         pid = setTimeout(() => pg.end(), 200);
+//         // pg.end();
+//     });
 
 
 
-// Line 4 : Build a Table, it's ok for all
+// // Line 4 : Build a Table, it's ok for all
 export const User = new Table('public.user', UserSchema, {
     // globalCondition: [{ column: 'id', fn: '!=', 'value': 1 }]
 });

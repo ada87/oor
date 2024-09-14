@@ -153,6 +153,3 @@ export class Table<T extends TObject> extends View<T> {
         return actions.add(this.getClient(), index, entity);
     }
 }
-
-
-

@@ -1,11 +1,11 @@
 {
     "files.exclude": {
-        ".env": true,
-        "build": true,
-        "oor.svg": true,
-        "script.ts": true,
-        "test.sql.7z": true,
-        "tsconfig.json": true
+        // ".env": true,
+        // "build": true,
+        // "oor.svg": true,
+        // "script.ts": true,
+        // "test.sql.7z": true,
+        // "tsconfig.json": true
     },
     "typescript.tsdk": "node_modules\\typescript\\lib"
 }

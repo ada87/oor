@@ -1,7 +1,7 @@
 import _ from 'lodash';
+import dayjs from 'dayjs';
 import { BaseView } from './BaseView'
 import { getFieldType, queryToCondition } from './QueryBuilder';
-import dayjs from 'dayjs';
 
 import type { TObject, Static } from '@sinclair/typebox';
 import type { QuerySchema, WhereParam } from './types';
@@ -11,7 +11,7 @@ const toDate = (txt: string | number): Date => {
     return dayjs(txt).toDate();
 }
 
-export abstract class BaseTable<T extends TObject, C> extends BaseView<T, C> {
+export abstract class BaseTable<T extends TObject, Conn> extends BaseView<T, Conn> {
 
     protected abstract _EXECUTOR: SqlExecutor<Static<T>>;
 

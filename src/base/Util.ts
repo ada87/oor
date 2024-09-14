@@ -86,11 +86,11 @@ export const setup = (settings: Settings) => {
 
 export const UType = {
     Table: <T extends TProperties>(properties: T): TPartial<TObject<T>> => Type.Partial(Type.Object(properties)),
-    Number: (options?: UNumericOptions<number>) => Type.Number(options),
+    Number: (options?: UNumericOptions) => Type.Number(options),
     String: (options?: UStringOptions) => Type.String(options),
     Date: (options?: UDateOptions) => Type.Union([Type.Date(options), Type.Number(), Type.String()], options),
     Boolean: (options?: USchema) => Type.Boolean(options),
-    Integer: (options?: UNumericOptions<number>) => Type.Integer(options),
+    Integer: (options?: UNumericOptions) => Type.Integer(options),
 }
 
 

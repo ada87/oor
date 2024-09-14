@@ -1,4 +1,4 @@
-import { type SchemaOptions, type StringOptions, type DateOptions, type NumericOptions, Type } from '@sinclair/typebox';
+import { type SchemaOptions, type StringOptions, type DateOptions, type NumberOptions, Type } from '@sinclair/typebox';
 
 export type DB_TYPE = 'pg' | 'es' | 'mysql' | 'sqlite';
 
@@ -126,7 +126,7 @@ export interface UStringOptions extends USchema, StringOptions {
 }
 
 
-export interface UNumericOptions<T extends number | bigint> extends USchema, NumericOptions<T> {
+export interface UNumericOptions extends USchema, NumberOptions {
     /**
      * Defind a mark: 
      *      1. Delete action will update this filed to mark 

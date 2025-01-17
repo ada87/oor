@@ -1,6 +1,6 @@
 {
   "name": "oor",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "author": "ada87",
   "keywords": [
     "nodejs",
@@ -26,26 +26,26 @@
   "scripts": {
     "test": "node -r ts-node/register node_modules/tsest/run",
     "watch": "node -r ts-node/register node_modules/tsest/run --watch",
-    "build": "node -r ts-node/register script.ts --build"
+    "build": "node -r ts-node/register script.mjs --build"
   },
   "devDependencies": {
-    "@elastic/elasticsearch": "^8.15.0",
-    "@types/lodash": "^4.17.7",
-    "@types/node": "^22.5.4",
-    "@types/pg": "^8.11.9",
+    "@elastic/elasticsearch": "^8.17.0",
+    "@types/lodash": "^4.17.14",
+    "@types/node": "^22.10.7",
+    "@types/pg": "^8.11.10",
     "@types/sql.js": "^1.4.9",
-    "fastify": "^4.28.1",
-    "fastify-plugin": "^4.5.1",
-    "mysql2": "^3.11.2",
-    "pg": "^8.12.0",
-    "sql.js": "^1.11.0",
+    "fastify": "^5.2.1",
+    "fastify-plugin": "^5.0.1",
+    "mysql2": "^3.12.0",
+    "pg": "^8.13.1",
+    "sql.js": "^1.12.0",
     "sqlite3": "^5.1.7",
     "ts-node": "^10.9.2",
     "tsest": "^0.0.8",
-    "typescript": "^5.6.2"
+    "typescript": "^5.7.3"
   },
   "dependencies": {
-    "@sinclair/typebox": "^0.33.10",
+    "@sinclair/typebox": "^0.34.14",
     "dayjs": "^1.11.13",
     "lodash": "^4.17.21"
   }

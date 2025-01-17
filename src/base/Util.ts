@@ -4,7 +4,7 @@ import { Type } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
 import { setProvider } from './Providers';
 
-import type { MagicSuffix, DB_TYPE, UDateOptions, UNumericOptions, UStringOptions, USchema } from './types';
+import type { MagicSuffix, DB_TYPE, UDateOptions, UNumericOptions, UStringOptions, OColumn } from './types';
 import type { TProperties, TPartial, TObject } from '@sinclair/typebox';
 
 
@@ -60,9 +60,11 @@ export var ShowSql = null;
 export var PAGE_SIZE = 10;
 
 export const setup = (settings: Settings) => {
+    console.log('setpu----------------------------------------------')
     if (_.isArray(settings.provider)) {
         setProvider(settings.provider[0], settings.provider[1]);
     } else if (_.isFunction(settings.provider)) {
+        console.log('set provider pg')
         setProvider('pg', settings.provider);
     }
     if (_.has(settings, 'strict')) {
@@ -89,7 +91,7 @@ export const UType = {
     Number: (options?: UNumericOptions) => Type.Number(options),
     String: (options?: UStringOptions) => Type.String(options),
     Date: (options?: UDateOptions) => Type.Union([Type.Date(options), Type.Number(), Type.String()], options),
-    Boolean: (options?: USchema) => Type.Boolean(options),
+    Boolean: (options?: OColumn) => Type.Boolean(options),
     Integer: (options?: UNumericOptions) => Type.Integer(options),
 }
 

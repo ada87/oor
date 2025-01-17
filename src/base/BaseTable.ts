@@ -22,7 +22,7 @@ export abstract class BaseTable<T extends TObject, Conn> extends BaseView<T, Con
     private checkEntity(obj: any, isAdd = false): any {
         // checkEntity(this.schema)
         let clone: any = {}
-        this._CONFIG.FIELD_MAP.forEach((schema, key) => {
+        this._CONFIG.COLUMN_MAP.forEach((schema, key) => {
             let field = schema.column || key;
             if (_.has(obj, key)) clone[field] = obj[key];
             let type = getFieldType(schema);
@@ -51,9 +51,9 @@ export abstract class BaseTable<T extends TObject, Conn> extends BaseView<T, Con
 
 
     deleteByField(field: string, value: string | number | boolean): Promise<number> {
-        const { _CONFIG: { mark, FIELD_MAP } } = this;
+        const { _CONFIG: { mark, COLUMN_MAP } } = this;
         if (mark) return this.updateByField(mark, field, value)
-        let schema = FIELD_MAP.get(field);
+        let schema = COLUMN_MAP.get(field);
         let column = (schema && schema.column) ? schema.column : field;
         return this.deleteByCondition([{ column, value }])
     }
@@ -62,7 +62,7 @@ export abstract class BaseTable<T extends TObject, Conn> extends BaseView<T, Con
     deleteByQuery(query: QuerySchema): Promise<number> {
         const { _CONFIG: { mark } } = this;
         if (mark) return this.updateByQuery(mark, query)
-        const condition = queryToCondition(query, this._CONFIG.FIELD_MAP, this._QUERY_CACHE);
+        const condition = queryToCondition(query, this._CONFIG.COLUMN_MAP, this._QUERY_CACHE);
         return this.deleteByCondition(condition);
     }
 
@@ -103,13 +103,13 @@ export abstract class BaseTable<T extends TObject, Conn> extends BaseView<T, Con
     }
 
     updateByField(obj: Static<T>, field: string, value: string | number | boolean): Promise<number> {
-        let schema = this._CONFIG.FIELD_MAP.get(field);
+        let schema = this._CONFIG.COLUMN_MAP.get(field);
         let column = (schema && schema.column) ? schema.column : field;
         return this.updateByCondition(obj, [{ column, value }])
     }
 
     updateByQuery(obj: Static<T>, query: QuerySchema): Promise<number> {
-        const condition = queryToCondition(query, this._CONFIG.FIELD_MAP, this._QUERY_CACHE);
+        const condition = queryToCondition(query, this._CONFIG.COLUMN_MAP, this._QUERY_CACHE);
         return this.updateByCondition(obj, condition);
     }
     updateByCondition(obj: Static<T>, condition?: WhereParam): Promise<number> {

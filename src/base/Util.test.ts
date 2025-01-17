@@ -43,7 +43,7 @@
 //     // }
 //     // const query: any = { ageBt: txt }
 //     // // console.log(query)
-//     // let condition = queryToCondition(query, FIELD_MAP, new Map());
+//     // let condition = queryToCondition(query, COLUMN_MAP, new Map());
 //     // // console.log(condition)
 //     // // console.log(condition.items.length);
 //     // const [sql, param] = where(condition);

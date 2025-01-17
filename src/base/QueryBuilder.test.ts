@@ -1,33 +1,34 @@
-// import _ from 'lodash';
-// import { test } from 'node:test'
+import { test } from 'node:test'
+import _ from 'lodash';
 
-// import { FIELD_MAP } from '../test/pg';
-// import { queryToCondition } from './QueryBuilder';
-// import { SUFFIX } from './types';
-// import type { QuerySchema } from './types';
+import { COLUMN_MAP } from '../test/pg';
+import { queryToCondition } from './QueryBuilder';
+import { SUFFIX } from './types';
+import type { QuerySchema } from './types';
 
-// test('Test : Suffix Cover', () => {
-//     let query: any = {
-//         age: 1,
-//         keyword_: 'fdsa'
-//     };
-//     // for (let suffix of SUFFIX) {
-//     //     query['age' + suffix] = 12;
-//     //     // query['name' + suffix] = 'abc';
-//     // }
-//     // console.log(query)
-//     let condition = queryToCondition(query, FIELD_MAP, new Map());
-//     console.log(condition)
-//     // console.log(condition.items.length);
-//     // const [sql, param] = where(condition);
-//     // console.log(sql, param)
+test('Field Condition Suffix',
+    {
+        // only: true,
+    }, () => {
+        let query: any = {
+            age: 1,
+            keyword_: 'fdsa'
+        };
+        for (let suffix of SUFFIX) {
+            query['age' + suffix] = 12;
+            query['name' + suffix] = 'abc';
+        }
+        console.log(query)
+        let condition = queryToCondition(query, COLUMN_MAP, new Map());
+        console.log(condition)
+        // console.log(condition.items.length);
+        // const [sql, param] = where(condition);
+        // console.log(sql, param)
 
-//     // let [ORDERBY, LIMIT] = orderByLimit(FIELD_MAP, query);
+        // let [ORDERBY, LIMIT] = orderByLimit(COLUMN_MAP, query);
 
-// })
-//     // .skip()
-//     // .pin()
-//     ;
+    }
+)
 
 
 
@@ -53,9 +54,9 @@
 //         // namea: 'oor',                               // will be ignored because field "namea" not exists
 //     };
 
-//     let condition = queryToCondition(query, FIELD_MAP, new Map());
+//     let condition = queryToCondition(query, COLUMN_MAP, new Map());
 //     console.log(condition)
-//     // let [ORDERBY, LIMIT] = orderByLimit(FIELD_MAP, query);
+//     // let [ORDERBY, LIMIT] = orderByLimit(COLUMN_MAP, query);
 
 
 //     // console.log('SQL        : ', SQL);

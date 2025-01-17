@@ -1,4 +1,4 @@
-import { type SchemaOptions, type StringOptions, type DateOptions, type NumberOptions, Type } from '@sinclair/typebox';
+import type { SchemaOptions, StringOptions, DateOptions, NumberOptions } from '@sinclair/typebox';
 
 export type DB_TYPE = 'pg' | 'es' | 'mysql' | 'sqlite';
 
@@ -96,7 +96,7 @@ export type QuerySchema = {
 
 
 
-export interface USchema extends SchemaOptions {
+export interface OColumn extends SchemaOptions {
     /**
      * 1. if ignore = true , query SELECT will not include this field
      * 2. `table.getById()` will return this field. Actually `table.getById()` aways use SELECT * !
@@ -111,11 +111,13 @@ export interface USchema extends SchemaOptions {
      * TODO The Funtion default call on this filed
     */
     // fn?: 'lower' | 'upper'
+
+
 }
 
 
 
-export interface UStringOptions extends USchema, StringOptions {
+export interface UStringOptions extends OColumn, StringOptions {
     /**
      * Defind a mark: 
      *      1. Delete action will update this filed to mark 
@@ -126,7 +128,7 @@ export interface UStringOptions extends USchema, StringOptions {
 }
 
 
-export interface UNumericOptions extends USchema, NumberOptions {
+export interface UNumericOptions extends OColumn, NumberOptions {
     /**
      * Defind a mark: 
      *      1. Delete action will update this filed to mark 
@@ -138,7 +140,7 @@ export interface UNumericOptions extends USchema, NumberOptions {
 
 
 
-export interface UDateOptions extends USchema, DateOptions {
+export interface UDateOptions extends OColumn, DateOptions {
     /**
      * 1. Create Time can not be modify
      * 2. It will be auto fill with Current Time while INSERT
@@ -150,4 +152,8 @@ export interface UDateOptions extends USchema, DateOptions {
      * 2. default；: flase
     */
     isModify?: boolean;
+    /**
+     * 
+    */
+    format?: string
 }

@@ -4,7 +4,7 @@ import { BaseQuery } from './BaseQuery'
 import { queryToCondition } from './QueryBuilder';
 
 import type { TObject, Static, TSchema } from '@sinclair/typebox';
-import type { QuerySchema, WhereParam, WhereDefine, USchema, WhereItem, Sort } from './types';
+import type { QuerySchema, WhereParam, WhereDefine, OColumn, WhereItem, Sort } from './types';
 
 
 const GLOBAL_ID_FIELD = new Set<string>(['id', 'uuid', 'guid']);
@@ -25,13 +25,12 @@ export type TableOptions = {
     */
     pageSize?: number,
     /**
-     * 默认查询过滤,比如 {field:'disabled',value:0,operation:'<>'}
+     * 默认查询过滤,比如 { field:'disabled',value:0,operation:'<>' }
      * 设置后，通过 query / all 拼装的 sql 都会带上 AND disabled <> 0 
     */
     globalCondition?: WhereItem[];
 }
 
-// const WHERE_TO_STRING = ();
 
 
 /**
@@ -56,7 +55,7 @@ export abstract class BaseView<T extends TObject, Conn> extends BaseQuery<Conn> 
         sort: null as Sort,
         mark: null,
         pageSize: PAGE_SIZE,
-        FIELD_MAP: null as Map<string, USchema>,
+        COLUMN_MAP: null as Map<string, OColumn>,
 
         fields_query: '*',
         fields_get: '*',
@@ -75,7 +74,7 @@ export abstract class BaseView<T extends TObject, Conn> extends BaseQuery<Conn> 
     constructor(tableName: string, schema: T, options?: TableOptions) {
         super();
         this._table = tableName;
-        this._CONFIG.FIELD_MAP = new Map<string, TSchema>();
+        this._CONFIG.COLUMN_MAP = new Map<string, TSchema>();
         let SortGuess: string[] = [];
         let field: string = null, by = 'desc' as any;
         _.keys(schema.properties).map(field => {
@@ -83,7 +82,7 @@ export abstract class BaseView<T extends TObject, Conn> extends BaseQuery<Conn> 
             let column = properties.column || field;
             this._F2C.set(field, column);
             this._C2F.set(column, field);
-            this._CONFIG.FIELD_MAP.set(field, properties);
+            this._CONFIG.COLUMN_MAP.set(field, properties);
             if (GLOBAL_ID_FIELD.has(column) && this._CONFIG.key == null) {
                 this._CONFIG.key = column;
                 SortGuess.push(field)
@@ -146,8 +145,8 @@ export abstract class BaseView<T extends TObject, Conn> extends BaseQuery<Conn> 
      * Use a QuerySchema Query Data 
     */
     query(query?: QuerySchema): Promise<Static<T>[]> {
-        const { _QUERY_CACHE, _CONFIG: { FIELD_MAP } } = this;
-        const condition = queryToCondition(query, FIELD_MAP, _QUERY_CACHE);
+        const { _QUERY_CACHE, _CONFIG: { COLUMN_MAP } } = this;
+        const condition = queryToCondition(query, COLUMN_MAP, _QUERY_CACHE);
         return this.queryByCondition(condition, query)
     }
 
@@ -158,8 +157,8 @@ export abstract class BaseView<T extends TObject, Conn> extends BaseQuery<Conn> 
     */
     async queryPager(query?: QuerySchema): Promise<{ total: number, list: Static<T>[] }> {
         let total = 0;
-        const { _table, _BUILDER, _EXECUTOR, _QUERY_CACHE, _CONFIG: { FIELD_MAP } } = this;
-        const condition = queryToCondition(query, FIELD_MAP, _QUERY_CACHE);
+        const { _table, _BUILDER, _EXECUTOR, _QUERY_CACHE, _CONFIG: { COLUMN_MAP } } = this;
+        const condition = queryToCondition(query, COLUMN_MAP, _QUERY_CACHE);
         const [WHERE, PARAM] = _BUILDER.where(condition);
         if (_.has(query, 'total_') && _.isNumber(query.total_)) {
             total = query.total_;

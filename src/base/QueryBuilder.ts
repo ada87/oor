@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { Kind } from '@sinclair/typebox';
-import { WhereItem, WhereCondition, QuerySchema, WhereDefine, FieldType, SUFFIX, MagicSuffix, USchema } from './types';
+import { WhereItem, WhereCondition, QuerySchema, WhereDefine, FieldType, SUFFIX, MagicSuffix, OColumn } from './types';
 import { throwErr } from './Util';
 
 
@@ -31,17 +31,17 @@ export const getFieldType = (schema: any): FieldType => {
 /**
  * Cache Query Field To Where Filed
 */
-const fieldToDef = (key: string, FIELD_MAP: Map<string, USchema>): WhereDefine => {
-    let SCHEMA = FIELD_MAP.get(key);
+const fieldToDef = (key: string, COLUMN_MAP: Map<string, OColumn>): WhereDefine => {
+    let SCHEMA = COLUMN_MAP.get(key);
     let query_field = key, suffix: MagicSuffix = null;
     if (SCHEMA == null) {
         for (let fix of SUFFIX) {
 
             if (key.endsWith(fix)) {
                 let temp = key.substring(0, key.length - fix.length);
-                if (FIELD_MAP.has(temp)) {
+                if (COLUMN_MAP.has(temp)) {
                     query_field = temp;
-                    SCHEMA = FIELD_MAP.get(temp)
+                    SCHEMA = COLUMN_MAP.get(temp)
                     suffix = fix;
                     break;
                 }
@@ -60,14 +60,14 @@ const fieldToDef = (key: string, FIELD_MAP: Map<string, USchema>): WhereDefine =
     return def;
 }
 
-const defineToItem = (def: WhereDefine, schema: USchema, value: string | boolean | number | Date): WhereItem => {
+const defineToItem = (def: WhereDefine, schema: OColumn, value: string | boolean | number | Date): WhereItem => {
     // TODO : IGNORE SOME INVALIDATE SCHEMA
     // return null;
     return { ...def, value };
 
 }
 
-export const queryToCondition = (query: QuerySchema, FIELD_MAP: Map<string, USchema>, FIELD_CACHE: Map<string, WhereDefine>): WhereCondition => {
+export const queryToCondition = (query: QuerySchema, COLUMN_MAP: Map<string, OColumn>, FIELD_CACHE: Map<string, WhereDefine>): WhereCondition => {
     const err: string[] = [];
     const ROOT: WhereCondition = { link: 'AND', items: [] }
     _.keys(query).map(key => {
@@ -80,7 +80,7 @@ export const queryToCondition = (query: QuerySchema, FIELD_MAP: Map<string, USch
             return;
         };
         if (define == null) {
-            define = fieldToDef(key, FIELD_MAP);
+            define = fieldToDef(key, COLUMN_MAP);
         }
         FIELD_CACHE.set(key, define);
         if (define == null) {
@@ -88,7 +88,7 @@ export const queryToCondition = (query: QuerySchema, FIELD_MAP: Map<string, USch
             return
         };
         // @ts-ignore
-        let queryItem = defineToItem(define, FIELD_MAP.get(define.column || define.field), query[key])
+        let queryItem = defineToItem(define, COLUMN_MAP.get(define.column || define.field), query[key])
         if (queryItem == null) {
             err.push(key + ' \' value has problem : ' + String(query[key]))
             return;
@@ -98,7 +98,7 @@ export const queryToCondition = (query: QuerySchema, FIELD_MAP: Map<string, USch
     // let keyword = _.trim(query.keyword_);
     // if (keyword) {
     //     let OR: WhereCondition = { link: 'OR', items: [] }
-    //     for (let [key, value] of FIELD_MAP) {
+    //     for (let [key, value] of COLUMN_MAP) {
     //         if (value.ignore) continue;
     //         let type = getFieldType(value);
     //         if (type != 'string') continue;

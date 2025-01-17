@@ -21,7 +21,7 @@ export class Table<T extends TObject> extends View<T> {
     private checkEntity(obj: any, isAdd = false): any {
         // checkEntity(this.schema)
         let clone: any = {}
-        this._CONFIG.FIELD_MAP.forEach((schema, key) => {
+        this._CONFIG.COLUMN_MAP.forEach((schema, key) => {
             let field = schema.column || key;
             if (_.has(obj, key)) {
                 clone[field] = obj[key];
@@ -49,9 +49,9 @@ export class Table<T extends TObject> extends View<T> {
      * Delete documents by match {term:{filed,value}}
     */
     deleteByField(field: string, value: string | number | boolean): Promise<number> {
-        const { _CONFIG: { mark, FIELD_MAP } } = this;
+        const { _CONFIG: { mark, COLUMN_MAP } } = this;
         if (mark) return this.updateByField(mark, field, value)
-        let schema = FIELD_MAP.get(field);
+        let schema = COLUMN_MAP.get(field);
         let column = (schema && schema.column) ? schema.column : field;
         return this.deleteByCondition([{ column, value }])
     }
@@ -62,7 +62,7 @@ export class Table<T extends TObject> extends View<T> {
     deleteByQuery(query: QuerySchema): Promise<number> {
         const { _CONFIG: { mark } } = this;
         if (mark) return this.updateByQuery(mark, query)
-        const condition = queryToCondition(query, this._CONFIG.FIELD_MAP, this._QUERY_CACHE);
+        const condition = queryToCondition(query, this._CONFIG.COLUMN_MAP, this._QUERY_CACHE);
         return this.deleteByCondition(condition);
     }
 
@@ -101,17 +101,17 @@ export class Table<T extends TObject> extends View<T> {
     }
 
     updateByQuery(obj: Static<T>, query: QuerySchema): Promise<number> {
-        const condition = queryToCondition(query, this._CONFIG.FIELD_MAP, this._QUERY_CACHE);
+        const condition = queryToCondition(query, this._CONFIG.COLUMN_MAP, this._QUERY_CACHE);
         return this.updateByCondition(obj, condition);
     }
     updateByCondition(obj: Static<T>, condition?: WhereParam): Promise<number> {
-        const { _index, _CONFIG: { FIELD_MAP, globalFilter } } = this;
+        const { _index, _CONFIG: { COLUMN_MAP, globalFilter } } = this;
         let entity = this.checkEntity(obj);
         const scripts = [];
         for (let key of _.keys(entity)) {
             let column = this.getColumn(key);
             let field = this.getField(key);
-            const type = getFieldType(FIELD_MAP.get(field));
+            const type = getFieldType(COLUMN_MAP.get(field));
             switch (type) {
                 case 'boolean':
                     scripts.push(`ctx._source.${column}=${boolValue(entity[key])};`)

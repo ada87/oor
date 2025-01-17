@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 
 import type { SqlWhere } from '../../base/sql';
 import type { Dayjs } from 'dayjs';
-import type { WhereParam, WhereItem, WhereCondition, MagicSuffix, Support, USchema } from '../../base/types';
+import type { WhereParam, WhereItem, WhereCondition, MagicSuffix, Support, OColumn } from '../../base/types';
 
 
 
@@ -345,7 +345,7 @@ export const where: SqlWhere = (condition: WhereParam): [string, any[]] => {
 
 
 
-export const fixWhere = (FIELD_MAP: Map<string, USchema>, extra: WhereItem[]): [string, string] => {
+export const fixWhere = (COLUMN_MAP: Map<string, OColumn>, extra: WhereItem[]): [string, string] => {
     let ITEMS: WhereItem[] = [];
     let ctf = new Map<string, string>();
     const convert = (kind, value) => {
@@ -360,7 +360,7 @@ export const fixWhere = (FIELD_MAP: Map<string, USchema>, extra: WhereItem[]): [
                 return value + '';
         }
     }
-    for (let [key, val] of FIELD_MAP) {
+    for (let [key, val] of COLUMN_MAP) {
         if (_.has(val, 'delMark')) {
             ITEMS.push({ column: (val.column || key), fn: '<>', value: convert(val[Kind as any], val.delMark) })
         }
@@ -369,7 +369,7 @@ export const fixWhere = (FIELD_MAP: Map<string, USchema>, extra: WhereItem[]): [
     extra.map(item => {
         // inner usage field
         // @ts-ignore
-        let schema = FIELD_MAP.get(item.field) || FIELD_MAP.get(ctf.get(item.field));
+        let schema = COLUMN_MAP.get(item.field) || COLUMN_MAP.get(ctf.get(item.field));
         if (schema == null) return;
         ITEMS.push({ ...item, value: convert(schema[Kind as any], item.value) });
     })

@@ -9,7 +9,7 @@ import { UType } from '../base/Util';
 //          Schema can be used for validate、check, @see @sinclair/typebox
 //          Some FrameWork support this schema derectly , like fastify 
 export const UserSchema = UType.Table({
-    id: UType.Integer(),
+    id: UType.Integer({ description: '', default: 1 }),
     name: UType.String({ maxLength: 32 }),
     age: UType.Integer({ minimum: 0, maximum: 128 }),
     sex: UType.Boolean(),
@@ -23,9 +23,9 @@ export const UserSchema = UType.Table({
 
 // Line 3 : Define a Type, you can avoid if not need this type.
 // export type User = Static<typeof UserSchema>;
-// const FIELD_MAP = new Map<string, TSchema>(_.keys(UserSchema.properties).map(field => [field, UserSchema.properties[field]]));
+// const COLUMN_MAP = new Map<string, TSchema>(_.keys(UserSchema.properties).map(field => [field, UserSchema.properties[field]]));
 
-// console.log(FIELD_MAP)
+// console.log(COLUMN_MAP)
 
 
 // type Cover = Record<MagicSuffix, { support?: boolean, values: any }>

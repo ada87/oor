@@ -3,3 +3,4 @@ dist
 public.sql
 build
 .env
+pnpm-lock.yaml

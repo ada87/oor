@@ -29,7 +29,9 @@ export const setup = async (settings: SqliteSettings): Promise<Database> => {
         return true;
     }
     setSaveFunction(save);
-    const SQL = await initSqlJs({ wasmBinary: readFileSync(settings.provider.wasm) });;
+    const SQL = await initSqlJs({
+        wasmBinary: readFileSync(settings.provider.wasm) as any
+    });;
     _setup({
         ...settings,
         provider: ['sqlite', () => {

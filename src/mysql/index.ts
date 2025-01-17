@@ -66,7 +66,7 @@ export class View<T extends TObject> extends BaseView<T, Pool> {
         }
         if (options && options.globalCondition && options.globalCondition.length) {
             options.globalCondition.map(item => {
-                let schema = this._CONFIG.FIELD_MAP.get(this._C2F.get(item.column))
+                let schema = this._CONFIG.COLUMN_MAP.get(this._C2F.get(item.column))
                 if (schema) {
                     WHERE.push({ ...item, type: getFieldType(schema) })
                 } else {
@@ -74,7 +74,7 @@ export class View<T extends TObject> extends BaseView<T, Pool> {
                 }
             })
         }
-        this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, WHERE);
+        this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.COLUMN_MAP, WHERE);
     }
 
     /**
@@ -112,7 +112,7 @@ export class Table<T extends TObject> extends BaseTable<T, Pool> {
         }
         if (options && options.globalCondition && options.globalCondition.length) {
             options.globalCondition.map(item => {
-                let schema = this._CONFIG.FIELD_MAP.get(this._C2F.get(item.column))
+                let schema = this._CONFIG.COLUMN_MAP.get(this._C2F.get(item.column))
                 if (schema) {
                     WHERE.push({ ...item, type: getFieldType(schema) })
                 } else {
@@ -120,7 +120,7 @@ export class Table<T extends TObject> extends BaseTable<T, Pool> {
                 }
             })
         }
-        this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.FIELD_MAP, WHERE);
+        this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.COLUMN_MAP, WHERE);
     }
 
     async add(object: Static<T>): Promise<Static<T>> {

@@ -1,3 +1,18 @@
+import { test } from 'node:test';
+test('name', {
+    timeout: 1000,
+    only: true,
+    skip: true,
+    todo: true,
+    plan: 12,
+}, (ctx, done) => {
+
+
+    
+    ctx.before()
+    done();
+})
+
 // export { test } from '@japa/runner';
 // import { readFileSync } from 'fs';
 // import '@japa/assert';
@@ -32,5 +47,5 @@
 // });
 
 // // @ts-ignore
-// // export const FIELD_MAP = User._CONFIG.FIELD_MAP as Map<string, USchema>;
+// // export const COLUMN_MAP = User._CONFIG.COLUMN_MAP as Map<string, OColumn>;
 

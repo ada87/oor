@@ -1,5 +1,5 @@
 // import { test } from 'tsest'
-// import { FIELD_MAP } from '../../test/pg';
+// import { COLUMN_MAP } from '../../test/pg';
 // import { WhereParam, QuerySchema, SUFFIX } from '../../base/types'
 // import { where, } from './where'
 // import { queryToCondition } from '../../base/QueryBuilder';

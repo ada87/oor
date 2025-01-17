@@ -3,7 +3,7 @@
 // import { TestExecutor } from '@japa/core';
 // import { setup, Table, } from '../mysql/index';
 // import _ from 'lodash';
-// import { UserSchema, } from './Const';
+import { UserSchema, } from './Const';
 
 // export { SUFFIX_MATRIX } from '../mysql/basic/where';
 
@@ -45,5 +45,5 @@
 // });
 
 // // @ts-ignore
-// export const FIELD_MAP = User._CONFIG.FIELD_MAP as Map<string, USchema>;
+// export const COLUMN_MAP = User._CONFIG.COLUMN_MAP as Map<string, OColumn>;
 

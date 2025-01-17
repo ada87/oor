@@ -5,7 +5,7 @@ import { queryToCondition, getFieldType } from '../../base/QueryBuilder';
 import { where, fixWhere, buildSearch } from './dsl';
 
 import type { TObject, Static, TSchema } from '@sinclair/typebox';
-import type { QuerySchema, WhereParam, WhereDefine, USchema } from '../../base/types';
+import type { QuerySchema, WhereParam, WhereDefine, OColumn } from '../../base/types';
 import type { TableOptions } from '../../base/BaseView'
 import type { Field, QueryDslQueryContainer, Sort } from '@elastic/elasticsearch/lib/api/types';
 import type { OrderByLimit, ESQuery } from './define';
@@ -32,7 +32,7 @@ export abstract class BaseView<T extends TObject, ROW> extends BaseQuery {
         sort: null as Sort,
         mark: null,
         pageSize: PAGE_SIZE,
-        FIELD_MAP: new Map<string, USchema>(),
+        COLUMN_MAP: new Map<string, OColumn>(),
 
         fields_exclude: [],
         globalFilter: null as QueryDslQueryContainer,
@@ -55,7 +55,7 @@ export abstract class BaseView<T extends TObject, ROW> extends BaseQuery {
         this._index = indexName;
         this._CONFIG.fields_exclude = [] as Field[];
 
-        this._CONFIG.FIELD_MAP = new Map<string, TSchema>();
+        this._CONFIG.COLUMN_MAP = new Map<string, TSchema>();
         var WHERE = [];
 
         let field: string = null, by = 'desc' as any;
@@ -68,7 +68,7 @@ export abstract class BaseView<T extends TObject, ROW> extends BaseQuery {
             let column = properties.column || field;
             this._F2C.set(field, column);
             this._C2F.set(column, field);
-            this._CONFIG.FIELD_MAP.set(field, properties);
+            this._CONFIG.COLUMN_MAP.set(field, properties);
             if (properties.isModify) SortGuess.push(field);
             if (_.has(properties, 'delMark') && properties.delMark != null) {
                 this._CONFIG.mark = { [column]: properties.delMark };
@@ -95,7 +95,7 @@ export abstract class BaseView<T extends TObject, ROW> extends BaseQuery {
         }
         if (options.globalCondition && options.globalCondition.length) {
             options.globalCondition.map(item => {
-                let schema = this._CONFIG.FIELD_MAP.get(this._C2F.get(item.column))
+                let schema = this._CONFIG.COLUMN_MAP.get(this._C2F.get(item.column))
                 if (schema) {
                     WHERE.push({ ...item, type: getFieldType(schema) })
                 } else {
@@ -154,8 +154,8 @@ export abstract class BaseView<T extends TObject, ROW> extends BaseQuery {
      *    Use FlatView ： Return Array< Entity >
     */
     query(query?: QuerySchema): Promise<ROW[]> {
-        const { _QUERY_CACHE, _CONFIG: { FIELD_MAP, } } = this;
-        const condition = queryToCondition(query, FIELD_MAP, _QUERY_CACHE);
+        const { _QUERY_CACHE, _CONFIG: { COLUMN_MAP, } } = this;
+        const condition = queryToCondition(query, COLUMN_MAP, _QUERY_CACHE);
         return this.queryByCondition(condition, query)
     }
 
@@ -170,8 +170,8 @@ export abstract class BaseView<T extends TObject, ROW> extends BaseQuery {
      *    Use FlatView ： Return Array < Entity >
     */
     async queryPager(query?: QuerySchema): Promise<{ total: number, list: ROW[] }> {
-        const { _EXECUTOR, _QUERY_CACHE, _CONFIG: { FIELD_MAP, fields_exclude, globalFilter } } = this;
-        const condition = queryToCondition(query, FIELD_MAP, _QUERY_CACHE);
+        const { _EXECUTOR, _QUERY_CACHE, _CONFIG: { COLUMN_MAP, fields_exclude, globalFilter } } = this;
+        const condition = queryToCondition(query, COLUMN_MAP, _QUERY_CACHE);
         const orderBy = this.orderByLimit(query);
         const param = where(condition);
         const request = buildSearch(this._index, param, orderBy, fields_exclude, globalFilter);
@@ -197,9 +197,9 @@ export abstract class BaseView<T extends TObject, ROW> extends BaseQuery {
     }
 
     protected byField(field: string, value?: string | number | boolean): QueryDslQueryContainer {
-        const { _CONFIG: { FIELD_MAP }, _C2F } = this;
+        const { _CONFIG: { COLUMN_MAP }, _C2F } = this;
         let column = this.getColumn(field);
-        let schema = FIELD_MAP.get(_C2F.get(column));
+        let schema = COLUMN_MAP.get(_C2F.get(column));
         const type = getFieldType(schema);
         return where([{ column, type, value }]);
     }

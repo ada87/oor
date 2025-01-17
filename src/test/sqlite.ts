@@ -38,5 +38,5 @@
 // // });
 
 // // // @ts-ignore
-// // export const FIELD_MAP = User._CONFIG.FIELD_MAP as Map<string, USchema>;
+// // export const COLUMN_MAP = User._CONFIG.COLUMN_MAP as Map<string, OColumn>;
 

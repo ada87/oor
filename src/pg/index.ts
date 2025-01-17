@@ -138,7 +138,6 @@ export type PGSettings = Omit<Settings, 'provider'> & {
 };
 
 export const setup = async (settings: PGSettings): Promise<Pool> => {
-    console.log('fdafdsafdsaf')
     let pool: Pool;
     if (_.isFunction(settings.provider)) {
         pool = settings.provider() as Pool;
@@ -146,8 +145,6 @@ export const setup = async (settings: PGSettings): Promise<Pool> => {
         pool = new Pool(settings.provider);
         await pool.connect();
     }
-    // console.log('000000000000000000000000000000000')
-    // console.log(pool)
     _setup({ ...settings, provider: ['pg', () => pool], })
     return pool;
 }

@@ -60,11 +60,9 @@ export var ShowSql = null;
 export var PAGE_SIZE = 10;
 
 export const setup = (settings: Settings) => {
-    console.log('setpu----------------------------------------------')
     if (_.isArray(settings.provider)) {
         setProvider(settings.provider[0], settings.provider[1]);
     } else if (_.isFunction(settings.provider)) {
-        console.log('set provider pg')
         setProvider('pg', settings.provider);
     }
     if (_.has(settings, 'strict')) {

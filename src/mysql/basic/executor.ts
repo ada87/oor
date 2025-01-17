@@ -24,7 +24,6 @@ export const executor: SqlExecutor<any> = {
         } catch (e) {
             throw new Error(e);
         } finally {
-            // console.log('release')
             conn.release();
         }
 

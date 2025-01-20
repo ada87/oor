@@ -2,7 +2,7 @@ import type { ClientBase } from 'pg';
 import type { SqlExecutor } from '../../base/sql';
 
 import _ from 'lodash';
-import { ShowSql } from '../../base/Util';
+import { ShowSql } from '../../base/Provider/Util';
 
 const log = (SQL: string, PARAM: any[]) => {
     if (ShowSql == null) return;

@@ -5,7 +5,7 @@ import { executor } from './basic/executor'
 import { getFieldType } from '../base/QueryBuilder';
 import { BaseView } from '../base/BaseView';
 import { BaseTable } from '../base/BaseTable';
-import { Settings, setup as _setup } from '../base/Util'
+import { Settings, setup as _setup } from '../base/Provider/Util'
 // Export Some useful global apis/types.
 // import { _query } from './basic/toPromise'
 // import initSqlJs from 'sql.js'; 

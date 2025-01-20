@@ -42,7 +42,8 @@
     "sqlite3": "^5.1.7",
     "ts-node": "^10.9.2",
     "tsest": "^0.0.8",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "xda": "^0.0.3"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.34.14",

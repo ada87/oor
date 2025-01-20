@@ -1,6 +1,6 @@
 // https://github.com/TryGhost/node-sqlite3
 import _ from 'lodash';
-import { ShowSql } from '../../base/Util';
+import { ShowSql } from '../../base/Provider/Util';
 import { save } from './save';
 import type { Database } from 'sql.js';
 import type { SqlExecutor, } from '../../base/sql';

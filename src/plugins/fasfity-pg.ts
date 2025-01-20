@@ -18,4 +18,4 @@ declare module 'fastify' {
     }
 }
 
-export default fp(OOR_FASTIFY_PG, { fastify: '4.x', name: '@fastify/oor' }) 
+export default fp(OOR_FASTIFY_PG, { fastify: '5.x', name: '@fastify/oor' }) 

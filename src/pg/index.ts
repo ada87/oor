@@ -1,7 +1,7 @@
 import _ from 'lodash';
 
 import { ClientBase, Pool, PoolConfig, QueryResult } from 'pg';
-import { Settings, setup as _setup } from '../base/Util'
+import { Settings, setup as _setup } from '../base/Provider/Util'
 import { SqlBuilder, SqlExecutor } from '../base/sql';
 import { getFieldType } from '../base/QueryBuilder';
 import { BaseView, TableOptions } from '../base/BaseView';
@@ -14,7 +14,7 @@ import type { DB_TYPE } from '../base/types';
 import type { Static, TObject } from '@sinclair/typebox';
 
 // Export Some useful global apis/types.
-export { UType } from '../base/Util';
+export { UType } from '../base/Provider/Util';
 export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
 
 export type { Static } from '@sinclair/typebox';

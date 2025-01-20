@@ -1,7 +1,7 @@
 // https://github.com/sidorares/node-mysql2
 import _ from 'lodash';
 import { createPool } from 'mysql2/promise';
-import { Settings, setup as _setup } from '../base/Util'
+import { Settings, setup as _setup } from '../base/Provider/Util'
 import { getFieldType } from '../base/QueryBuilder';
 import { BaseView } from '../base/BaseView';
 import { BaseTable } from '../base/BaseTable';
@@ -22,7 +22,7 @@ export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, }
 /**
  * A Quick Ref
 */
-export { UType } from '../base/Util';
+export { UType } from '../base/Provider/Util';
 export type { Static } from '@sinclair/typebox';
 
 

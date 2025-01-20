@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { PAGE_SIZE } from '../../base/Util';
+import { PAGE_SIZE } from '../../base/Provider/Util';
 import { BaseQuery } from './BaseQuery'
 import { queryToCondition, getFieldType } from '../../base/QueryBuilder';
 import { where, fixWhere, buildSearch } from './dsl';

@@ -1,4 +1,4 @@
-import { getProvider } from './Providers';
+import { getProvider } from './Provider/Providers';
 
 import type { SqlBuilder, BaseSqlExecutor } from './sql';
 import type { DB_TYPE } from './types';
@@ -29,7 +29,7 @@ export abstract class BaseQuery<Conn> {
     /**
      * Get Database connection form provider
     */
-    getClient(): Conn {
+    async getClient(): Promise<Conn> {
         return getProvider(this._DB_TYPE)();
     }
 

@@ -4,7 +4,7 @@ import { Type } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
 import { setProvider } from './Providers';
 
-import type { MagicSuffix, DB_TYPE, UDateOptions, UNumericOptions, UStringOptions, OColumn } from './types';
+import type { MagicSuffix, DB_TYPE, UDateOptions, UNumericOptions, UStringOptions, OColumn } from '../types';
 import type { TProperties, TPartial, TObject } from '@sinclair/typebox';
 
 

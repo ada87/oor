@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import _ from 'lodash';
 import { View } from './View'
 import { getFieldType, queryToCondition } from '../../base/QueryBuilder';
-import { boolValue } from '../../base/Util';
+import { boolValue } from '../../base/Provider/Util';
 import { where, fixQuery, buildSearch } from './dsl';
 import { actions } from './executor'
 

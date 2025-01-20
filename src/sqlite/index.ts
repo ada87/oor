@@ -5,7 +5,7 @@ import { executor } from './basic/executor'
 import { getFieldType } from '../base/QueryBuilder';
 import { BaseView } from '../base/BaseView';
 import { BaseTable } from '../base/BaseTable';
-import { Settings, setup as _setup } from '../base/Util'
+import { Settings, setup as _setup } from '../base/Provider/Util'
 // Export Some useful global apis/types.
 import { verbose } from 'sqlite3';
 import { _query } from './basic/toPromise'
@@ -17,7 +17,7 @@ import type { SqlBuilder, SqlExecutor } from '../base/sql';
 import type { TableOptions } from '../base/BaseView';
 import type { Database } from 'sqlite3';
 
-export { UType } from '../base/Util';
+export { UType } from '../base/Provider/Util';
 export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
 export type { Static } from '@sinclair/typebox';
 
@@ -70,16 +70,7 @@ export class View<T extends TObject> extends BaseView<T, Database> {
         this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.COLUMN_MAP, WHERE);
     }
 
-    /**
-     * same arguments as mysql.query()
-     * */
-    // all(sql, ...args: any[]): Promise<T[]> {
-    //     // this.getClient().all
-    //     // this.getClient().exec
-    //     // this.getClient().get
-    //     // this.getClient().run
-    //     return _query(this.getClient(), sql, args)
-    // }
+
 }
 
 export class Table<T extends TObject> extends BaseTable<T, Database> {
@@ -125,8 +116,9 @@ export class Table<T extends TObject> extends BaseTable<T, Database> {
     /**
      * same arguments as mysql.query()
      * */
-    exec(sql, ...args: any[]): Promise<T[]> {
-        return _query(this.getClient(), sql, args);
+    async exec(sql, ...args: any[]): Promise<T[]> {
+        const client = await this.getClient()
+        return await _query(client, sql, args);
     }
 }
 

@@ -1,13 +1,13 @@
 import _ from 'lodash';
 import initSqlJs from 'sql.js/dist/sql-wasm';
 import { readFileSync } from 'fs'
-import { Settings, setup as _setup } from '../base/Util'
+import { Settings, setup as _setup } from '../base/Provider/Util'
 import { SaveFunction, setSaveFunction } from './basic/save';
 import type { Database } from 'sql.js';
 
 
 
-export { UType } from '../base/Util';
+export { UType } from '../base/Provider/Util';
 export { View, Table } from './core';
 export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
 export type { Static } from '@sinclair/typebox';

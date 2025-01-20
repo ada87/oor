@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { ShowSql } from '../../base/Util';
+import { ShowSql } from '../../base/Provider/Util';
 // https://github.com/TryGhost/node-sqlite3
 import type { Database } from 'sqlite3';
 import type { SqlExecutor, } from '../../base/sql';

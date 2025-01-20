@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../../base/Util';
+import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../../base/Provider/Util';
 import dayjs from 'dayjs';
 
 import type { QueryDslQueryContainer, QueryDslBoolQuery, SearchRequest, Field } from '@elastic/elasticsearch/lib/api/types';

@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { Kind } from '@sinclair/typebox';
-import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../../base/Util';
+import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../../base/Provider/Util';
 import dayjs from 'dayjs';
 
 import type { SqlWhere } from '../../base/sql';

@@ -20,6 +20,7 @@ export const SUFFIX = [
     '>', '>=', '<', '<=', '=', '!=', '<>',              // Comparison Functions,  https://www.postgresql.org/docs/current/functions-comparison.html
     'In', 'NotIn'                                       // SQL IN Condition , use "," sperate items, Not support boolean date
 ] as const;
+
 export type MagicSuffix = (typeof SUFFIX)[number];
 
 export type WhereDefine = {

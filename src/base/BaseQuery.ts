@@ -1,18 +1,16 @@
-import { getProvider } from './Provider/Providers';
-
+import type { Database } from './db';
 import type { SqlBuilder, BaseSqlExecutor } from './sql';
-import type { DB_TYPE } from './types';
 
 /**
  * Basic Query, abstract class, must implement these properties:
 */
-export abstract class BaseQuery<Conn> {
+export abstract class BaseQuery<Connection> {
 
-    /**
-     * _DB_TYPE: string - speific a database type, 
-     *  support for now : 'mysql', 'pg', 'es', 'sqlite'
-    */
-    protected abstract _DB_TYPE: DB_TYPE;
+    private db: Database<Connection>;
+
+    constructor(db: Database<Connection>) {
+        this.db = db;
+    }
 
     /** 
      * _BUILDER: SqlBuilder  - SQL Query Builder for db
@@ -29,16 +27,8 @@ export abstract class BaseQuery<Conn> {
     /**
      * Get Database connection form provider
     */
-    async getClient(): Promise<Conn> {
-        return getProvider(this._DB_TYPE)();
+    async getConn(): Promise<Connection> {
+        return this.db.getConn();
     }
-
-    /**
-     * Exec A Senctence
-    */
-    // sql(...args: any[]): Promise<any> {
-    //     return this._EXECUTOR.query.call(this, this.getClient(), ...args)
-    // }
-
 
 }

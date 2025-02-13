@@ -3,6 +3,7 @@ import { PAGE_SIZE } from './Provider/Util';
 import { BaseQuery } from './BaseQuery'
 import { queryToCondition } from './QueryBuilder';
 
+import type { Database } from './db'
 import type { TObject, Static, TSchema } from '@sinclair/typebox';
 import type { QuerySchema, WhereParam, WhereDefine, OColumn, WhereItem, Sort } from './types';
 
@@ -40,7 +41,7 @@ export type TableOptions = {
  * @param options  optional @see TableOptions smoe
  * 
 */
-export abstract class BaseView<T extends TObject, Conn> extends BaseQuery<Conn> {
+export abstract class BaseView<T extends TObject, Connection> extends BaseQuery<Connection> {
 
     protected _table: string;
 
@@ -71,8 +72,8 @@ export abstract class BaseView<T extends TObject, Conn> extends BaseQuery<Conn> 
      * @param options (Table/View) Options
      * 
     */
-    constructor(tableName: string, schema: T, options?: TableOptions) {
-        super();
+    constructor(db: Database<Connection>, tableName: string, schema: T, options?: TableOptions) {
+        super(db);
         this._table = tableName;
         this._CONFIG.COLUMN_MAP = new Map<string, TSchema>();
         let SortGuess: string[] = [];
@@ -120,7 +121,8 @@ export abstract class BaseView<T extends TObject, Conn> extends BaseQuery<Conn> 
         const { _BUILDER, _EXECUTOR, _table, _CONFIG: { fields_query } } = this;
         const SQL_QUERY = _BUILDER.select(_table, fields_query);
         const SQL = `${SQL_QUERY} ${WHERE} ${ORDER_BY} ${LIMIT}`;
-        const result = _EXECUTOR.query(this.getClient(), SQL, PARAM)
+        const conn = await this.getConn();
+        const result = _EXECUTOR.query(conn, SQL, PARAM)
         return result;
     }
 
@@ -164,7 +166,8 @@ export abstract class BaseView<T extends TObject, Conn> extends BaseQuery<Conn> 
             total = query.total_;
         } else {
             const SQL_COUNT = `${_BUILDER.count(_table)} ${this.fixWhere(WHERE)}`;
-            const countResult = await _EXECUTOR.get(this.getClient(), SQL_COUNT, PARAM);
+            const conn = await this.getConn();
+            const countResult = await _EXECUTOR.get(conn, SQL_COUNT, PARAM);
             if (countResult == null) {
                 return {
                     total: 0,
@@ -181,22 +184,24 @@ export abstract class BaseView<T extends TObject, Conn> extends BaseQuery<Conn> 
     /**
      * Fetch All Records form the Table / View
     */
-    all(): Promise<Static<T>[]> {
+    async all(): Promise<Static<T>[]> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_query, WHERE_FIX } } = this;
         const SQL = _BUILDER.select(_table, fields_query) + WHERE_FIX[0];
-        return _EXECUTOR.query(this.getClient(), SQL);
+        const conn = await this.getConn();;
+        return _EXECUTOR.query(conn, SQL);
     }
 
     /**
      * Get A record form Table / View By Primary key.
      * This method will return All column. Even if the IGNORE column.
     */
-    getById(id: number | string): Promise<Static<T>> {
+    async getById(id: number | string): Promise<Static<T>> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key, fields_get } } = this;
         if (key == null) throw new Error(`Table ${_table} do not have a Primary Key`);
         const SQL = _BUILDER.select(_table, fields_get);
         const [WHERE, PARAM] = _BUILDER.byField(key, id);
-        return _EXECUTOR.get(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
+        const conn = await this.getConn()
+        return _EXECUTOR.get(conn, `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
     }
     /**
      * Get A record form Table / View By Specify Field = value.
@@ -204,21 +209,23 @@ export abstract class BaseView<T extends TObject, Conn> extends BaseQuery<Conn> 
      * Note : If result has multi records , return the first row
      *        Want return all records?  use `queryByField`
     */
-    getByField(field: string, value?: string | number): Promise<Static<T>> {
+    async getByField(field: string, value?: string | number): Promise<Static<T>> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_get } } = this;
         const SQL = _BUILDER.select(_table, fields_get);
         const [WHERE, PARAM] = _BUILDER.byField(field, value);
-        return _EXECUTOR.get(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
+        const conn = await this.getConn()
+        return _EXECUTOR.get(conn, `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
     }
 
     /**
      * Get records form Table / View By Specify Property = value.
     */
-    queryByField(field: string, value?: string | number | boolean): Promise<Static<T>[]> {
+    async queryByField(field: string, value?: string | number | boolean): Promise<Static<T>[]> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_get } } = this;
         const SQL = _BUILDER.select(_table, fields_get);
         const [WHERE, PARAM] = _BUILDER.byField(field, value);
-        return _EXECUTOR.query(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
+        const conn = await this.getConn()
+        return _EXECUTOR.query(conn, `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
     }
 
     protected fixWhere(where: string): string {

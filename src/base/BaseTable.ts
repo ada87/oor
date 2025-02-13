@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import { BaseView } from './BaseView'
 import { getFieldType, queryToCondition } from './QueryBuilder';
 
+// import type { Database } from './DataBase'
 import type { TObject, Static } from '@sinclair/typebox';
 import type { QuerySchema, WhereParam } from './types';
 import type { SqlExecutor } from './sql';
@@ -11,7 +12,7 @@ const toDate = (txt: string | number): Date => {
     return dayjs(txt).toDate();
 }
 
-export abstract class BaseTable<T extends TObject, Conn> extends BaseView<T, Conn> {
+export abstract class BaseTable<T extends TObject, Connection> extends BaseView<T, Connection> {
 
     protected abstract _EXECUTOR: SqlExecutor<Static<T>>;
 
@@ -66,30 +67,32 @@ export abstract class BaseTable<T extends TObject, Conn> extends BaseView<T, Con
         return this.deleteByCondition(condition);
     }
 
-    deleteByCondition(condition: WhereParam): Promise<number> {
+    async deleteByCondition(condition: WhereParam): Promise<number> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { mark } } = this;
         if (mark) return this.updateByCondition(mark, condition)
         const SQL = _BUILDER.delete(_table);
         const [WHERE, PARAM] = this._BUILDER.where(condition);
-        return _EXECUTOR.execute(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
+        const conn = await this.getConn();
+        return await _EXECUTOR.execute(conn, `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
     }
 
     /**
      * Delete a row by primary id
     */
-    deleteById(id: number | string): Promise<number> {
+    async deleteById(id: number | string): Promise<number> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key, mark } } = this;
         if (key == null) throw new Error(`Table ${_table} do not have a Primary Key`);
         if (mark) return this.update({ ...mark, [key]: id })
         const SQL = _BUILDER.delete(_table);
         const [WHERE, PARAM] = _BUILDER.byField(key, id);
-        return _EXECUTOR.execute(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
+        const conn = await this.getConn();
+        return await _EXECUTOR.execute(conn, `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
     }
 
     /**
      * Update a record, By Primary Key in the obj
     */
-    update(obj: Static<T>): Promise<number> {
+    async update(obj: Static<T>): Promise<number> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
         // if (key == null) throw new Error(`Table ${_table} do not have a Primary Key`);
         if (!_.has(obj, key)) throw new Error(`Update Action must have a key`);
@@ -99,37 +102,40 @@ export abstract class BaseTable<T extends TObject, Conn> extends BaseView<T, Con
             throw new Error(`Update Action must have some properties`);
         }
         const [WHERE, PARAM] = _BUILDER.byField(key, obj[key] as any, FIELD_SET.length + 1)
-        return _EXECUTOR.execute(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM]);
+        const conn = await this.getConn();
+        return _EXECUTOR.execute(conn, `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM]);
     }
 
-    updateByField(obj: Static<T>, field: string, value: string | number | boolean): Promise<number> {
+    async updateByField(obj: Static<T>, field: string, value: string | number | boolean): Promise<number> {
         let schema = this._CONFIG.COLUMN_MAP.get(field);
         let column = (schema && schema.column) ? schema.column : field;
         return this.updateByCondition(obj, [{ column, value }])
     }
 
-    updateByQuery(obj: Static<T>, query: QuerySchema): Promise<number> {
+    async updateByQuery(obj: Static<T>, query: QuerySchema): Promise<number> {
         const condition = queryToCondition(query, this._CONFIG.COLUMN_MAP, this._QUERY_CACHE);
         return this.updateByCondition(obj, condition);
     }
-    updateByCondition(obj: Static<T>, condition?: WhereParam): Promise<number> {
+    async updateByCondition(obj: Static<T>, condition?: WhereParam): Promise<number> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
         _.unset(obj, key);
         let entity = this.checkEntity(obj, false);
         if (_.keys(entity).length == 0) return new Promise(r => r(0));
         const [SQL, FIELD_SET] = _BUILDER.update(_table, entity);
         const [WHERE, PARAM] = this._BUILDER.where(condition, FIELD_SET.length + 1);
-        return _EXECUTOR.execute(this.getClient(), `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM]);
+        const conn = await this.getConn();
+        return _EXECUTOR.execute(conn, `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM]);
     }
 
     /**
      * Insert a record
     */
-    add(object: Static<T>): Promise<Static<T>> {
+    async add(object: Static<T>): Promise<Static<T>> {
         const { _table, _BUILDER, _EXECUTOR } = this;
         let entity = this.checkEntity(object, true);
         const [SQL, PARAM] = _BUILDER.insert(_table, entity);
-        return _EXECUTOR.add(this.getClient(), `${SQL}`, PARAM);
+        const conn = await this.getConn();
+        return _EXECUTOR.add(conn, `${SQL}`, PARAM);
     }
 }
 

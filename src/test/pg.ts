@@ -1,7 +1,7 @@
 // import { test as jtest, Test, TestContext } from '@japa/runner';
 import { Client } from 'pg';
 // import { TestExecutor } from '@japa/core';
-import { setup, Table, } from '../pg/index';
+// import { setup, Table, } from '../pg/index';
 import _ from 'lodash';
 import { UserSchema } from './Const';
 export { SUFFIX_MATRIX } from '../pg/basic/where';
@@ -22,11 +22,11 @@ export const MODE = 'PG';
 
 export var pg: Client = new Client(config);
 
-setup({
-    provider: () => pg,
-    strict: true,
-    showSQL: console.log
-})
+// setup({
+//     provider: () => pg,
+//     strict: true,
+//     showSQL: console.log
+// })
 
 
 
@@ -50,9 +50,9 @@ let pid: any = null;
 
 
 // // Line 4 : Build a Table, it's ok for all
-export const User = new Table('public.user', UserSchema, {
-    // globalCondition: [{ column: 'id', fn: '!=', 'value': 1 }]
-});
+// export const User = new Table('public.user', UserSchema, {
+//     // globalCondition: [{ column: 'id', fn: '!=', 'value': 1 }]
+// });
 
 
 // @ts-ignore

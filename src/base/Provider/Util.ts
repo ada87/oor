@@ -2,56 +2,15 @@ import _ from 'lodash';
 import dayjs from 'dayjs';
 import { Type } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
-import { setProvider } from './Providers';
+// import { setProvider } from './Providers';
 
-import type { MagicSuffix, DB_TYPE, UDateOptions, UNumericOptions, UStringOptions, OColumn } from '../types';
+import type { MagicSuffix, UDateOptions, UNumericOptions, UStringOptions, OColumn } from '../types';
 import type { TProperties, TPartial, TObject } from '@sinclair/typebox';
 
 
 
 export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull']);
-/**
- * Data Source Config
-*/
-export type Settings = {
-    /**
-     * DataBase Instace or  DataBase Connection Config
-     * use 'setup' function in sepific DataBase
-    */
-    provider: [DB_TYPE, () => any] | (() => any),
-    /**
-     * Default pageSize for  Table/View Pagition,
-    */
-    pageSize?: number,
-    /**
-     * A log Function Example : default :null
-     *      console.info
-     *      logger.log
-     */
-    showSQL?: Function;
-    /**
-     * Check Param strict match Table Schema Define
-     * "query" use for db.query param
-     * "entity" use for add/update  param
-     * 
-     * Default : false
-     * false : Do not validate the param schema 
-     * true : Validate param schema 
-     * example : UType.Table({id:UType.Integer({min:1, max:10})})
-     *   can validate a range
-     * 
-    */
-    strict?: boolean | {
-        query?: boolean
-        entity?: boolean,
-    },
-    // date?: {
-    //     // spify this to boost speed ,suggest aways iso 8601
-    //     parseRuleFormat?: string,
-    // }
-}
-// 
-Type.Number({ maximum: 1, minimum: 33 })
+
 
 
 var STRICT_QUERY = false;
@@ -59,30 +18,30 @@ var STRICT_ENTITY = false;
 export var ShowSql = null;
 export var PAGE_SIZE = 10;
 
-export const setup = (settings: Settings) => {
-    if (_.isArray(settings.provider)) {
-        setProvider(settings.provider[0], settings.provider[1]);
-    } else if (_.isFunction(settings.provider)) {
-        setProvider('pg', settings.provider);
-    }
-    if (_.has(settings, 'strict')) {
-        if (settings.strict) {
-            if (_.isBoolean(settings.strict)) {
-                STRICT_QUERY = true;
-                STRICT_ENTITY = true;
-            } else {
-                if (settings.strict.entity) STRICT_ENTITY = true;
-                if (settings.strict.query) STRICT_QUERY = true;
-            }
-        } else {
-            STRICT_QUERY = false;
-            STRICT_ENTITY = false;
-        }
-    }
+// export const setup = (settings: Settings) => {
+//     if (_.isArray(settings.provider)) {
+//         setProvider(settings.provider[0], settings.provider[1]);
+//     } else if (_.isFunction(settings.provider)) {
+//         setProvider('pg', settings.provider);
+//     }
+//     if (_.has(settings, 'strict')) {
+//         if (settings.strict) {
+//             if (_.isBoolean(settings.strict)) {
+//                 STRICT_QUERY = true;
+//                 STRICT_ENTITY = true;
+//             } else {
+//                 if (settings.strict.entity) STRICT_ENTITY = true;
+//                 if (settings.strict.query) STRICT_QUERY = true;
+//             }
+//         } else {
+//             STRICT_QUERY = false;
+//             STRICT_ENTITY = false;
+//         }
+//     }
 
-    if (settings.pageSize) PAGE_SIZE = settings.pageSize;
-    if (settings.showSQL && _.isFunction(settings.showSQL)) ShowSql = settings.showSQL;
-}
+//     if (settings.pageSize) PAGE_SIZE = settings.pageSize;
+//     if (settings.showSQL && _.isFunction(settings.showSQL)) ShowSql = settings.showSQL;
+// }
 
 export const UType = {
     Table: <T extends TProperties>(properties: T): TPartial<TObject<T>> => Type.Partial(Type.Object(properties)),

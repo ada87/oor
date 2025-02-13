@@ -3,7 +3,7 @@ import { PAGE_SIZE } from './Provider/Util';
 import { BaseQuery } from './BaseQuery'
 import { queryToCondition } from './QueryBuilder';
 
-import type { Database } from './db'
+import type { Database } from './DataBase'
 import type { TObject, Static, TSchema } from '@sinclair/typebox';
 import type { QuerySchema, WhereParam, WhereDefine, OColumn, WhereItem, Sort } from './types';
 

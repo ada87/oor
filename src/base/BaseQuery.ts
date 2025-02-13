@@ -1,4 +1,4 @@
-import type { Database } from './db';
+import type { Database } from './DataBase';
 import type { SqlBuilder, BaseSqlExecutor } from './sql';
 
 /**

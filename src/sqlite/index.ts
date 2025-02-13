@@ -5,14 +5,13 @@ import { executor } from './basic/executor'
 import { getFieldType } from '../base/QueryBuilder';
 import { BaseView } from '../base/BaseView';
 import { BaseTable } from '../base/BaseTable';
-import { Settings, setup as _setup } from '../base/Provider/Util'
+// import { Settings, setup as _setup } from '../base/Provider/Util'
 // Export Some useful global apis/types.
 import { verbose } from 'sqlite3';
 import { _query } from './basic/toPromise'
 
 
 import type { Static, TObject } from '@sinclair/typebox';
-import type { DB_TYPE } from '../base/types';
 import type { SqlBuilder, SqlExecutor } from '../base/sql';
 import type { TableOptions } from '../base/BaseView';
 import type { Database } from 'sqlite3';
@@ -36,7 +35,6 @@ const SelectField = (field: string, schema: any) => {
 
 
 export class View<T extends TObject> extends BaseView<T, Database> {
-    protected _DB_TYPE: DB_TYPE = 'sqlite';
     protected _BUILDER: SqlBuilder = SQLITE;
     protected _EXECUTOR: SqlExecutor<T> = executor;
 
@@ -74,7 +72,6 @@ export class View<T extends TObject> extends BaseView<T, Database> {
 }
 
 export class Table<T extends TObject> extends BaseTable<T, Database> {
-    protected _DB_TYPE: DB_TYPE = 'sqlite';
     protected _BUILDER: SqlBuilder = SQLITE;
     protected _EXECUTOR: SqlExecutor<Static<T>> = executor;
     protected init(schema: T, options?: TableOptions) {
@@ -117,24 +114,25 @@ export class Table<T extends TObject> extends BaseTable<T, Database> {
      * same arguments as mysql.query()
      * */
     async exec(sql, ...args: any[]): Promise<T[]> {
-        const client = await this.getClient()
-        return await _query(client, sql, args);
+        // const client = await this.getClient()
+        // return await _query(client, sql, args);
+        return null
     }
 }
 
-export type SqliteSettings = Omit<Settings, 'provider'> & {
-    provider: string | (() => Database)
-};
+// export type SqliteSettings = Omit<Settings, 'provider'> & {
+//     provider: string | (() => Database)
+// };
 
-export const setup = async (settings: SqliteSettings): Promise<Database> => {
-    let db: Database;
-    if (_.isFunction(settings.provider)) {
-        db = settings.provider();
-    } else {
-        const sql = verbose();
-        db = new sql.Database(settings.provider);
-        await db.serialize();
-    }
-    _setup({ ...settings, provider: ['sqlite', () => db], })
-    return db;
-}
+// export const setup = async (settings: SqliteSettings): Promise<Database> => {
+//     let db: Database;
+//     if (_.isFunction(settings.provider)) {
+//         db = settings.provider();
+//     } else {
+//         const sql = verbose();
+//         db = new sql.Database(settings.provider);
+//         await db.serialize();
+//     }
+//     _setup({ ...settings, provider: ['sqlite', () => db], })
+//     return db;
+// }

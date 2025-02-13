@@ -1,4 +1,3 @@
-import type { DB_TYPE } from "../types";
 
 import type { PoolConfig } from 'pg'
 import type { PoolOptions } from 'mysql2'
@@ -63,22 +62,3 @@ const getPG = (): PoolConfig => {
 
 
 }
-
-// declare function getEnv(dbType:'pg'): PgOptions;
-
-export const getEnv = <T extends DB_TYPE>(dbType: T): ConfigMap[T] => {
-    switch (dbType) {
-        case 'pg':
-            return getPG();
-        case 'mysql':
-            return getMYSQL();
-        case 'sqlite':
-            return getSQLITE();
-        case 'es':
-            return getES();
-    }
-    return null
-
-    // return a
-}
-

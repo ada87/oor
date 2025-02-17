@@ -11,7 +11,8 @@ test('connect client', {
     // console.log(PG)
     const user = await USER.getById(1);
 
-    USER.update({ ...user, name: 'TEST' })
+    const result = await USER.update({ ...user, name: 'TEST' },true)
+    console.log(result)
     // console.log(user)
 
     // console.log(config)

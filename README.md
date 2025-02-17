@@ -3,7 +3,8 @@
 [Documention](https://oor.xdnote.com/index.en/)  |  [简体中文](README_ZH.md)  | ![npm version](https://img.shields.io/npm/v/oor.svg?style=flat)
 
 NodeJs ORM tool library , for `Postgresql`, `ElasticSearch`, `MySql` .
-
+<!-- Required : MySQL 8.0.19  -->
+<!-- Required : SQLite 3.35.0  -->
 
 ## Features
 

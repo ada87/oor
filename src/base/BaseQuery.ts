@@ -1,10 +1,11 @@
 import type { Database } from './DataBase';
 import type { SqlBuilder, BaseSqlExecutor } from './sql';
+import type { Static, TObject } from '@sinclair/typebox';
 
 /**
  * Basic Query, abstract class, must implement these properties:
 */
-export abstract class BaseQuery<Connection> {
+export abstract class BaseQuery<T extends TObject, Connection> {
 
     private db: Database<Connection>;
 
@@ -22,7 +23,7 @@ export abstract class BaseQuery<Connection> {
     * _EXECUTOR: BaseSqlExecutor  - SQL Executer for db
     *      @see BaseSqlExecutor
     */
-    protected abstract _EXECUTOR: BaseSqlExecutor;
+    protected abstract _EXECUTOR: BaseSqlExecutor<Static<T>>;
 
     /**
      * Get Database connection form provider

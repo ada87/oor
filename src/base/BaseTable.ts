@@ -92,7 +92,10 @@ export abstract class BaseTable<T extends TObject, Connection> extends BaseView<
     /**
      * Update a record, By Primary Key in the obj
     */
-    async update(obj: Static<T>): Promise<number> {
+    async update(obj: Static<T>, returning?: false): Promise<number>;
+    async update(obj: Static<T>, returning: true): Promise<any>;
+
+    async update(obj: Static<T>, returning: boolean = false): Promise<number | any> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
         // if (key == null) throw new Error(`Table ${_table} do not have a Primary Key`);
         if (!_.has(obj, key)) throw new Error(`Update Action must have a key`);
@@ -104,6 +107,7 @@ export abstract class BaseTable<T extends TObject, Connection> extends BaseView<
         const [WHERE, PARAM] = _BUILDER.byField(key, obj[key] as any, FIELD_SET.length + 1)
         const conn = await this.getConn();
         // console.log( `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM])
+        
         return _EXECUTOR.execute(conn, `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM]);
     }
 

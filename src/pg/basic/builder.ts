@@ -47,6 +47,7 @@ export const update: SqlUpdate = (table: string, obj: any, key = 'id'): [string,
         query.push(`${field} = $${i + diff}`)
         param.push(val)
     });
+    // console.log(`UPDATE  ${table} SET ${query.join(',')} RETURNING *`)
 
     return [`UPDATE  ${table} SET ${query.join(',')}`, param];
 }

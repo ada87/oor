@@ -41,7 +41,7 @@ export type TableOptions = {
  * @param options  optional @see TableOptions smoe
  * 
 */
-export abstract class BaseView<T extends TObject, Connection> extends BaseQuery<Connection> {
+export abstract class BaseView<T extends TObject, Connection> extends BaseQuery<T, Connection> {
 
     protected _table: string;
 

@@ -2,9 +2,8 @@ import _ from 'lodash';
 import dayjs from 'dayjs';
 import { Type } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
-// import { setProvider } from './Providers';
 
-import type { MagicSuffix, UDateOptions, UNumericOptions, UStringOptions, OColumn } from '../types';
+import type { MagicSuffix, UDateOptions, UNumericOptions, UStringOptions, OColumn } from './types';
 import type { TProperties, TPartial, TObject } from '@sinclair/typebox';
 
 
@@ -18,30 +17,6 @@ var STRICT_ENTITY = false;
 export var ShowSql = null;
 export var PAGE_SIZE = 10;
 
-// export const setup = (settings: Settings) => {
-//     if (_.isArray(settings.provider)) {
-//         setProvider(settings.provider[0], settings.provider[1]);
-//     } else if (_.isFunction(settings.provider)) {
-//         setProvider('pg', settings.provider);
-//     }
-//     if (_.has(settings, 'strict')) {
-//         if (settings.strict) {
-//             if (_.isBoolean(settings.strict)) {
-//                 STRICT_QUERY = true;
-//                 STRICT_ENTITY = true;
-//             } else {
-//                 if (settings.strict.entity) STRICT_ENTITY = true;
-//                 if (settings.strict.query) STRICT_QUERY = true;
-//             }
-//         } else {
-//             STRICT_QUERY = false;
-//             STRICT_ENTITY = false;
-//         }
-//     }
-
-//     if (settings.pageSize) PAGE_SIZE = settings.pageSize;
-//     if (settings.showSQL && _.isFunction(settings.showSQL)) ShowSql = settings.showSQL;
-// }
 
 export const UType = {
     Table: <T extends TProperties>(properties: T): TPartial<TObject<T>> => Type.Partial(Type.Object(properties)),

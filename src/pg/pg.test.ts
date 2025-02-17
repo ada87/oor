@@ -1,17 +1,19 @@
 import { test } from 'tsest'
-import { PgClient } from './index';
+import { PG } from './index';
+import { UserSchema } from '../base/Util.test'
 
+const USER = PG.Table('public.user', UserSchema);
 
-const client  = new PgClient({});
-export const user  = client.Table();
 test('connect client', {
-
+    only: true
 }, async () => {
+    // console.log(USER)
+    // console.log(PG)
+    const user = await USER.getById(1);
 
-    
-    // const conn = await client.getClient();
-    // conn.query('SELECT NOW()', (err, res) => {
-    // client.connect();
-    // client.query('SELECT NOW()', (err, res) => {   
- })
+    USER.update({ ...user, name: 'TEST' })
+    // console.log(user)
+
+    // console.log(config)
+})
 

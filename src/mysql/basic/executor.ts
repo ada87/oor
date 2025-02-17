@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { ShowSql } from '../../base/Provider/Util';
+import { ShowSql } from '../../base/Util';
 
 import type { Pool, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import type { SqlExecutor, } from '../../base/sql';

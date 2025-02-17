@@ -1,4 +1,4 @@
-import _ from 'lodash';
+// import _ from 'lodash';
 import { SqlBuilder, SqlExecutor } from '../base/sql';
 import { getFieldType } from '../base/QueryBuilder';
 import { BaseTable } from '../base/BaseTable';
@@ -27,7 +27,8 @@ export class PgTable<T extends TObject> extends BaseTable<T, Client | Pool> {
     protected init(schema: T, options?: TableOptions) {
         let fields_query = [];
         let fields_get = [];
-        _.keys(schema.properties).map(field => {
+        
+        Object.keys(schema.properties).map(field => {
             let properties = schema.properties[field];
             if (properties.column) {
                 fields_get.push(`"${properties.column}" AS "${field}"`);
@@ -47,7 +48,7 @@ export class PgTable<T extends TObject> extends BaseTable<T, Client | Pool> {
         this._CONFIG.fields_get = fields_get.join(',')
         const WHERE = [];
         if (this._CONFIG.mark) {
-            let column = _.keys(this._CONFIG.mark)[0];
+            let column = Object.keys(this._CONFIG.mark)[0];
             WHERE.push({ field: column, value: this._CONFIG.mark[column], condition: '!=' });
         }
         if (options && options.globalCondition && options.globalCondition.length) {

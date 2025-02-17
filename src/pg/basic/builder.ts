@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { PAGE_SIZE } from '../../base/Provider/Util';
+import { PAGE_SIZE } from '../../base/Util';
 
 
 import type { SqlDelete, SqlInsert, SqlOrderBy, SqlUpdate, SqlLimit, SqlSelect, SqlCount, SqlByField, } from '../../base/sql';

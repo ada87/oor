@@ -7,12 +7,12 @@ import { insert, update, del, select, count, byField, orderBy, limit } from './b
 import { where, fixWhere } from './basic/where'
 import { executor } from './basic/executor'
 
-import type { Static, TObject } from '@sinclair/typebox';
+import type { TObject } from '@sinclair/typebox';
+
 
 // Export Some useful global apis/types.
 export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
 
-export type { Static } from '@sinclair/typebox';
 
 const PG: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
 

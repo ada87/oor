@@ -1,14 +1,22 @@
 // type IS_POOL = boolean;
 
+type DateType = Date | string | number | null | undefined;
+
+
+
 type DataBaseOptions = {
     isPool?: false
     logger?: boolean
     pageSize?: number
+    dateType?: DateType
     strict?: boolean | {
+
         query?: boolean
         entity?: boolean,
     },
 }
+
+// type TableOptions = 
 // | {
 //     isPool: true
 //     logger?: boolean

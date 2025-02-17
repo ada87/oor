@@ -1,15 +1,15 @@
-import type { MagicSuffix, WhereItem, FieldType, Support } from '../base/types';
-
 import _ from 'lodash';
 import { SUFFIX } from '../base/types'
 import { SqlWhere, } from '../base/sql'
 import { UType } from '../base/Util';
 
+import type { MagicSuffix, WhereItem, FieldType, Support } from '../base/types';
+
 // Line 2 : Build a Schema , 
 //          Schema can be used for validate、check, @see @sinclair/typebox
 //          Some FrameWork support this schema derectly , like fastify 
 export const UserSchema = UType.Table({
-    id: UType.Integer({ description: '', default: 1 }),
+    id: UType.Integer(),
     name: UType.String({ maxLength: 32 }),
     age: UType.Integer({ minimum: 0, maximum: 128 }),
     sex: UType.Boolean(),

@@ -103,6 +103,7 @@ export abstract class BaseTable<T extends TObject, Connection> extends BaseView<
         }
         const [WHERE, PARAM] = _BUILDER.byField(key, obj[key] as any, FIELD_SET.length + 1)
         const conn = await this.getConn();
+        // console.log( `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM])
         return _EXECUTOR.execute(conn, `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM]);
     }
 

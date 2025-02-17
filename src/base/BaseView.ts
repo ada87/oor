@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { PAGE_SIZE } from './Provider/Util';
+import { PAGE_SIZE } from './Util';
 import { BaseQuery } from './BaseQuery'
 import { queryToCondition } from './QueryBuilder';
 

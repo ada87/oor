@@ -16,7 +16,7 @@ import type { SqlBuilder, SqlExecutor } from '../base/sql';
 import type { TableOptions } from '../base/BaseView';
 import type { Database } from 'sqlite3';
 
-export { UType } from '../base/Provider/Util';
+export { UType } from '../base/Util';
 export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
 export type { Static } from '@sinclair/typebox';
 

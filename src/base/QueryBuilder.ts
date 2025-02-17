@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { Kind } from '@sinclair/typebox';
 import { WhereItem, WhereCondition, QuerySchema, WhereDefine, FieldType, SUFFIX, MagicSuffix, OColumn } from './types';
-import { throwErr } from './Provider/Util';
+import { throwErr } from './Util';
 
 
 const DEFAULT_QUERY_KEY = new Set<string>(['start_', 'count_', 'order_', 'by_', 'keyword_']);

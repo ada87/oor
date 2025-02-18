@@ -1,5 +1,3 @@
-// import { getProvider } from '../../base/Provider/Providers';
-
 import type { Client } from '@elastic/elasticsearch';
 import type { SearchResponse, SearchRequest } from '@elastic/elasticsearch/lib/api/types';
 
@@ -11,7 +9,7 @@ export abstract class BaseQuery {
     */
     getClient(): Client {
         // return getProvider('es') as any;
-        return  null
+        return null
     }
 
     /**

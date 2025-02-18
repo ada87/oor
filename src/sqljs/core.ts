@@ -78,7 +78,7 @@
 // export class Table<T extends TObject> extends BaseTable<T, Database> {
 //     protected _DB_TYPE: DB_TYPE = 'sqlite';
 //     protected _BUILDER: SqlBuilder = SQLITE;
-//     protected _EXECUTOR: SqlExecutor<Static<T>> = executor;
+//     protected _EXECUTOR: SqlExecutor<Static<S>> = executor;
 //     protected init(schema: T, options?: TableOptions) {
 //         let fields_query = [];
 //         let fields_get = [];

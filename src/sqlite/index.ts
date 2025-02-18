@@ -73,7 +73,7 @@ export class View<T extends TObject> extends BaseView<T, Database> {
 
 export class Table<T extends TObject> extends BaseTable<T, Database> {
     protected _BUILDER: SqlBuilder = SQLITE;
-    protected _EXECUTOR: SqlExecutor<Static<T>> = executor;
+    protected _EXECUTOR: SqlExecutor<Static<S>> = executor;
     protected init(schema: T, options?: TableOptions) {
         let fields_query = [];
         let fields_get = [];
@@ -104,7 +104,7 @@ export class Table<T extends TObject> extends BaseTable<T, Database> {
         this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.COLUMN_MAP, WHERE);
     }
 
-    async add(object: Static<T>) {
+    async add(object: Static<S>) {
         const result = await super.add(object)
         return await this.getById(result['id'] as any)
 

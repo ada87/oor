@@ -9,8 +9,8 @@ export { UType } from '../base/Util';
 export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
 export type { Static } from '@sinclair/typebox';
 
-import { setSaveFunction } from './basic/save';
-import type { SaveFunction } from './basic/save';
+import { setSaveFunction } from './save';
+import type { SaveFunction } from './save';
 
 
 // export const SAVE_TO_LOCATION: SaveFunction = async () => {

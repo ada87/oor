@@ -88,23 +88,23 @@ export class Table<T extends TObject> extends View<T> {
      * Update a record,  by DOCUMENT._id 
      * (Not id field in Source) : Source id can use updateByField(doc, 'id',xxx);
     */
-    update(id: string, obj: Static<T>, useIndex = false): Promise<number> {
+    update(id: string, obj: Static<S>, useIndex = false): Promise<number> {
         const entity = this.checkEntity(obj, false);
         return actions.updateById(this.getClient(), this._index, id, entity, useIndex);
     }
     /**
      * Update documents by match {term:{filed,value}}
     */
-    updateByField(obj: Static<T>, field: string, value: string | number | boolean): Promise<number> {
+    updateByField(obj: Static<S>, field: string, value: string | number | boolean): Promise<number> {
         let column = this.getColumn(field);
         return this.updateByCondition(obj, [{ column, value, fn: '=' }])
     }
 
-    updateByQuery(obj: Static<T>, query: QuerySchema): Promise<number> {
+    updateByQuery(obj: Static<S>, query: QuerySchema): Promise<number> {
         const condition = queryToCondition(query, this._CONFIG.COLUMN_MAP, this._QUERY_CACHE);
         return this.updateByCondition(obj, condition);
     }
-    updateByCondition(obj: Static<T>, condition?: WhereParam): Promise<number> {
+    updateByCondition(obj: Static<S>, condition?: WhereParam): Promise<number> {
         const { _index, _CONFIG: { COLUMN_MAP, globalFilter } } = this;
         let entity = this.checkEntity(obj);
         const scripts = [];
@@ -147,7 +147,7 @@ export class Table<T extends TObject> extends View<T> {
     /**
      * Insert a record
     */
-    add(object: Static<T>): Promise<SearchHit<Static<T>>> {
+    add(object: Static<S>): Promise<SearchHit<Static<S>>> {
         let index = _.isFunction(this.getIndex) ? this.getIndex(object) : this._index;
         let entity = this.checkEntity(object, true)
         return actions.add(this.getClient(), index, entity);

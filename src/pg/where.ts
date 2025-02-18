@@ -1,11 +1,11 @@
 import _ from 'lodash';
 import { Kind } from '@sinclair/typebox';
-import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../../base/Util';
+import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../base/Util';
 import dayjs from 'dayjs';
 
-import type { WhereParam, WhereItem, WhereCondition, MagicSuffix, Support, OColumn } from '../../base/types';
+import type { WhereParam, WhereItem, WhereCondition, MagicSuffix, Support, OColumn } from '../base/types';
 import type { Dayjs } from 'dayjs';
-import type { SqlWhere } from '../../base/sql';
+import type { SqlWhere } from '../base/sql';
 
 
 type QueryPos = { SQL: string[]; PARAM: any[], NUM: number; }

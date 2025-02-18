@@ -2,9 +2,9 @@
 import { SqlBuilder, SqlExecutor } from '../base/sql';
 import { getFieldType } from '../base/QueryBuilder';
 import { BaseTable } from '../base/BaseTable';
-import { insert, update, del, select, count, byField, orderBy, limit } from './basic/builder';
-import { where, fixWhere } from './basic/where'
-import { executor } from './basic/executor'
+import { insert, update, del, select, count, byField, orderBy, limit } from './builder';
+import { where, fixWhere } from './where'
+import { executor } from './executor'
 
 import type { TableOptions } from '../base/BaseView';
 import type { Static, TObject } from '@sinclair/typebox';
@@ -16,18 +16,20 @@ export type { Static } from '@sinclair/typebox';
 
 const PG: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
 
-import type {  Client, ClientBase, Pool, } from 'pg';
+import type { Client, ClientBase, Pool, } from 'pg';
 
 
 
 export class PgTable<T extends TObject> extends BaseTable<T, Client | Pool> {
+
+
     protected _BUILDER: SqlBuilder = PG;
-    protected _EXECUTOR: SqlExecutor<Static<T>> = executor;
+    protected _EXECUTOR: SqlExecutor<Static<S>> = executor;
 
     protected init(schema: T, options?: TableOptions) {
         let fields_query = [];
         let fields_get = [];
-        
+
         Object.keys(schema.properties).map(field => {
             let properties = schema.properties[field];
             if (properties.column) {

@@ -1,12 +1,12 @@
 import _ from 'lodash';
-import { PAGE_SIZE } from '../../base/Util';
+// import { PAGE_SIZE } from '../base/Util';
 import { BaseQuery } from './BaseQuery'
-import { queryToCondition, getFieldType } from '../../base/QueryBuilder';
+import { queryToCondition, getFieldType } from '../base/QueryBuilder';
 import { where, fixWhere, buildSearch } from './dsl';
 
 import type { TObject, Static, TSchema } from '@sinclair/typebox';
-import type { QuerySchema, WhereParam, WhereDefine, OColumn } from '../../base/types';
-import type { TableOptions } from '../../base/BaseView'
+import type { QuerySchema, WhereParam, WhereDefine, OColumn } from '../base/types';
+import type { TableOptions } from '../base/BaseView'
 import type { Field, QueryDslQueryContainer, Sort } from '@elastic/elasticsearch/lib/api/types';
 import type { OrderByLimit, ESQuery } from './define';
 
@@ -16,11 +16,11 @@ type ESIndexOptions<T> = TableOptions & {
 
 const ES_MAX_SIZE = 10000;
 
-export abstract class BaseView<T extends TObject, ROW> extends BaseQuery {
+export abstract class BaseView<S extends TObject, ROW> extends BaseQuery {
 
     protected _index: string;
 
-    protected abstract _EXECUTOR: ESQuery<Static<T>, ROW>
+    protected abstract _EXECUTOR: ESQuery<Static<S>, ROW>
 
     private _F2C = new Map<string, string>(); // Field To Column
     private _C2F = new Map<string, string>(); // Column To Field
@@ -39,7 +39,7 @@ export abstract class BaseView<T extends TObject, ROW> extends BaseQuery {
     }
     protected _QUERY_CACHE = new Map<string, WhereDefine>();
 
-    protected getIndex: ((data: Static<T>) => string) = null;
+    protected getIndex: ((data: Static<S>) => string) = null;
 
 
 
@@ -50,7 +50,7 @@ export abstract class BaseView<T extends TObject, ROW> extends BaseQuery {
      * @param options (Table/View) Options
      * 
     */
-    constructor(indexName: string, schema: T, options?: ESIndexOptions<Static<T>>) {
+    constructor(indexName: string, schema: T, options?: ESIndexOptions<Static<S>>) {
         super();
         this._index = indexName;
         this._CONFIG.fields_exclude = [] as Field[];
@@ -209,7 +209,7 @@ export abstract class BaseView<T extends TObject, ROW> extends BaseQuery {
      * Get A record form Table / View By Primary key.
      * This method will return All column. Even if the IGNORE column.
     */
-    getById(id: string): Promise<Static<T>> {
+    getById(id: string): Promise<Static<S>> {
         return this._EXECUTOR.getById(this.getClient(), this._index, id);
     }
     /**

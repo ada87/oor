@@ -1,34 +1,25 @@
 import type { Database } from './DataBase';
-import type { SqlBuilder, BaseSqlExecutor } from './sql';
-import type { Static, TObject } from '@sinclair/typebox';
 
 /**
  * Basic Query, abstract class, must implement these properties:
 */
-export abstract class BaseQuery<T extends TObject, Connection> {
+export abstract class BaseQuery<C> {
 
-    private db: Database<Connection>;
+    private db: Database<C>;
 
-    constructor(db: Database<Connection>) {
+    constructor(db: Database<C>) {
         this.db = db;
     }
 
-    /** 
-     * _BUILDER: SqlBuilder  - SQL Query Builder for db
-    *   @see SqlBuilder
-    */
-    protected abstract _BUILDER: SqlBuilder;
 
-    /** 
-    * _EXECUTOR: BaseSqlExecutor  - SQL Executer for db
-    *      @see BaseSqlExecutor
-    */
-    protected abstract _EXECUTOR: BaseSqlExecutor<Static<T>>;
 
+    getDB(): Database<C> {
+        return this.db;
+    }
     /**
      * Get Database connection form provider
     */
-    async getConn(): Promise<Connection> {
+    async getConn(): Promise<C> {
         return this.db.getConn();
     }
 

@@ -90,7 +90,7 @@
 // */
 // export class Table<T extends TObject> extends BaseTable<T, Pool> {
 //     protected _BUILDER: SqlBuilder = MYSQL;
-//     protected _EXECUTOR: SqlExecutor<Static<T>> = executor;
+//     protected _EXECUTOR: SqlExecutor<Static<S>> = executor;
 //     protected init(schema: T, options?: TableOptions) {
 //         let fields_query = [];
 //         let fields_get = [];
@@ -121,7 +121,7 @@
 //         this._CONFIG.WHERE_FIX = fixWhere(this._CONFIG.COLUMN_MAP, WHERE);
 //     }
 
-//     async add(object: Static<T>): Promise<Static<T>> {
+//     async add(object: Static<S>): Promise<Static<S>> {
 //         const result = await super.add(object)
 //         return await this.getById(result['id'] as string)
 //     }

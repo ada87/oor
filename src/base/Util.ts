@@ -12,10 +12,10 @@ export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull']);
 
 
 
-var STRICT_QUERY = false;
-var STRICT_ENTITY = false;
-export var ShowSql = null;
-export var PAGE_SIZE = 10;
+// var STRICT_QUERY = false;
+// var STRICT_ENTITY = false;
+// export var ShowSql = null;
+// export var PAGE_SIZE = 10;
 
 
 export const UType = {

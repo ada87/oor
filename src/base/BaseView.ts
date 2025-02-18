@@ -1,8 +1,9 @@
 import _ from 'lodash';
-import { PAGE_SIZE } from './Util';
+// import { PAGE_SIZE } from './Util';
 import { BaseQuery } from './BaseQuery'
 import { queryToCondition } from './QueryBuilder';
 
+import type { View, SqlQuery } from './sql';
 import type { Database } from './DataBase'
 import type { TObject, Static, TSchema } from '@sinclair/typebox';
 import type { QuerySchema, WhereParam, WhereDefine, OColumn, WhereItem, Sort } from './types';
@@ -41,13 +42,26 @@ export type TableOptions = {
  * @param options  optional @see TableOptions smoe
  * 
 */
-export abstract class BaseView<T extends TObject, Connection> extends BaseQuery<T, Connection> {
+export abstract class BaseView<S extends TObject, C> extends BaseQuery<C> implements View<S, C> {
 
     protected _table: string;
 
 
     protected _F2C = new Map<string, string>(); // Field To Column
     protected _C2F = new Map<string, string>(); // Column To Field
+
+
+    /** 
+     * _BUILDER: SqlBuilder  - SQL Query Builder for db
+    *   @see SqlBuilder
+    */
+    protected abstract _BUILDER: SqlQuery<S, C>;
+
+    /** 
+    * _EXECUTOR: BaseSqlExecutor  - SQL Executer for db
+    *      @see BaseSqlExecutor
+    */
+    protected abstract _EXECUTOR: BaseSqlExecutor<Static<S>>;
 
 
     protected _CONFIG = {
@@ -72,7 +86,7 @@ export abstract class BaseView<T extends TObject, Connection> extends BaseQuery<
      * @param options (Table/View) Options
      * 
     */
-    constructor(db: Database<Connection>, tableName: string, schema: T, options?: TableOptions) {
+    constructor(db: Database<C>, tableName: string, schema: S, options?: TableOptions) {
         super(db);
         this._table = tableName;
         this._CONFIG.COLUMN_MAP = new Map<string, TSchema>();
@@ -115,9 +129,9 @@ export abstract class BaseView<T extends TObject, Connection> extends BaseQuery<
     };
 
 
-    protected abstract init(schema: T, options?: TableOptions): void;
+    protected abstract init(schema: S, options?: TableOptions): void;
 
-    private async _query(WHERE, PARAM: ArrayLike<string> = [], ORDER_BY = '', LIMIT = ''): Promise<Static<T>[]> {
+    private async _query(WHERE, PARAM: ArrayLike<string> = [], ORDER_BY = '', LIMIT = ''): Promise<Static<S>[]> {
         const { _BUILDER, _EXECUTOR, _table, _CONFIG: { fields_query } } = this;
         const SQL_QUERY = _BUILDER.select(_table, fields_query);
         const SQL = `${SQL_QUERY} ${WHERE} ${ORDER_BY} ${LIMIT}`;
@@ -131,7 +145,7 @@ export abstract class BaseView<T extends TObject, Connection> extends BaseQuery<
      * @see WhereCondition
      * Use a WhereCondition Query Data 
     */
-    queryByCondition(condition?: WhereParam, limit?: QuerySchema): Promise<Static<T>[]> {
+    queryByCondition(condition?: WhereParam, limit?: QuerySchema): Promise<Static<S>[]> {
         const [WHERE, PARAM] = this._BUILDER.where(condition);
         if (limit) {
             const [ORDER_BY, LIMIT] = this.orderByLimit(limit);
@@ -146,7 +160,7 @@ export abstract class BaseView<T extends TObject, Connection> extends BaseQuery<
      * @see QuerySchema
      * Use a QuerySchema Query Data 
     */
-    query(query?: QuerySchema): Promise<Static<T>[]> {
+    query(query?: QuerySchema): Promise<Static<S>[]> {
         const { _QUERY_CACHE, _CONFIG: { COLUMN_MAP } } = this;
         const condition = queryToCondition(query, COLUMN_MAP, _QUERY_CACHE);
         return this.queryByCondition(condition, query)
@@ -157,7 +171,7 @@ export abstract class BaseView<T extends TObject, Connection> extends BaseQuery<
      * Use a QuerySchema Query Data With Page
      * this will return a object with {total:number,list:ArrayLike<T>}
     */
-    async queryPager(query?: QuerySchema): Promise<{ total: number, list: Static<T>[] }> {
+    async queryPager(query?: QuerySchema): Promise<{ total: number, list: Static<S>[] }> {
         let total = 0;
         const { _table, _BUILDER, _EXECUTOR, _QUERY_CACHE, _CONFIG: { COLUMN_MAP } } = this;
         const condition = queryToCondition(query, COLUMN_MAP, _QUERY_CACHE);
@@ -184,7 +198,7 @@ export abstract class BaseView<T extends TObject, Connection> extends BaseQuery<
     /**
      * Fetch All Records form the Table / View
     */
-    async all(): Promise<Static<T>[]> {
+    async all(): Promise<Static<S>[]> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_query, WHERE_FIX } } = this;
         const SQL = _BUILDER.select(_table, fields_query) + WHERE_FIX[0];
         const conn = await this.getConn();;
@@ -195,7 +209,7 @@ export abstract class BaseView<T extends TObject, Connection> extends BaseQuery<
      * Get A record form Table / View By Primary key.
      * This method will return All column. Even if the IGNORE column.
     */
-    async getById(id: number | string): Promise<Static<T>> {
+    async getById(id: number | string): Promise<Static<S>> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key, fields_get } } = this;
         if (key == null) throw new Error(`Table ${_table} do not have a Primary Key`);
         const SQL = _BUILDER.select(_table, fields_get);
@@ -209,7 +223,7 @@ export abstract class BaseView<T extends TObject, Connection> extends BaseQuery<
      * Note : If result has multi records , return the first row
      *        Want return all records?  use `queryByField`
     */
-    async getByField(field: string, value?: string | number): Promise<Static<T>> {
+    async getByField(field: string, value?: string | number): Promise<Static<S>> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_get } } = this;
         const SQL = _BUILDER.select(_table, fields_get);
         const [WHERE, PARAM] = _BUILDER.byField(field, value);
@@ -220,7 +234,7 @@ export abstract class BaseView<T extends TObject, Connection> extends BaseQuery<
     /**
      * Get records form Table / View By Specify Property = value.
     */
-    async queryByField(field: string, value?: string | number | boolean): Promise<Static<T>[]> {
+    async queryByField(field: string, value?: string | number | boolean): Promise<Static<S>[]> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_get } } = this;
         const SQL = _BUILDER.select(_table, fields_get);
         const [WHERE, PARAM] = _BUILDER.byField(field, value);

@@ -11,7 +11,7 @@
 //     return dayjs(txt).toDate();
 // }
 
-// export abstract class BaseTableBuider<T extends TObject, Connection> extends BaseView<T, Connection> {
+// export abstract class BaseTableBuider<T extends TObject, C> extends BaseView<T, C> {
 
 //     constructor(tableName: string, schema: T, options?: TableOptions) {
 //         super(tableName, schema, options);

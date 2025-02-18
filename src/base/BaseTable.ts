@@ -12,9 +12,9 @@ const toDate = (txt: string | number): Date => {
     return dayjs(txt).toDate();
 }
 
-export abstract class BaseTable<T extends TObject, Connection> extends BaseView<T, Connection> {
+export abstract class BaseTable<S extends TObject, C> extends BaseView<S, C> {
 
-    protected abstract _EXECUTOR: SqlExecutor<Static<T>>;
+    protected abstract _EXECUTOR: SqlExecutor<Static<S>>;
 
     /**
      * Auto convert data
@@ -92,10 +92,10 @@ export abstract class BaseTable<T extends TObject, Connection> extends BaseView<
     /**
      * Update a record, By Primary Key in the obj
     */
-    async update(obj: Static<T>, returning?: false): Promise<number>;
-    async update(obj: Static<T>, returning: true): Promise<any>;
+    async update(obj: Static<S>, returning?: false): Promise<number>;
+    async update(obj: Static<S>, returning: true): Promise<any>;
 
-    async update(obj: Static<T>, returning: boolean = false): Promise<number | any> {
+    async update(obj: Static<S>, returning: boolean = false): Promise<number | any> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
         // if (key == null) throw new Error(`Table ${_table} do not have a Primary Key`);
         if (!_.has(obj, key)) throw new Error(`Update Action must have a key`);
@@ -107,21 +107,21 @@ export abstract class BaseTable<T extends TObject, Connection> extends BaseView<
         const [WHERE, PARAM] = _BUILDER.byField(key, obj[key] as any, FIELD_SET.length + 1)
         const conn = await this.getConn();
         // console.log( `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM])
-        
+
         return _EXECUTOR.execute(conn, `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM]);
     }
 
-    async updateByField(obj: Static<T>, field: string, value: string | number | boolean): Promise<number> {
+    async updateByField(obj: Static<S>, field: string, value: string | number | boolean): Promise<number> {
         let schema = this._CONFIG.COLUMN_MAP.get(field);
         let column = (schema && schema.column) ? schema.column : field;
         return this.updateByCondition(obj, [{ column, value }])
     }
 
-    async updateByQuery(obj: Static<T>, query: QuerySchema): Promise<number> {
+    async updateByQuery(obj: Static<S>, query: QuerySchema): Promise<number> {
         const condition = queryToCondition(query, this._CONFIG.COLUMN_MAP, this._QUERY_CACHE);
         return this.updateByCondition(obj, condition);
     }
-    async updateByCondition(obj: Static<T>, condition?: WhereParam): Promise<number> {
+    async updateByCondition(obj: Static<S>, condition?: WhereParam): Promise<number> {
         const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key } } = this;
         _.unset(obj, key);
         let entity = this.checkEntity(obj, false);
@@ -135,7 +135,7 @@ export abstract class BaseTable<T extends TObject, Connection> extends BaseView<
     /**
      * Insert a record
     */
-    async add(object: Static<T>): Promise<Static<T>> {
+    async add(object: Static<S>): Promise<Static<S>> {
         const { _table, _BUILDER, _EXECUTOR } = this;
         let entity = this.checkEntity(object, true);
         const [SQL, PARAM] = _BUILDER.insert(_table, entity);

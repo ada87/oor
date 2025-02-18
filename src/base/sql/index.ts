@@ -1,5 +1,5 @@
-import type { TObject } from '@sinclair/typebox';
-import type { WhereParam, QuerySchema, Sort } from '../utils/types';
+import { Extends, type TObject } from '@sinclair/typebox';
+import type { WhereParam, QuerySchema, Sort } from '../types';
 
 export { BaseQueryBuilder } from './QueryBuilder';
 export { BaseActionBuilder } from './ActionBuilder';
@@ -16,7 +16,7 @@ export interface QueryBuilder {
     fixWhere: (where?: string, param?: Array<any>) => [string, Array<any>];
 }
 
-export interface ActionBuilder {
+export interface ActionBuilder extends QueryBuilder {
     insert: (data: TObject, returning?: boolean) => [string, any[]];
     update: (data: TObject, returning?: boolean) => [string, any[]];
     delete: () => string;
@@ -41,18 +41,18 @@ export interface QueryExecutor<C, O> {
 
 export interface ActionExecutor<C, O> extends QueryExecutor<C, O> {
     add: {
-        <O extends object>(conn, sql: string, param: any): Promise<O>,
-        <O extends object>(conn, sql: string, param: any, returning: true): Promise<O>,
+        (conn, sql: string, param: any): Promise<O>,
+        (conn, sql: string, param: any, returning: true): Promise<O>,
         (conn, sql: string, param: any, returning: false): Promise<Number>,
     }
     addBatch: {
-        <O extends object>(conn, sql: string, param: any): Promise<Array<O>>,
-        <O extends object>(conn, sql: string, param: any, returning: true): Promise<O>,
+        (conn, sql: string, param: any): Promise<Array<O>>,
+        (conn, sql: string, param: any, returning: true): Promise<O>,
         (conn, sql: string, param: any, returning: false): Promise<Number>,
     },
     execute: {
         (conn, sql: string, param?: any): Promise<number>,
         (conn, sql: string, param: any, returning: false): Promise<number>,
-        <O extends object>(conn, sql: string, param: any, returning: true): Promise<Array<O>>,
+        (conn, sql: string, param: any, returning: true): Promise<Array<O>>,
     },
 }

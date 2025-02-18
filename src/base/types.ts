@@ -20,6 +20,7 @@ export const SUFFIX = [
     '>', '>=', '<', '<=', '=', '!=', '<>',              // Comparison Functions,  https://www.postgresql.org/docs/current/functions-comparison.html
     'In', 'NotIn'                                       // SQL IN Condition , use "," sperate items, Not support boolean date
 ] as const;
+
 export type MagicSuffix = (typeof SUFFIX)[number];
 
 export type WhereDefine = {
@@ -155,4 +156,25 @@ export interface UDateOptions extends Column, DateOptions {
      * 
     */
     format?: string
+}
+
+
+
+export type DatabaseOptions = {
+    pageSize?: number
+    rowKey?: string
+    strictQuery?: boolean
+    strictEntity?: boolean
+}
+export type TableOptions = DatabaseOptions & {
+
+    /**
+     * The Table's Default Sorting Rule : Order Field , By Method
+    */
+    sort?: Sort
+    /**
+     * 默认查询过滤,比如 { field:'disabled',value:0,operation:'<>' }
+     * 设置后，通过 query / all 拼装的 sql 都会带上 AND disabled <> 0 
+    */
+    globalCondition?: WhereItem[];
 }

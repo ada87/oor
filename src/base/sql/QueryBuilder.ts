@@ -2,8 +2,7 @@ import _ from 'lodash';
 
 import type { QueryBuilder } from './index';
 import type { TObject, Static } from '@sinclair/typebox';
-import type { WhereParam, QuerySchema, Sort, Column } from '../utils/types';
-import type { TableOptions, DatabaseOptions } from '..'
+import type { WhereParam, QuerySchema, Sort, Column, TableOptions, DatabaseOptions } from '../types';
 
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -110,6 +109,9 @@ export class BaseQueryBuilder implements QueryBuilder {
         // this.init(schema, options);
         // options.pageSize = options.pageSize || 10;
         // this._table = '';
+    }
+    select(fields?: string): string {
+        throw new Error('Method not implemented.');
     }
     byId: (value: string | number) => [string, Array<any>];
     fixWhere: (where?: string, param?: Array<any>) => [string, Array<any>];

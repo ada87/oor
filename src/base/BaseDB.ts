@@ -1,10 +1,15 @@
-import type { DatabaseOptions, Database } from '.';
+import type { DatabaseOptions } from './types';
 
-const DEFAULT_OPTIONS: DatabaseOptions = { defaultPageSize: 20, defaultRowKey: 'id', }
+export interface Database<C, Options extends DatabaseOptions = DatabaseOptions> {
+    getConn: () => Promise<C>;
+    getOptions: () => Options;
+}
+
+const DEFAULT_OPTIONS: DatabaseOptions = { pageSize: 20, rowKey: 'id', }
 
 
 
-export abstract class BaseDataBase<ConnectionConfig, C, Options extends DatabaseOptions = DatabaseOptions> implements Database<C, Options> {
+export abstract class BaseDB<ConnectionConfig, C, Options extends DatabaseOptions = DatabaseOptions> implements Database<C, Options> {
 
     protected config: ConnectionConfig;
     protected options: Options;
@@ -14,11 +19,11 @@ export abstract class BaseDataBase<ConnectionConfig, C, Options extends Database
         this.options = { ...DEFAULT_OPTIONS, options } as any;
     }
 
-    getOptions(): Options {
+    public getOptions(): Options {
         return { ...this.options }
     }
 
-    abstract getConn: () => Promise<C>;
+    public abstract getConn(): Promise<C>;
 
 }
 

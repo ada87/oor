@@ -1,14 +1,33 @@
-import { BaseQuery } from './BaseDatabase';
+import { BaseQuery, } from './BaseDB';
 import _ from 'lodash';
 
+import type { Database } from './BaseDB';
 import type { QueryBuilder, QueryExecutor } from './sql'
-import type { WhereParam, QuerySchema, } from './utils/types'
-import type { TableOptions, DatabaseOptions, Database, View } from '.';
+import type { WhereParam, QuerySchema, Sort, WhereItem, DatabaseOptions, TableOptions } from './types'
 import type { TObject, Static } from '@sinclair/typebox';
+
 
 type Provider<B extends QueryBuilder> = {
     new(tableName: string, schema: TObject, tbOptions?: TableOptions, dbOptions?: DatabaseOptions): B
 };
+
+
+
+export interface View<O extends object> {
+    // readonly tableName: string;
+
+    all: () => Promise<Array<O>>;
+    getById: (id: string | number) => Promise<O>
+    getByField: (field: string, value: string | number | Date) => Promise<O>;
+    getByCondition: (condition: WhereParam) => Promise<O>;
+    query: {
+        (): Promise<Array<O>>
+        (query: QuerySchema): Promise<Array<O>>,
+    };
+    queryPagination: (query?: QuerySchema) => Promise<{ total: number, list: Array<O> }>
+    queryByField: (field: string, value?: string | number | boolean) => Promise<Array<O>>;
+    queryByCondition: (condition?: WhereParam, query?: QuerySchema) => Promise<Array<O>>;
+}
 
 export abstract class BaseView<S extends TObject, C, B extends QueryBuilder> extends BaseQuery<C> implements View<Static<S>> {
 
@@ -19,18 +38,12 @@ export abstract class BaseView<S extends TObject, C, B extends QueryBuilder> ext
 
     protected abstract readonly EXECUTOR: QueryExecutor<C, Static<S>>;
 
-    protected init() { };
-
-    // protected _preload(db: Database<C>, tableName: string, schema: S, options?: TableOptions) {
-    //     this.BUILDER = new BaseQueryBuilder(tableName, schema, options, db.getOptions());
-    // }
-
     /**
-    * @param tableName Data table name, "${schemaName}.${tableName}"  
-    *  "${schemaName}." can be ignore with the default search_path.
-    * @param schema The Object Schema, oor will not validate the value
-    * @param options (Table/View) Options
-    */
+     * @param tableName Data table name, "${schemaName}.${tableName}"  
+     *  "${schemaName}." can be ignore with the default search_path.
+     * @param schema The Object Schema, oor will not validate the value
+     * @param options (Table/View) Options
+     */
     constructor(p: Provider<B>, db: Database<C>, tbName: string, tbSchema: S, tbOptions?: TableOptions) {
         super(db);
         const dbOptions = db.getOptions();
@@ -38,6 +51,14 @@ export abstract class BaseView<S extends TObject, C, B extends QueryBuilder> ext
         this.STRICT_QUERY = tbOptions?.strictQuery || dbOptions?.strictQuery || false;
         this.init();
     }
+
+    protected init() { };
+
+    // protected _preload(db: Database<C>, tableName: string, schema: S, options?: TableOptions) {
+    //     this.BUILDER = new BaseQueryBuilder(tableName, schema, options, db.getOptions());
+    // }
+
+
 
     async all(): Promise<Static<S>[]> {
         const { BUILDER, EXECUTOR } = this;

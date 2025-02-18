@@ -1,5 +1,6 @@
 // import { TObject } from '@sinclair/typebox';
-import { BaseQueryBuilder } from '../base/sql';
+import { TObject } from '@sinclair/typebox';
+import { BaseQueryBuilder, BaseActionBuilder } from '../base/sql';
 import _ from 'lodash';
 
 
@@ -34,7 +35,7 @@ export class PgQueryBuilder extends BaseQueryBuilder {
     // export const select: SqlSelect = (table: string, fields: string = '*'): string => `SELECT ${fields || '*'} FROM ${table} `;
 
     // export const count: SqlCount = (table: string) => `SELECT count(0) AS total FROM ${table}`;
-    
+
     // export const insert: SqlInsert = (table: string, obj: any): [string, any[]] => {
     //     const fields = _.keys(obj);
     //     if (fields.length == 0) {
@@ -43,7 +44,7 @@ export class PgQueryBuilder extends BaseQueryBuilder {
     //     let query = [];
     //     let idx = [];
     //     let param = [];
-    
+
     //     fields.map((field, i) => {
     //         let val = obj[field];
     //         if (val === null) {
@@ -55,13 +56,13 @@ export class PgQueryBuilder extends BaseQueryBuilder {
     //     })
     //     return [`INSERT INTO ${table} (${query.join(',')}) VALUES (${idx.join(',')}) RETURNING *`, param];
     // }
-    
+
     // export const update: SqlUpdate = (table: string, obj: any, key = 'id'): [string, any[]] => {
     //     const fields = _.keys(obj);
     //     if (fields.length == 0) throw new Error();
     //     let query = [];
     //     let param = [];
-    
+
     //     let diff = 1;
     //     fields.map((field, i) => {
     //         // Not Allow Update Primary Key
@@ -74,33 +75,24 @@ export class PgQueryBuilder extends BaseQueryBuilder {
     //         param.push(val)
     //     });
     //     // console.log(`UPDATE  ${table} SET ${query.join(',')} RETURNING *`)
-    
+
     //     return [`UPDATE  ${table} SET ${query.join(',')}`, param];
     // }
-    
+
     // export const del: SqlDelete = (table: string): string => `DELETE FROM ${table} `
-    
-    
-    
-    
-    
+
+
+
+
+
     // export const byField: SqlByField = (field: string, id: string | number, startIdx: number = 1) => [` ${field} = $${startIdx} `, [id]];
-    
+
 
 }
 
-// export class PgActionBuilder<T extends TObject> extends PgQueryBuilder<T> {
+export class PgActionBuilder extends PgQueryBuilder implements BaseActionBuilder {
+    insert: (data: TObject, returning?: boolean) => [string, any[]];
+    update: (data: TObject, returning?: boolean) => [string, any[]];
+    delete: () => string;
 
-//     insert() {
-//         return '';
-//     }
-//     update() {
-//         return '';
-//     }
-//     delete() {
-//         return '';
-//     }
-//     returning() {
-//         return '';
-//     }
-// }
+}

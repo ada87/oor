@@ -1,8 +1,9 @@
 import _ from 'lodash';
-
-import { BaseView, } from '../base'
+import { BaseView, } from '../base/BaseView'
 import { PgQueryBuilder } from './PgQueryBuilder';
-import type { TableOptions, Database } from '../base'
+
+import type { Database } from '../base/BaseDB';
+import type { TableOptions, } from '../base'
 import type { QueryExecutor } from '../base/sql';
 // import { getFieldType } from '../base/utils/QueryBuilder';
 // import { BaseView, TableOptions } from '../base/BaseView';
@@ -15,7 +16,6 @@ import type { TObject, Static } from '@sinclair/typebox';
 
 
 // Export Some useful global apis/types.
-export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/utils/types';
 
 
 // import type { QueryExecutor } from '../base/sql';
@@ -26,12 +26,12 @@ export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, }
 import type { Client, ClientBase, Pool } from 'pg';
 
 
-export class PgView<S extends TObject> extends BaseView<S, Client | Pool, PgQueryBuilder> {
-    protected EXECUTOR = PG_QUERY as QueryExecutor<Client | Pool, Static<S>>;
+export class PgView<S extends TObject, B extends PgQueryBuilder = PgQueryBuilder> extends BaseView<S, Client | Pool, B> {
+    protected EXECUTOR = PG_QUERY as QueryExecutor<Client | Pool, any>;
 
 
     constructor(db: Database<Client | Pool>, tableName: string, tableSchema: S, tableOptions?: TableOptions) {
-        super(PgQueryBuilder, db, tableName, tableSchema, tableOptions);
+        super(PgQueryBuilder as any, db, tableName, tableSchema, tableOptions);
     }
 
 
@@ -93,3 +93,30 @@ export class PgView<S extends TObject> extends BaseView<S, Client | Pool, PgQuer
         return conn.query.call(conn, ...args);
     }
 }
+
+
+
+// import _ from 'lodash';
+// import { SUFFIX } from './types'
+// import { , } from './index'
+// import { UType } from '../base/utils/SQLUtil';
+
+// import type { MagicSuffix, WhereItem, FieldType, Support } from './types';
+
+// // Line 2 : Build a Schema , 
+// //          Schema can be used for validate、check, @see @sinclair/typebox
+// //          Some FrameWork support this schema derectly , like fastify 
+// export const UserSchema = UType.Table({
+//     id: UType.Integer(),
+//     name: UType.String({ maxLength: 32 }),
+//     age: UType.Integer({ minimum: 0, maximum: 128 }),
+//     sex: UType.Boolean(),
+//     profile: UType.String({ ignore: true }),
+//     address: UType.String({ maxLength: 128 }),
+//     salary: UType.Number(),
+//     registerDate: UType.Date({ column: 'register_date', isCreate: true }),
+//     lastModify: UType.Date({ column: 'last_modify', isModify: true })
+// });
+
+// const a = new PgView(null,null,UserSchema,null);
+// const user  = await a.getByCondition()

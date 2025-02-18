@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { Kind } from '@sinclair/typebox';
-import { WhereItem, WhereCondition, QuerySchema, WhereDefine, FieldType, SUFFIX, MagicSuffix, Column } from './types';
-import { throwErr } from './Util';
+import { WhereItem, WhereCondition, QuerySchema, WhereDefine, FieldType, SUFFIX, MagicSuffix, Column } from '../types';
+import { throwErr } from './SQLUtil';
 
 
 const DEFAULT_QUERY_KEY = new Set<string>(['start_', 'count_', 'order_', 'by_', 'keyword_', 'total_']);
@@ -67,7 +67,7 @@ const defineToItem = (def: WhereDefine, schema: Column, value: string | boolean 
 
 }
 
-export const queryToCondition = (query: QuerySchema, COLUMN_MAP: Map<string, Column>, FIELD_CACHE: Map<string, WhereDefine>): WhereCondition => {
+export const queryToCondition = (strict: boolean, query: QuerySchema, COLUMN_MAP: Map<string, Column>, FIELD_CACHE: Map<string, WhereDefine>): WhereCondition => {
     const err: string[] = [];
     const ROOT: WhereCondition = { link: 'AND', items: [] }
     _.keys(query).map(key => {
@@ -112,6 +112,6 @@ export const queryToCondition = (query: QuerySchema, COLUMN_MAP: Map<string, Col
     //         }
     //     }
     // }
-    throwErr(err, 'Some SQL Error Occur')
+    throwErr(strict, err, 'Some SQL Error Occur')
     return ROOT;
 }

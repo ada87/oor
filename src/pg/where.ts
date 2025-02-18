@@ -1,11 +1,11 @@
 import _ from 'lodash';
 import { Kind } from '@sinclair/typebox';
-import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../base/utils/Util';
+import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../base/utils/SQLUtil';
 import dayjs from 'dayjs';
 
-import type { WhereParam, WhereItem, WhereCondition, MagicSuffix, Support, OColumn } from '../base/utils/types';
+import type { WhereParam, WhereItem, WhereCondition, MagicSuffix, Support, Column } from '../base/types';
 import type { Dayjs } from 'dayjs';
-import type { SqlWhere } from '../base/Executor/sql';
+// import type { SqlWhere } from '../base/Executor/sql';
 
 
 type QueryPos = { SQL: string[]; PARAM: any[], NUM: number; }
@@ -343,53 +343,53 @@ const ConditionToWhere = (condition: WhereCondition, pos: QueryPos, err: string[
 };
 
 
-export const where: SqlWhere = (condition: WhereParam, startIdx = 1): [string, any[]] => {
-    const pos: QueryPos = { SQL: [], PARAM: [], NUM: startIdx };
-    let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
-    let err: string[] = [];
-    ConditionToWhere(root, pos, err);
-    throwErr(err, 'Some SQL Error Occur');
-    if (pos.SQL.length == 0) {
-        return ['', []]
-    };
-    return [pos.SQL.join(" " + root.link + " "), pos.PARAM]
-}
+// export const where: SqlWhere = (condition: WhereParam, startIdx = 1): [string, any[]] => {
+//     const pos: QueryPos = { SQL: [], PARAM: [], NUM: startIdx };
+//     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
+//     let err: string[] = [];
+//     ConditionToWhere(root, pos, err);
+//     throwErr(err, 'Some SQL Error Occur');
+//     if (pos.SQL.length == 0) {
+//         return ['', []]
+//     };
+//     return [pos.SQL.join(" " + root.link + " "), pos.PARAM]
+// }
 
 
 
-export const fixWhere = (COLUMN_MAP: Map<string, OColumn>, extra: WhereItem[]): [string, string] => {
-    let ITEMS: WhereItem[] = [];
-    let ctf = new Map<string, string>();
-    const convert = (kind, value) => {
-        switch (kind) {
-            case 'Boolean':
-                return value;
-            case 'Number':
-                return parseFloat(value);
-            case 'Integer':
-                return parseInt(value);
-            default:
-                return value + '';
-        }
-    }
-    for (let [key, val] of COLUMN_MAP) {
-        if (_.has(val, 'delMark')) {
-            ITEMS.push({ column: (val.column || key), fn: '<>', value: convert(val[Kind as any], val.delMark) })
-        }
-        ctf.set((val.column || key), key);
-    }
-    extra.map(item => {
-        // inner usage field
-        // @ts-ignore
-        let schema = COLUMN_MAP.get(item.field) || COLUMN_MAP.get(ctf.get(item.field));
-        if (schema == null) return;
-        ITEMS.push({ ...item, value: convert(schema[Kind as any], item.value) });
-    })
-    if (ITEMS.length == 0) return ['', ' WHERE '];
-    let [SQL, PARAM] = where(ITEMS);
-    if (SQL.length == 0) return ['', ' WHERE '];
-    PARAM.map((item, i) => {
-        SQL = SQL.replaceAll(`$${i + 1}`, _.isNumber(item) ? (item + '') : `'${item}'`)
-    });
-    return [' WHERE ' + SQL, ' AND ']
-}
+// export const fixWhere = (COLUMN_MAP: Map<string, Column>, extra: WhereItem[]): [string, string] => {
+//     let ITEMS: WhereItem[] = [];
+//     let ctf = new Map<string, string>();
+//     const convert = (kind, value) => {
+//         switch (kind) {
+//             case 'Boolean':
+//                 return value;
+//             case 'Number':
+//                 return parseFloat(value);
+//             case 'Integer':
+//                 return parseInt(value);
+//             default:
+//                 return value + '';
+//         }
+//     }
+//     for (let [key, val] of COLUMN_MAP) {
+//         if (_.has(val, 'delMark')) {
+//             ITEMS.push({ column: (val.column || key), fn: '<>', value: convert(val[Kind as any], val.delMark) })
+//         }
+//         ctf.set((val.column || key), key);
+//     }
+//     extra.map(item => {
+//         // inner usage field
+//         // @ts-ignore
+//         let schema = COLUMN_MAP.get(item.field) || COLUMN_MAP.get(ctf.get(item.field));
+//         if (schema == null) return;
+//         ITEMS.push({ ...item, value: convert(schema[Kind as any], item.value) });
+//     })
+//     if (ITEMS.length == 0) return ['', ' WHERE '];
+//     let [SQL, PARAM] = where(ITEMS);
+//     if (SQL.length == 0) return ['', ' WHERE '];
+//     PARAM.map((item, i) => {
+//         SQL = SQL.replaceAll(`$${i + 1}`, _.isNumber(item) ? (item + '') : `'${item}'`)
+//     });
+//     return [' WHERE ' + SQL, ' AND ']
+// }

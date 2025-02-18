@@ -1,37 +1,50 @@
-// import { BaseQuery } from '../DataBase/BaseQuery';
-// import { QueryBuilder } from '../Builder/QueryBuilder';
+import { BaseView, } from './BaseView';
+import _ from 'lodash';
 
-// import type { WhereParam, QuerySchema } from '../utils/types'
-// import type { Database } from './BaseDatabase';
-// import type { TableOptions } from './BaseView';
-// import type { TObject, Static } from '@sinclair/typebox';
-// import { BaseView, type View } from './BaseView'
+import type { ActionExecutor, ActionBuilder } from './sql'
+import type { View } from './BaseView'
+import type { TObject, Static } from '@sinclair/typebox';
 
-// export class BaseTable<S extends TObject,C> extends BaseView<T,C>  {
-    
-//     protected _table: string;
 
-//     constructor(tableName: string, schema: S, options?: TableOptions) {
-//         super(schema, options);
-//         this._table = tableName;
-//     }
+export interface Table<O extends object> extends View<O> {
+    add: {
+        (conn, sql: string, param: any): Promise<O>,
+        (conn, sql: string, param: any, returning: true): Promise<O>,
+        (conn, sql: string, param: any, returning: false): Promise<Number>,
+    }
+    addBatch: {
+        (conn, sql: string, param: any): Promise<Array<O>>,
+        (conn, sql: string, param: any, returning: true): Promise<O>,
+        (conn, sql: string, param: any, returning: false): Promise<Number>,
+    },
+    execute: {
+        (conn, sql: string, param?: any): Promise<number>,
+        (conn, sql: string, param: any, returning: false): Promise<number>,
+        (conn, sql: string, param: any, returning: true): Promise<Array<O>>,
+    },
+}
 
-//     // get tableName(): string {
-//     //     return this._table;
-//     // }
 
-//     // get table(): string {
-//     //     return this._table;
-//     // }
+export class BaseTable<S extends TObject, C, B extends ActionBuilder> extends BaseView<S, C, B> implements Table<Static<S>> {
 
-//     // get tableSchema(): S {
-//     //     return this._schema;
-//     // }
+    protected EXECUTOR: ActionExecutor<C, Static<S>>;
+    add: { (conn: any, sql: string, param: any): Promise<Static<S>>; (conn: any, sql: string, param: any, returning: true): Promise<Static<S>>; (conn: any, sql: string, param: any, returning: false): Promise<Number>; };
+    addBatch: { (conn: any, sql: string, param: any): Promise<Static<S>[]>; (conn: any, sql: string, param: any, returning: true): Promise<Static<S>>; (conn: any, sql: string, param: any, returning: false): Promise<Number>; };
+    execute: { (conn: any, sql: string, param?: any): Promise<number>; (conn: any, sql: string, param: any, returning: false): Promise<number>; (conn: any, sql: string, param: any, returning: true): Promise<Static<S>[]>; };
+}
 
-//     // get tableOptions(): TableOptions {
-//     //     return this._options;
-//     // }
 
-//     // get tableColumns(): string[] {
-//     //     return Object.keys(this._schema);
+
+// /**
+//  * @param tableName Data table name, "${schemaName}.${tableName}"
+//  *  "${schemaName}." can be ignore with the default search_path.
+//  * @param schema The Object Schema, oor will not validate the value
+//  * @param options (Table/View) Options
+//  */
+// constructor(p: Provider<B>, db: Database<C>, tbName: string, tbSchema: S, tbOptions?: TableOptions) {
+//     super(db);
+//     const dbOptions = db.getOptions();
+//     this.BUILDER = new p(tbName, tbSchema, tbOptions, dbOptions);
+//     this.STRICT_QUERY = tbOptions?.strictQuery || dbOptions?.strictQuery || false;
+//     this.init();
 // }

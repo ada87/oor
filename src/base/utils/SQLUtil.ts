@@ -1,9 +1,9 @@
 import _ from 'lodash';
 import dayjs from 'dayjs';
 import { Type } from '@sinclair/typebox';
-// import { Value } from '@sinclair/typebox/value';
+import { Value } from '@sinclair/typebox/value';
 
-import type { MagicSuffix, UDateOptions, UNumericOptions, UStringOptions, Column } from './types';
+import type { MagicSuffix, UDateOptions, UNumericOptions, UStringOptions, Column } from '../types';
 import type { TProperties, TPartial, TObject } from '@sinclair/typebox';
 
 
@@ -28,27 +28,27 @@ export const UType = {
 }
 
 
-// export const throwErr = (err: string[], message?: string) => {
-//     if (err.length == 0) return;
-//     if (!STRICT_QUERY) {
-//         console.error(message + '\n      ' + err.join('\n      '));
-//         return;
-//     }
-//     throw new Error(message ? message : err[0], { cause: err.join('\n') as any })
-// }
+export const throwErr = (strict: boolean, err: string[], message?: string) => {
+    if (err.length == 0) return;
+    if (!strict) {
+        console.error(message + '\n      ' + err.join('\n      '));
+        return;
+    }
+    throw new Error(message ? message : err[0], { cause: err.join('\n') as any })
+}
 
 
-// export const checkEntity = (T: TObject, val: any) => {
-//     if (!STRICT_ENTITY) {
-//         return;
-//     }
-//     const result = Value.Errors(T, val);
-//     let err = result.First();
-//     if (err) {
+export const checkEntity = (strict: boolean, T: TObject, val: any) => {
+    if (!strict) {
+        return;
+    }
+    const result = Value.Errors(T, val);
+    let err = result.First();
+    if (err) {
 
-//         throw new Error('Entity Has Some Error')
-//     }
-// }
+        throw new Error('Entity Has Some Error')
+    }
+}
 
 
 const getStart = (str: string): [MagicSuffix, string] => {

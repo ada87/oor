@@ -1,5 +1,5 @@
 import type { ClientBase } from 'pg';
-import type { SqlExecutor } from '../base/sql';
+import type { SqlExecutor } from '../base/Executor/sql';
 
 import _ from 'lodash';
 // import { ShowSql } from '../base/Util';

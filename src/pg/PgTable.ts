@@ -1,6 +1,6 @@
 // import _ from 'lodash';
-import { SqlBuilder, SqlExecutor } from '../base/sql';
-import { getFieldType } from '../base/QueryBuilder';
+import { SqlBuilder, SqlExecutor } from '../base/Executor/sql';
+import { getFieldType } from '../base/utils/QueryBuilder';
 import { BaseTable } from '../base/BaseTable';
 import { insert, update, del, select, count, byField, orderBy, limit } from './builder';
 import { where, fixWhere } from './where'
@@ -10,7 +10,7 @@ import type { TableOptions } from '../base/BaseView';
 import type { Static, TObject } from '@sinclair/typebox';
 
 // Export Some useful global apis/types.
-export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
+export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/utils/types';
 
 export type { Static } from '@sinclair/typebox';
 

@@ -95,7 +95,7 @@ export type QuerySchema = {
 
 
 
-export interface OColumn extends SchemaOptions {
+export interface Column extends SchemaOptions {
     /**
      * 1. if ignore = true , query SELECT will not include this field
      * 2. `table.getById()` will return this field. Actually `table.getById()` aways use SELECT * !
@@ -116,7 +116,7 @@ export interface OColumn extends SchemaOptions {
 
 
 
-export interface UStringOptions extends OColumn, StringOptions {
+export interface UStringOptions extends Column, StringOptions {
     /**
      * Defind a mark: 
      *      1. Delete action will update this filed to mark 
@@ -127,7 +127,7 @@ export interface UStringOptions extends OColumn, StringOptions {
 }
 
 
-export interface UNumericOptions extends OColumn, NumberOptions {
+export interface UNumericOptions extends Column, NumberOptions {
     /**
      * Defind a mark: 
      *      1. Delete action will update this filed to mark 
@@ -139,7 +139,7 @@ export interface UNumericOptions extends OColumn, NumberOptions {
 
 
 
-export interface UDateOptions extends OColumn, DateOptions {
+export interface UDateOptions extends Column, DateOptions {
     /**
      * 1. Create Time can not be modify
      * 2. It will be auto fill with Current Time while INSERT

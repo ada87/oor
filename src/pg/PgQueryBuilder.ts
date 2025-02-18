@@ -1,0 +1,106 @@
+// import { TObject } from '@sinclair/typebox';
+import { BaseQueryBuilder } from '../base/sql';
+import _ from 'lodash';
+
+
+// export const orderBy: SqlOrderBy = (ftc: Map<string, any>, ctf: Map<string, string>, query?: QuerySchema, default_sort?: Sort) => {
+//     let by = 'desc';
+//     if (query) {
+//         if (query.order_) {
+//             if (query.by_ && BY_SET.has(query.by_)) by = query.by_;
+//             if (ctf.has(query.order_)) {
+//                 return `ORDER BY ${query.order_} ${by}`
+//             } else if (ftc.has(query.order_)) {
+//                 return `ORDER BY ${ftc.get(query.order_)} ${by}`
+//             }
+//             return '';
+//         }
+//     }
+//     if (default_sort) {
+//         return `ORDER BY ${default_sort.order} ${default_sort.by}`;
+//     }
+//     return ''
+// }
+
+// export const limit: SqlLimit = (query?: QuerySchema, pageSize: number = PAGE_SIZE) => {
+//     let start = _.has(query, 'start_') ? query.start_ : 0;
+//     let count = _.has(query, 'count_') ? query.count_ : pageSize;
+//     return `LIMIT ${count} OFFSET ${start}`
+// }
+
+export class PgQueryBuilder extends BaseQueryBuilder {
+
+
+    // export const select: SqlSelect = (table: string, fields: string = '*'): string => `SELECT ${fields || '*'} FROM ${table} `;
+
+    // export const count: SqlCount = (table: string) => `SELECT count(0) AS total FROM ${table}`;
+    
+    // export const insert: SqlInsert = (table: string, obj: any): [string, any[]] => {
+    //     const fields = _.keys(obj);
+    //     if (fields.length == 0) {
+    //         throw new Error();
+    //     }
+    //     let query = [];
+    //     let idx = [];
+    //     let param = [];
+    
+    //     fields.map((field, i) => {
+    //         let val = obj[field];
+    //         if (val === null) {
+    //             return
+    //         }
+    //         query.push(field)
+    //         idx.push("$" + (i + 1));
+    //         param.push(val)
+    //     })
+    //     return [`INSERT INTO ${table} (${query.join(',')}) VALUES (${idx.join(',')}) RETURNING *`, param];
+    // }
+    
+    // export const update: SqlUpdate = (table: string, obj: any, key = 'id'): [string, any[]] => {
+    //     const fields = _.keys(obj);
+    //     if (fields.length == 0) throw new Error();
+    //     let query = [];
+    //     let param = [];
+    
+    //     let diff = 1;
+    //     fields.map((field, i) => {
+    //         // Not Allow Update Primary Key
+    //         if (field == key) {
+    //             diff = 0;
+    //             return;
+    //         }
+    //         let val = obj[field];
+    //         query.push(`${field} = $${i + diff}`)
+    //         param.push(val)
+    //     });
+    //     // console.log(`UPDATE  ${table} SET ${query.join(',')} RETURNING *`)
+    
+    //     return [`UPDATE  ${table} SET ${query.join(',')}`, param];
+    // }
+    
+    // export const del: SqlDelete = (table: string): string => `DELETE FROM ${table} `
+    
+    
+    
+    
+    
+    // export const byField: SqlByField = (field: string, id: string | number, startIdx: number = 1) => [` ${field} = $${startIdx} `, [id]];
+    
+
+}
+
+// export class PgActionBuilder<T extends TObject> extends PgQueryBuilder<T> {
+
+//     insert() {
+//         return '';
+//     }
+//     update() {
+//         return '';
+//     }
+//     delete() {
+//         return '';
+//     }
+//     returning() {
+//         return '';
+//     }
+// }

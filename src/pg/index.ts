@@ -3,13 +3,13 @@ import { BaseClient } from '../base/DataBase';
 import { PgTable } from './PgTable';
 import { PgView } from './PgView'
 
-export { UType } from '../base/Util';
+export { UType } from '../base/utils/Util';
 import type { ClientConfig, PoolConfig } from 'pg';
 import type { TableOptions } from '../base/BaseView';
 import type { Static, TObject } from '@sinclair/typebox';
 
 // export { UType } from '../base/Provider/Util';
-export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
+export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/utils/types';
 
 
 // export class Pg extends BaseClient<(ClientConfig | (() => Client)), Client> {

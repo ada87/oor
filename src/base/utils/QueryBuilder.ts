@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import { Kind } from '@sinclair/typebox';
-import { WhereItem, WhereCondition, QuerySchema, WhereDefine, FieldType, SUFFIX, MagicSuffix, OColumn } from './types';
+import { WhereItem, WhereCondition, QuerySchema, WhereDefine, FieldType, SUFFIX, MagicSuffix, Column } from './types';
 import { throwErr } from './Util';
 
 
-const DEFAULT_QUERY_KEY = new Set<string>(['start_', 'count_', 'order_', 'by_', 'keyword_']);
+const DEFAULT_QUERY_KEY = new Set<string>(['start_', 'count_', 'order_', 'by_', 'keyword_', 'total_']);
 
 export const getFieldType = (schema: any): FieldType => {
 
@@ -31,7 +31,7 @@ export const getFieldType = (schema: any): FieldType => {
 /**
  * Cache Query Field To Where Filed
 */
-const fieldToDef = (key: string, COLUMN_MAP: Map<string, OColumn>): WhereDefine => {
+const fieldToDef = (key: string, COLUMN_MAP: Map<string, Column>): WhereDefine => {
     let SCHEMA = COLUMN_MAP.get(key);
     let query_field = key, suffix: MagicSuffix = null;
     if (SCHEMA == null) {
@@ -60,14 +60,14 @@ const fieldToDef = (key: string, COLUMN_MAP: Map<string, OColumn>): WhereDefine 
     return def;
 }
 
-const defineToItem = (def: WhereDefine, schema: OColumn, value: string | boolean | number | Date): WhereItem => {
+const defineToItem = (def: WhereDefine, schema: Column, value: string | boolean | number | Date): WhereItem => {
     // TODO : IGNORE SOME INVALIDATE SCHEMA
     // return null;
     return { ...def, value };
 
 }
 
-export const queryToCondition = (query: QuerySchema, COLUMN_MAP: Map<string, OColumn>, FIELD_CACHE: Map<string, WhereDefine>): WhereCondition => {
+export const queryToCondition = (query: QuerySchema, COLUMN_MAP: Map<string, Column>, FIELD_CACHE: Map<string, WhereDefine>): WhereCondition => {
     const err: string[] = [];
     const ROOT: WhereCondition = { link: 'AND', items: [] }
     _.keys(query).map(key => {

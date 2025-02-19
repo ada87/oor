@@ -1,34 +1,3 @@
-import _ from 'lodash';
-import { BaseQueryBuilder, BaseActionBuilder } from '../core';
-
-import type { TObject } from '@sinclair/typebox';
-
-// export const orderBy: SqlOrderBy = (ftc: Map<string, any>, ctf: Map<string, string>, query?: QuerySchema, default_sort?: Sort) => {
-//     let by = 'desc';
-//     if (query) {
-//         if (query.order_) {
-//             if (query.by_ && BY_SET.has(query.by_)) by = query.by_;
-//             if (ctf.has(query.order_)) {
-//                 return `ORDER BY ${query.order_} ${by}`
-//             } else if (ftc.has(query.order_)) {
-//                 return `ORDER BY ${ftc.get(query.order_)} ${by}`
-//             }
-//             return '';
-//         }
-//     }
-//     if (default_sort) {
-//         return `ORDER BY ${default_sort.order} ${default_sort.by}`;
-//     }
-//     return ''
-// }
-
-// export const limit: SqlLimit = (query?: QuerySchema, pageSize: number = PAGE_SIZE) => {
-//     let start = _.has(query, 'start_') ? query.start_ : 0;
-//     let count = _.has(query, 'count_') ? query.count_ : pageSize;
-//     return `LIMIT ${count} OFFSET ${start}`
-// }
-
-export class PgQueryBuilder extends BaseQueryBuilder {
 
 
     // export const select: SqlSelect = (table: string, fields: string = '*'): string => `SELECT ${fields || '*'} FROM ${table} `;
@@ -85,13 +54,3 @@ export class PgQueryBuilder extends BaseQueryBuilder {
 
 
     // export const byField: SqlByField = (field: string, id: string | number, startIdx: number = 1) => [` ${field} = $${startIdx} `, [id]];
-
-
-}
-
-export class PgActionBuilder extends PgQueryBuilder implements BaseActionBuilder {
-    insert: (data: TObject, returning?: boolean) => [string, any[]];
-    update: (data: TObject, returning?: boolean) => [string, any[]];
-    delete: () => string;
-
-}

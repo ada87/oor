@@ -2,7 +2,7 @@
 // import { TObject } from '@sinclair/typebox';
 // import { BaseActionBuilder, QueryExecutor } from '../base/sql'
 
-// import type { QuerySchema, Sort } from '../base/utils/types';
+// import type { QuerySchema, SoOrderByrt } from '../base/utils/types';
 
 // export class PGActionBuilder extends BaseActionBuilder {
 

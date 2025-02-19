@@ -1,7 +1,7 @@
 // import _ from 'lodash';
 import { ActionExecutor,  } from '../core';
 // import { getFieldType } from '../core/utils/QueryBuilder';
-import { PgActionBuilder } from './PgQueryBuilder'
+import { PgAction } from './PgSQL'
 import { PG_EXECUTOR } from './ExecutorNodePg'
 
 import type { Static, TObject } from '@sinclair/typebox';
@@ -13,7 +13,7 @@ import type { ClientBase, } from 'pg';
 import { PgView } from './PgView'
 
 
-export class PgTable<C, S extends TObject> extends PgView<C, S, PgActionBuilder> {
+export class PgTable<C, S extends TObject> extends PgView<C, S, PgAction> {
 
     protected EXECUTOR = PG_EXECUTOR as ActionExecutor<C, any>;
 

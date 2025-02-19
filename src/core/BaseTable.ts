@@ -11,6 +11,10 @@ import type { TObject, Static } from '@sinclair/typebox';
 export class BaseTable<C, S extends TObject, B extends ActionBuilder> extends BaseView<C, S, B> implements Table<Static<S>> {
 
     protected EXECUTOR: ActionExecutor<C, Static<S>>;
+
+    
+    protected checkEntity = null;
+
     add: { (conn: any, sql: string, param: any): Promise<Static<S>>; (conn: any, sql: string, param: any, returning: true): Promise<Static<S>>; (conn: any, sql: string, param: any, returning: false): Promise<Number>; };
     addBatch: { (conn: any, sql: string, param: any): Promise<Static<S>[]>; (conn: any, sql: string, param: any, returning: true): Promise<Static<S>>; (conn: any, sql: string, param: any, returning: false): Promise<Number>; };
     execute: { (conn: any, sql: string, param?: any): Promise<number>; (conn: any, sql: string, param: any, returning: false): Promise<number>; (conn: any, sql: string, param: any, returning: true): Promise<Static<S>[]>; };

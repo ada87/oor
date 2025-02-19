@@ -1,9 +1,10 @@
 import { BaseQuery } from './BaseDB';
-import _ from 'lodash';
+// import { queryToCondition, getFieldType } from '../utils/SQLUtil';
+
 
 import type { DatabaseOptions, TableOptions, QueryBuilder, QueryExecutor, Database, View } from './types'
 import type { TObject, Static } from '@sinclair/typebox';
-import type { WhereParam, QuerySchema } from '../utils/types';
+import type { WhereParam, SQLStatement, QuerySchema, OrderBy } from '../utils/types';
 
 type Provider<B extends QueryBuilder> = {
     new(tableName: string, schema: TObject, tbOptions?: TableOptions, dbOptions?: DatabaseOptions): B
@@ -12,10 +13,7 @@ type Provider<B extends QueryBuilder> = {
 
 export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> extends BaseQuery<C> implements View<Static<S>> {
 
-
     protected readonly BUILDER: B;
-
-    private readonly STRICT_QUERY: boolean = false;
 
     protected abstract readonly EXECUTOR: QueryExecutor<C, Static<S>>;
 
@@ -27,84 +25,63 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
      */
     constructor(p: Provider<B>, db: Database<C>, tbName: string, tbSchema: S, tbOptions?: TableOptions) {
         super(db);
-        const dbOptions = db.getOptions();
+        const dbOptions = db.getOption();
         this.BUILDER = new p(tbName, tbSchema, tbOptions, dbOptions);
-        this.STRICT_QUERY = tbOptions?.strictQuery || dbOptions?.strictQuery || false;
         this.init();
     }
 
     protected init() { };
 
-    // protected _preload(db: Database<C>, tableName: string, schema: S, options?: TableOptions) {
-    //     this.BUILDER = new BaseQueryBuilder(tableName, schema, options, db.getOptions());
-    // }
 
+    protected queryStateMent(SELECT: string, whereStatement?: SQLStatement, fixed = true): SQLStatement {
+        const { BUILDER } = this;
+        if (fixed) {
+            const [WHERE, PARAM] = BUILDER.fixWhere(whereStatement);
+            return [`${SELECT} ${WHERE}`, PARAM];
+        }
+        if (whereStatement) {
+            return [`${SELECT} ${whereStatement[0]}`, whereStatement[1]];
+        }
+        return [SELECT, []];
+    }
 
-
-    async all(): Promise<Static<S>[]> {
+    protected async _query(SELECT: string, ORDERBY_LIMIT?: string, WHERE?: WhereParam, fixed = true): Promise<Static<S>[]> {
         const { BUILDER, EXECUTOR } = this;
-        const SQL = BUILDER.select();
-        const [WHERE, PARAM] = BUILDER.fixWhere();
+        const [SQL, PARAM] = this.queryStateMent(SELECT, BUILDER.where(WHERE), fixed);;
         const conn = await this.getConn();
-        const result = await EXECUTOR.query(conn, `${SQL} ${WHERE}`, PARAM);
+        const result = await EXECUTOR.query(conn, SQL + ORDERBY_LIMIT, PARAM);
         return result;
     }
 
-    async getById(id: string | number) {
-        const { BUILDER, EXECUTOR } = this;
-        const SQL = BUILDER.select();
-        const [_WHERE, _PARAM] = BUILDER.byId(id);
-        const conn = await this.getConn();
-        const [WHERE, PARAM] = BUILDER.fixWhere(_WHERE, _PARAM);
-        const result = await EXECUTOR.get(conn, `${SQL} ${WHERE}`, PARAM);
+    async all(sort?: OrderBy): Promise<Static<S>[]> {
+        const { BUILDER } = this;
+        let orderBy = sort ? BUILDER.orderBy(sort) : '';
+        const result = await this._query(BUILDER.select(), orderBy);
+        return result
+    }
+
+
+    async query(query?: QuerySchema): Promise<Static<S>[]> {
+        const { BUILDER } = this;
+        const where = BUILDER.convertQuery(query)
+        const order = BUILDER.orderByLimit(query);
+        const result = await this._query(BUILDER.select(), order, where);
         return result;
-    }
-
-    async getByField(field: string, value: string | number): Promise<Static<S>> {
-        const { BUILDER, EXECUTOR } = this;
-        const SQL = BUILDER.select();
-        const [_WHERE, _PARAM] = BUILDER.byField(field, value);
-        const [WHERE, PARAM] = BUILDER.fixWhere(_WHERE, _PARAM);
-        const conn = await this.getConn()
-        const result = await EXECUTOR.get(conn, `${SQL} ${WHERE}`, PARAM);
-        return result;
-    }
-
-    async getByCondition(condition: WhereParam): Promise<Static<S>> {
-        const { BUILDER, EXECUTOR } = this;
-
-        const SQL = BUILDER.select();
-        const [_WHERE, _PARAM] = BUILDER.where(condition);
-        const [WHERE, PARAM] = BUILDER.fixWhere(_WHERE, _PARAM);
-
-        const conn = await this.getConn()
-        const result = await EXECUTOR.get(conn, `${SQL} ${WHERE}`, PARAM);
-        return result;
-    }
-
-    private async _query(WHERE, PARAM: ArrayLike<string> = [], ORDER_BY = '', LIMIT = ''): Promise<Static<S>[]> {
-        // const { BUILDER, EXECUTOR, _table, _CONFIG: { fields_query } } = this;
-        // const SQL_QUERY = _BUILDER.select(_table, fields_query);
-        // const SQL = `${SQL_QUERY} ${WHERE} ${ORDER_BY} ${LIMIT}`;
-        // const conn = await this.getConn();
-        // const result = _EXECUTOR.query(conn, SQL, PARAM)
-        // return result;
-        return []
-    }
-
-
-    async query(): Promise<Static<S>[]> {
-        const { BUILDER, EXECUTOR } = this;
-        return null;
     }
 
     async queryPagination(query?: QuerySchema): Promise<{ total: number; list: Static<S>[]; }> {
         const { BUILDER, EXECUTOR } = this;
-        return null;
+        const where = BUILDER.convertQuery(query)
+        const order = BUILDER.orderByLimit(query);
+        const conn = await this.getConn();
+        const result = await EXECUTOR.queryPagination(conn, BUILDER.select(), where[0], order, where[1]);
+        return result;
     }
 
-    async queryByField(field: string, value?: string | number | boolean): Promise<Static<S>[]> {
+    async queryByField(field: string, value: string | number | boolean): Promise<Static<S>[]> {
         const { BUILDER, EXECUTOR } = this;
+        const where = BUILDER.byField(field, value);
+
         return null;
     }
 
@@ -114,4 +91,48 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
     }
 
 
+    // private async _query(WHERE, PARAM: ArrayLike<string | number | boolean> = [], ORDER_BY = '', LIMIT = ''): Promise<Static<S>[]> {
+    //     // const { BUILDER, EXECUTOR, _table, _CONFIG: { fields_query } } = this;
+    //     // const SQL_QUERY = _BUILDER.select(_table, fields_query);
+    //     // const SQL = `${SQL_QUERY} ${WHERE} ${ORDER_BY} ${LIMIT}`;
+    //     // const conn = await this.getConn();
+    //     // const result = _EXECUTOR.query(conn, SQL, PARAM)
+    //     // return result;
+    //     return []
+    // }
+
+    // protected async _get(SQL: string, whereParam?: WhereParam, fixed = false) {
+    //     const { BUILDER, EXECUTOR } = this;
+    // }
+
+    // async getById(id: string | number) {
+    //     const { BUILDER, EXECUTOR } = this;
+    //     const SQL = BUILDER.select();
+    //     const [_WHERE, _PARAM] = BUILDER.byId(id);
+    //     // const conn = await this.getConn();
+    //     const [WHERE, PARAM] = BUILDER.fixWhere(_WHERE, _PARAM);
+    //     const result = await EXECUTOR.get(conn, `${SQL} ${WHERE}`, PARAM);
+
+    //     return result;
+    // }
+
+    // async getByField(field: string, value: string | number): Promise<Static<S>> {
+    //     const { BUILDER, EXECUTOR } = this;
+    //     const SQL = BUILDER.select();
+    //     const [_WHERE, _PARAM] = BUILDER.byField(field, value);
+    //     const [WHERE, PARAM] = BUILDER.fixWhere(_WHERE, _PARAM);
+    //     const conn = await this.getConn()
+    //     const result = await EXECUTOR.get(conn, `${SQL} ${WHERE}`, PARAM);
+    //     return result;
+    // }
+
+    // async getByCondition(condition: WhereParam): Promise<Static<S>> {
+    //     const { BUILDER, EXECUTOR } = this;
+    //     const SQL = BUILDER.select();
+    //     const [_WHERE, _PARAM] = BUILDER.where(condition);
+    //     const [WHERE, PARAM] = BUILDER.fixWhere(_WHERE, _PARAM);
+    //     const conn = await this.getConn()
+    //     const result = await EXECUTOR.get(conn, `${SQL} ${WHERE}`, PARAM);
+    //     return result;
+    // }
 }

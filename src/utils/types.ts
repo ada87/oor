@@ -1,11 +1,11 @@
 import { Type } from '@sinclair/typebox';
 
 import type {
-    SchemaOptions,
-    TProperties, TPartial, TObject,
-    StringOptions, DateOptions, NumberOptions,
+    SchemaOptions, TProperties, TPartial,
+    TObject, StringOptions, DateOptions, NumberOptions,
 } from '@sinclair/typebox';
 
+// https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP
 
 export type Support = { string: boolean, number: boolean, date: boolean, boolean: boolean }
 /**
@@ -13,7 +13,6 @@ export type Support = { string: boolean, number: boolean, date: boolean, boolean
 */
 export type FieldType = 'string' | 'number' | 'int' | 'boolean' | 'date';
 
-// https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP
 
 export const SUFFIX = [
     'Min', 'MinThan', 'Max', 'MaxThan',                 // commom  > , >= , <  ,  <=
@@ -51,14 +50,20 @@ export type WhereItem = WhereDefine & {
 
 export type WhereCondition = {
     link: 'AND' | 'OR'
-    items: (WhereItem | WhereCondition)[]
+    items: Array<(WhereItem | WhereCondition)>
 }
 
-export type Sort = { order: string, by: 'asc' | 'desc' };
+// import type { SearchRequest, QueryDslQueryContainer, IndexRequest, Script } from '@elastic/elasticsearch/lib/api/types';
+// type sort = SearchRequest['sort']
 
-export type WhereParam = WhereCondition | (WhereCondition | WhereItem)[];
+export type OrderBy = { order: string, by: 'asc' | 'desc' };
+export type Limit = { start: number, count: number };
+export type OrderByLimit = Limit | OrderBy & Limit;
 
-export type WhereStatement = [string, Array<any>];
+
+export type WhereParam = WhereCondition | Array<(WhereCondition | WhereItem)>;
+
+export type SQLStatement = [string, Array<any>];
 
 export type QuerySchema = {
 
@@ -83,13 +88,13 @@ export type QuerySchema = {
      * The Sort column method
     */
     by_?: 'asc' | 'desc';
-    // /**
-    //  * If specify sid_ field, The Query will skip Steps:
-    //  *      1. use last cached sql condition (exclude <start,count,order,by>)
-    //  *      2. use last total (in pagition query).
-    //  * do specify sid_ in second can upper the performane in pagition query.
-    // */
-    // sid_?: number;
+    /**
+     * If specify cid_ field, The Query will skip Steps:
+     *      1. use last cached sql condition (exclude <start,count,order,by>)
+     *      2. use last total (in pagition query).
+     * do specify sid_ in second can upper the performane in pagition query.
+    */
+    cid_?: number;
     /**
      * If specify total_ field, The Query will skip the count(total) query and return in total derectly.
      * do specify total_ in second can upper the performane in pagition query.

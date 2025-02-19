@@ -1,32 +1,4 @@
-import _ from 'lodash';
-// import { SUFFIX } from './types'
-// import { , } from './index'
-import { UType } from './types';
-import { TableOptions, DatabaseOptions } from '../core';
-
-// import type { MagicSuffix, WhereItem, FieldType, Support } from './types';
-
-// // Line 2 : Build a Schema , 
-// //          Schema can be used for validate、check, @see @sinclair/typebox
-// //          Some FrameWork support this schema derectly , like fastify 
-// tbName: string, tbSchema: TObject, tbOption: TableOptions, dbOption: DatabaseOptions
-
-export const TABLE_NAME = 'user';
-export const TABLE_OPTIONS: TableOptions = {}
-export const DATABASE_OPTIONS: DatabaseOptions = {}
-
-export const UserSchema = UType.Table({
-    id: UType.Integer(),
-    name: UType.String({ maxLength: 32 }),
-    age: UType.Integer({ minimum: 0, maximum: 128 }),
-    sex: UType.Boolean(),
-    profile: UType.String({ ignore: true }),
-    address: UType.String({ maxLength: 128 }),
-    salary: UType.Number(),
-    registerDate: UType.Date({ column: 'register_date', isCreate: true }),
-    lastModify: UType.Date({ column: 'last_modify', isModify: true })
-});
-
+// import _ from 'lodash';
 
 // // Line 3 : Define a Type, you can avoid if not need this type.
 // // export type User = Static<typeof UserSchema>;

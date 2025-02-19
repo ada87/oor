@@ -6,8 +6,8 @@
         "script.mjs": true,
         "test.sql.7z": true,
         "tsconfig.json": true,
-        "src/lib-*": true,
-        "src/*.ts": true,
+        // "src/lib-*": true,
+        // "src/*.ts": true,
     },
     "typescript.tsdk": "node_modules\\typescript\\lib"
 }

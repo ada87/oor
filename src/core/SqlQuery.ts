@@ -1,430 +1,226 @@
 import _ from 'lodash';
+import { queryToCondition } from '../utils/ConditionUtil';
+import { validateSort } from '../utils/ValidateUtil'
 
-import type { TableOptions, DatabaseOptions, QueryBuilder} from './types';
-import type  {  TObject } from '@sinclair/typebox';
-import type { WhereParam,  Sort, Column, WhereStatement  } from '../utils/types';
+import type { TableOptions, DatabaseOptions, QueryBuilder } from './types';
+import type { TObject } from '@sinclair/typebox';
+import type { WhereParam, OrderBy, Column, SQLStatement, QuerySchema, WhereCondition, WhereDefine } from '../utils/types';
 
 
 const DEFAULT_PAGE_SIZE = 10;
-const GLOBAL_ID_FIELD = new Set<string>(['id', 'uuid', 'guid']);
+const GLOBAL_ID_FIELD = new Set<string>(['id', 'guid', 'uuid']);
+
+// /**
+//  * Auto convert data
+//  * check row data while insert or update
+//  * */
+// protected checkEntity(obj: any, isAdd = false): any {
+//     // checkEntity(this.schema)
+//     let clone: any = {}
+//     this.COLUMN_MAP.forEach((schema, key) => {
+//         let field = schema.column || key;
+//         if (_.has(obj, key)) clone[field] = obj[key];
+//         let type = getFieldType(schema);
+//         if (type == 'date') {
+//             if (schema.isCreate) {
+//                 if (isAdd) {
+//                     clone[field] = new Date();
+//                 } else {
+//                     _.unset(clone, field);
+//                 }
+//                 return;
+//             }
+//             if (schema.isModify) {
+//                 clone[field] = new Date();
+//                 return;
+//             }
+//             if (obj[key] === null || obj[key] === 0) {
+//                 clone[field] = null;
+//             } else {
+//                 clone[field] = toDate(obj[key]);
+//             }
+//         }
+//     })
+//     return clone;
+// }
 
 
 
-export abstract class BaseQueryBuilder implements QueryBuilder {
+
+
+export abstract class BaseQuery implements QueryBuilder {
 
     protected readonly tableName: string;
-
     protected readonly rowKey: string;
-
+    protected readonly SORT: OrderBy = null;
     protected readonly pageSize: number;
+    protected readonly STRICT_QUERY: boolean = false;
 
     protected COLUMN_MAP: Map<string, Column>;
 
-    private readonly FIELD_QUERY = '*';
-    private readonly FIELD_DETAIL = '*';
-
+    protected readonly QUERY_FIELDS: string = '*';
+    protected readonly DETAIL_FIELDS: string = '*';
     protected readonly DEL_MARK: { field: string, value: string | number | boolean, } = null;
-    protected readonly DEFAULT_SORT: Sort = null;
-    
 
-    protected WHERE_FIX: [string, string] = ['', ' WHERE '];
+    private readonly F2C = new Map<string, string>(); // Field To Column
+    private readonly C2F = new Map<string, string>(); // Column To Field
 
-
-    protected readonly _F2C = new Map<string, string>(); // Field To Column
-    protected readonly _C2F = new Map<string, string>(); // Column To Field
-
-    // private orderByLimit(query?: QuerySchema): OrderByLimit {
-    //     const { _CONFIG: { sort, pageSize, } } = this;
-    //     let orderBy: OrderByLimit = {}
-    //     if (query == null) {
-    //         orderBy.from = 0;
-    //         orderBy.size = pageSize;
-    //         if (sort) orderBy.sort = sort;
-    //         return orderBy
-    //     }
-    //     orderBy.from = query.start_ || 0;
-    //     orderBy.size = query.count_ || pageSize;
-    //     if (this._F2C.has(query.order_)) {
-    //         orderBy.sort = { [this._F2C.get(query.order_)]: _.trim(query.by_) == 'asc' ? 'asc' : 'desc' }
-    //     }
-    //     return orderBy
-
-    // }
+    private FIELD_CACHE = new Map<string, WhereDefine>();
 
 
-    constructor(tbName: string, tbSchema: TObject, tbOption: TableOptions, dbOption: DatabaseOptions) {
+    constructor(tbName: string, tbSchema: TObject, tbOptions: TableOptions, dbOptions: DatabaseOptions) {
         this.tableName = tbName;
-        this.rowKey = tbOption?.rowKey;
-        // || ;
-        this.pageSize = tbOption?.pageSize || dbOption?.pageSize || DEFAULT_PAGE_SIZE;
-        this.COLUMN_MAP = new Map<string, Column>();
-        let SortGuess: string[] = [];
-        if (tbOption.sort) {
+        this.rowKey = tbOptions?.rowKey;
+        this.pageSize = tbOptions?.pageSize || dbOptions?.pageSize || DEFAULT_PAGE_SIZE;
+        this.STRICT_QUERY = tbOptions?.strictQuery || dbOptions?.strictQuery || false;
 
-        }
-        // let field: string = null, by = 'desc' as any;
+        this.COLUMN_MAP = new Map<string, Column>();
+        const GuessSortFields: string[] = [], QueryFields = [], DetailFields = []
+        let GuessIdField: string = null;
+
         const fields = _.keys(tbSchema.properties);
 
-        let idField = null; 
         for (let field of fields) {
 
             let properties = tbSchema.properties[field];
             let column = properties.column || field;
-            this._F2C.set(field, column);
-            this._C2F.set(column, field);
+            this.F2C.set(field, column);
+            this.F2C.set(column, column);
+            this.C2F.set(column, field);
+            this.C2F.set(field, field);
             this.COLUMN_MAP.set(field, properties);
-            if(this.rowKey==null&&idField==null&&GLOBAL_ID_FIELD.has(field)){
-                idField = field;
+            if (this.rowKey == null && GuessIdField == null && GLOBAL_ID_FIELD.has(field)) {
+                GuessIdField = field;
             }
-    
-            if (properties.isModify) SortGuess.unshift(field); // 默认按最后修改时间
-            if(properties.isCreate) SortGuess.push(field);  // 默认按创建时间
-            if (_.has(properties, 'delMark') && properties.delMark != null) {
+
+
+            if (properties.isModify) GuessSortFields.unshift(field);    // 默认按最后修改时间
+            if (properties.isCreate) GuessSortFields.push(field);       // 默认按创建时间
+
+            if (this.DEL_MARK == null && _.has(properties, 'delMark') && properties.delMark !== null) {
                 this.DEL_MARK = {
                     field: column,
                     value: properties.delMark,
                 };
             }
-
-
-            // let fields_query = [];
-            // let fields_get = [];
-            // _.keys(schema.properties).map(field => {
-            //     let properties = schema.properties[field];
-            //     let select = SelectField(field, properties);
-            //     fields_get.push(select);
-            //     if (properties.ignore === true) return;
-            //     fields_query.push(select);
-            // });
-            // this._CONFIG.fields_query = fields_query.join(',');
-            // this._CONFIG.fields_get = fields_get.join(',')
+            DetailFields.push(this.convertField(field, column));
+            if (properties.ignore !== true) {
+                QueryFields.push(this.convertField(field, column));
+            }
         };
-        // this.DEL_MARK = null;
-        if (tbOption?.sort) {
-            
 
-            // if (options.sort) {
-            // field = options.sort.order;
-            // by = options.sort.by;
-            // }
-        }
+        if (QueryFields.length > 0) this.QUERY_FIELDS = QueryFields.join(', ');
+        if (DetailFields.length > 0) this.DETAIL_FIELDS = DetailFields.join(', ');
+
         if (this.rowKey == null) {
-            this.rowKey = dbOption?.rowKey||idField || 'id';
+            this.rowKey = GuessIdField || dbOptions?.rowKey || 'id';
+        } else {
+            GuessSortFields.push(this.rowKey);
         }
-        
-        // console.log(this.pageSize)
+
+        if (tbOptions?.sort) {
+            this.SORT = validateSort(tbOptions.sort, this.F2C);
+        } else if (GuessSortFields.length) {
+            this.SORT = validateSort({ order: GuessSortFields[0], by: 'desc' }, this.F2C);
+        }
+
     }
 
-    abstract select(fields?: boolean | string | Array<string>): string;
-    abstract byId(value: string | number): WhereStatement;
-    abstract where(condition: WhereParam, startIdx?: number): WhereStatement;
-    abstract byField(field: string, value: string | number | boolean, startIdx?: number): WhereStatement;
-    abstract count(): string;
-    abstract orderBy(): string;
-    abstract limit(): string;
-    abstract fixWhere(where?: string, param?: Array<any>): WhereStatement;
-    
 
-    
-    // select(fields?:boolean| string|Array<string>): string {
+    convertField(property: string, column?: string): string {
+        if (column == property) return '`' + column + '`';
+        return `\`${column}\` AS \`${property}\``;
+    }
 
-    //     if(fields==null||fields==undefined) return `SELECT ${this.FIELD_QUERY} FROM ${this.tableName} `;
-        
-    //     if(typeof fields == 'boolean'){
-    //         if(fields) return `SELECT ${this.FIELD_DETAIL} FROM ${this.tableName} `;
-    //         return `SELECT ${this.FIELD_QUERY} FROM ${this.tableName} `;
-    //     }   
-    //     if(typeof fields == 'string') {
-    //         let txt = fields.trim();
-    //         if(txt.length==0) return `SELECT ${this.FIELD_QUERY} FROM ${this.tableName} `;
-    //         return `SELECT ${txt} FROM ${this.tableName} `;
-    //     }
-    //     if(Array.isArray(fields)){
-    //         let txt = fields.join(',');
-    //         if(txt.length==0) return `SELECT ${this.FIELD_QUERY} FROM ${this.tableName} `;
-    //         return `SELECT ${txt} FROM ${this.tableName} `;
-    //     }
-
-    //     return `SELECT ${ this.FIELD_QUERY} FROM ${this.tableName} `;
-    //     // throw new Error('Method not implemented.');
-    // }
-
-    // byId(value: string | number):WhereStatement {
-    //     return [ 
-    //         `${this.rowKey} = $1`, 
-    //         [value]
-    //     ] 
-    // }
-
-    // fixWhere: (where?: string, param?: Array<any>)
+    convertQuery(query: QuerySchema): WhereCondition {
+        return queryToCondition(this.STRICT_QUERY, query, this.COLUMN_MAP, this.FIELD_CACHE);
+    }
 
 
-    // where(condition: WhereParam, startIdx: number = 0):WhereStatement {
-    //     let whereClause = '';
-    //     const params: any[] = [];
-    //     let idx = startIdx;
+    select(fields?: boolean | string | Array<string>): string {
 
-    //     for (const [field, value] of Object.entries(condition)) {
-    //         if (whereClause.length > 0) {
-    //             whereClause += ' AND ';
-    //         }
-    //         whereClause += `${field} = $${idx}`;
-    //         params.push(value);
-    //         idx++;
-    //     }
+        if (fields == null || fields == undefined) return `SELECT ${this.QUERY_FIELDS} FROM ${this.tableName} `;
 
-    //     return [whereClause, params];
-    // }
-    // byField(field: string, value: string | number | boolean, startIdx?: number):WhereStatement{
+        if (typeof fields == 'boolean') {
+            if (fields) return `SELECT ${this.DETAIL_FIELDS} FROM ${this.tableName} `;
+            return `SELECT ${this.QUERY_FIELDS} FROM ${this.tableName} `;
+        }
+        if (typeof fields == 'string') {
+            let txt = fields.trim();
+            if (txt.length == 0) return `SELECT ${this.QUERY_FIELDS} FROM ${this.tableName} `;
+            return `SELECT ${txt} FROM ${this.tableName} `;
+        }
+        if (Array.isArray(fields)) {
+            const columns = fields.filter(field => this.F2C.has(field)).map(filed => this.F2C.get(filed));
+            if (columns.length == 0) return `SELECT ${this.QUERY_FIELDS} FROM ${this.tableName} `;
+            const queryFields = columns.map(column => this.convertField(this.C2F.get(column), column)).join(', ');
+            return `SELECT ${queryFields} FROM ${this.tableName} `;
+        }
 
-    //     return [
-    //         `${field} = $${startIdx}`,
-    //         [value]
-    //     ]
-    // }
-
-
-    // count(): string {
-    //     return '';
-    // }
+        return `SELECT ${this.QUERY_FIELDS} FROM ${this.tableName} `;
+    }
 
 
-    // // where(query: QuerySchema): string {
-    // //     return '';
-    // // }
-    // // byId(id: string | number): string {
-    // //     return ''
-    // // }
-    // // byField(field: string, value: string | number | boolean | Date): string {
-    // //     return '';
-    // // }
-    // orderBy(): string {
-    //     return '';
-    // }
-    // limit(): string {
-    //     return '';
-    // }
+    orderBy(query?: QuerySchema): string {
+        let orderyBy = validateSort({ order: query.order_, by: query.by_ }, this.F2C);
+        if (orderyBy == null) return '';
+        return `ORDER BY \`${orderyBy.order}\` ${orderyBy.by}`;
+    }
+    limit(query?: QuerySchema): string {
+        const start = query?.start_ || 0;
+        const count = query?.count_ || this.pageSize;
+        return `LIMIT ${count} OFFSET ${start}`
+    }
+
+    orderByLimit(query?: QuerySchema): string {
+        return `${this.orderBy(query)} ${this.limit(query)}`
+    }
+
+    byField(field: string, value: string | number | boolean, startIdx?: number): SQLStatement {
+        if (!this.F2C.has(field)) throw new Error(`Field ${field} not found in Table ${this.tableName}`);
+        let column = this.F2C.get(field);
+        let sql = `\`${column}\` = ?`;
+        return [sql, [value]];
+    }
+
+    byId(value: string | number): SQLStatement {
+        return this.byField(this.rowKey, value);
+    }
+
+    // count: (distinct?: boolean) => string;
+
+    // byQuery: (query: QuerySchema) => SQLStatement;
+    // byCondition: (condition: WhereParam) => SQLStatement;
+
+    abstract where: (condition: WhereParam, startIdx?: number) => SQLStatement;
+    abstract fixWhere: (statement?: SQLStatement) => SQLStatement;
 
 
-
-
-
-    // /** 
-    //  * _BUILDER: SqlBuilder  - SQL Query Builder for db
-    // *   @see SqlBuilder
-    // */
-    // protected abstract _BUILDER: SqlQuery<S, C>;
-
-    // /** 
-    // * _EXECUTOR: BaseSqlExecutor  - SQL Executer for db
-    // *      @see BaseSqlExecutor
-    // */
-    // protected abstract _EXECUTOR: BaseSqlExecutor<Static<S>>;
-
-
-
-    // protected _QUERY_CACHE = new Map<string, WhereDefine>();
-
-    // /**
-    //  * @param tableName Data table name, "${schemaName}.${tableName}"  
-    //  *  "${schemaName}." can be ignore with the default search_path.
-    //  * @param schema The Object Schema, oor will not validate the value
-    //  * @param options (Table/View) Options
-    //  * 
-    // */
-    // constructor(db: Database<C>, tableName: string, schema: S, options?: TableOptions) {
-    //     super(db);
-    //     this._table = tableName;
-
-    // };
-
-
-    // protected abstract init(schema: S, options?: TableOptions): void;
-
-    // private async _query(WHERE, PARAM: ArrayLike<string> = [], ORDER_BY = '', LIMIT = ''): Promise<Static<S>[]> {
-    //     const { _BUILDER, _EXECUTOR, _table, _CONFIG: { fields_query } } = this;
-    //     const SQL_QUERY = _BUILDER.select(_table, fields_query);
-    //     const SQL = `${SQL_QUERY} ${WHERE} ${ORDER_BY} ${LIMIT}`;
-    //     const conn = await this.getConn();
-    //     const result = _EXECUTOR.query(conn, SQL, PARAM)
-    //     return result;
-    // }
-
-
-    // /**
-    //  * @see WhereCondition
-    //  * Use a WhereCondition Query Data 
-    // */
-    // queryByCondition(condition?: WhereParam, limit?: QuerySchema): Promise<Static<S>[]> {
-    //     const [WHERE, PARAM] = this._BUILDER.where(condition);
-    //     if (limit) {
-    //         const [ORDER_BY, LIMIT] = this.orderByLimit(limit);
-    //         return this._query(this.fixWhere(WHERE), PARAM, ORDER_BY, LIMIT);
-    //     }
-
-    //     return this._query(this.fixWhere(WHERE), PARAM);
-    // }
-
-
-    // /**
-    //  * @see QuerySchema
-    //  * Use a QuerySchema Query Data 
-    // */
-    // query(query?: QuerySchema): Promise<Static<S>[]> {
-    //     const { _QUERY_CACHE, _CONFIG: { COLUMN_MAP } } = this;
-    //     const condition = queryToCondition(query, COLUMN_MAP, _QUERY_CACHE);
-    //     return this.queryByCondition(condition, query)
-    // }
-
-    // /**
-    //  * @see QuerySchema
-    //  * Use a QuerySchema Query Data With Page
-    //  * this will return a object with {total:number,list:ArrayLike<T>}
-    // */
-    // async queryPager(query?: QuerySchema): Promise<{ total: number, list: Static<S>[] }> {
-    //     let total = 0;
-    //     const { _table, _BUILDER, _EXECUTOR, _QUERY_CACHE, _CONFIG: { COLUMN_MAP } } = this;
-    //     const condition = queryToCondition(query, COLUMN_MAP, _QUERY_CACHE);
-    //     const [WHERE, PARAM] = _BUILDER.where(condition);
-    //     if (_.has(query, 'total_') && _.isNumber(query.total_)) {
-    //         total = query.total_;
-    //     } else {
-    //         const SQL_COUNT = `${_BUILDER.count(_table)} ${this.fixWhere(WHERE)}`;
-    //         const conn = await this.getConn();
-    //         const countResult = await _EXECUTOR.get(conn, SQL_COUNT, PARAM);
-    //         if (countResult == null) {
-    //             return {
-    //                 total: 0,
-    //                 list: [],
-    //             }
-    //         }
-    //         total = parseInt(countResult.total);
-    //     }
-    //     const [ORDER_BY, LIMIT] = this.orderByLimit(query);
-    //     const list = await this._query(this.fixWhere(WHERE), PARAM, ORDER_BY, LIMIT)
-    //     return { total, list }
-    // }
-
-    // /**
-    //  * Fetch All Records form the Table / View
-    // */
-    // async all(): Promise<Static<S>[]> {
-    //     const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_query, WHERE_FIX } } = this;
-    //     const SQL = _BUILDER.select(_table, fields_query) + WHERE_FIX[0];
-    //     const conn = await this.getConn();;
-    //     return _EXECUTOR.query(conn, SQL);
-    // }
-
-    // /**
-    //  * Get A record form Table / View By Primary key.
-    //  * This method will return All column. Even if the IGNORE column.
-    // */
-    // async getById(id: number | string): Promise<Static<S>> {
-    //     const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key, fields_get } } = this;
-    //     if (key == null) throw new Error(`Table ${_table} do not have a Primary Key`);
-    //     const SQL = _BUILDER.select(_table, fields_get);
-    //     const [WHERE, PARAM] = _BUILDER.byField(key, id);
-    //     const conn = await this.getConn()
-    //     return _EXECUTOR.get(conn, `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
-    // }
-    // /**
-    //  * Get A record form Table / View By Specify Field = value.
-    //  * This method will return All column. Even if the IGNORE column.
-    //  * Note : If result has multi records , return the first row
-    //  *        Want return all records?  use `queryByField`
-    // */
-    // async getByField(field: string, value?: string | number): Promise<Static<S>> {
-    //     const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_get } } = this;
-    //     const SQL = _BUILDER.select(_table, fields_get);
-    //     const [WHERE, PARAM] = _BUILDER.byField(field, value);
-    //     const conn = await this.getConn()
-    //     return _EXECUTOR.get(conn, `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
-    // }
-
-    // /**
-    //  * Get records form Table / View By Specify Property = value.
-    // */
-    // async queryByField(field: string, value?: string | number | boolean): Promise<Static<S>[]> {
-    //     const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_get } } = this;
-    //     const SQL = _BUILDER.select(_table, fields_get);
-    //     const [WHERE, PARAM] = _BUILDER.byField(field, value);
-    //     const conn = await this.getConn()
-    //     return _EXECUTOR.query(conn, `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
-    // }
-
-    // protected fixWhere(where: string): string {
-    //     const { _CONFIG: { WHERE_FIX } } = this;
-    //     let whereStr = _.trim(where);
-    //     return whereStr.length ? (WHERE_FIX[0] + WHERE_FIX[1] + whereStr) : WHERE_FIX[0];
-    // }
-
-    // private orderByLimit(query?: QuerySchema): [string, string] {
-    //     const { _C2F, _F2C, _CONFIG: { sort, pageSize } } = this;
-    //     return [
-    //         // _BUILDER.orderBy(_F2C, _C2F, query, sort),
-    //         // _BUILDER.limit(query, pageSize)
-    //     ]
-    // }
-
-
-
-
-    // byId: (value: string | number) => string;
 }
 
 
+// export const where: SqlWhere = (condition: WhereParam): [string, any[]] => {
+//     const pos: QueryPos = { SQL: [], PARAM: [] };
+//     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
+//     let err: string[] = [];
+//     ConditionToWhere(root, pos, err);
+//     throwErr(err, 'Some SQL Error Occur');
+//     if (pos.SQL.length == 0) {
+//         return ['', []]
+//     };
+//     return [pos.SQL.join(" " + root.link + " "), pos.PARAM]
+// }
 
-    // export const select: SqlSelect = (table: string, fields: string = '*'): string => `SELECT ${fields || '*'} FROM ${table} `;
 
-    // export const count: SqlCount = (table: string) => `SELECT count(0) AS total FROM ${table}`;
-    
-    // export const insert: SqlInsert = (table: string, obj: any): [string, any[]] => {
-    //     const fields = _.keys(obj);
-    //     if (fields.length == 0) {
-    //         throw new Error();
-    //     }
-    //     let query = [];
-    //     let idx = [];
-    //     let param = [];
-    
-    //     fields.map((field, i) => {
-    //         let val = obj[field];
-    //         if (val === null) {
-    //             return
-    //         }
-    //         query.push(field)
-    //         idx.push("$" + (i + 1));
-    //         param.push(val)
-    //     })
-    //     return [`INSERT INTO ${table} (${query.join(',')}) VALUES (${idx.join(',')}) RETURNING *`, param];
-    // }
-    
-    // export const update: SqlUpdate = (table: string, obj: any, key = 'id'): [string, any[]] => {
-    //     const fields = _.keys(obj);
-    //     if (fields.length == 0) throw new Error();
-    //     let query = [];
-    //     let param = [];
-    
-    //     let diff = 1;
-    //     fields.map((field, i) => {
-    //         // Not Allow Update Primary Key
-    //         if (field == key) {
-    //             diff = 0;
-    //             return;
-    //         }
-    //         let val = obj[field];
-    //         query.push(`${field} = $${i + diff}`)
-    //         param.push(val)
-    //     });
-    //     // console.log(`UPDATE  ${table} SET ${query.join(',')} RETURNING *`)
-    
-    //     return [`UPDATE  ${table} SET ${query.join(',')}`, param];
-    // }
-    
-    // export const del: SqlDelete = (table: string): string => `DELETE FROM ${table} `
-    
-    
-    
-    
-    
-    // export const byField: SqlByField = (field: string, id: string | number, startIdx: number = 1) => [` ${field} = $${startIdx} `, [id]];
+// export const where: SqlWhere = (condition: WhereParam, startIdx = 1): [string, any[]] => {
+//     const pos: QueryPos = { SQL: [], PARAM: [], NUM: startIdx };
+//     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
+//     let err: string[] = [];
+//     ConditionToWhere(root, pos, err);
+//     throwErr(err, 'Some SQL Error Occur');
+//     if (pos.SQL.length == 0) {
+//         return ['', []]
+//     };
+//     return [pos.SQL.join(" " + root.link + " "), pos.PARAM]
+// }
+

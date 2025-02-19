@@ -25,7 +25,7 @@
   "main": "pg/index.js",
   "scripts": {
     "test": "node --env-file=.env -r ts-node/register node_modules/tsest/run",
-    "watch": "node --env-file=.env -r ts-node/register node_modules/tsest/run --file=PgQueryBuilder.test.ts --watch",
+    "watch": "node --env-file=.env -r ts-node/register node_modules/tsest/run --fileName=Schema.test --watch",
     "build": "node -r ts-node/register script.mjs --build"
   },
   "devDependencies": {

@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import { BaseView, } from '../core/BaseView'
-import { PgQueryBuilder } from './PgQueryBuilder';
+import { PgQuery } from './PgSQL';
+import { PG_EXECUTOR, PG_QUERY } from './ExecutorNodePg'
 
 import type { Database, TableOptions, QueryExecutor } from '../core'
 // import { getFieldType } from '../base/utils/QueryBuilder';
@@ -8,7 +9,6 @@ import type { Database, TableOptions, QueryExecutor } from '../core'
 // import { insert, update, del, select, count, byField, orderBy, limit } from './basic/builder';
 // import { where, fixWhere } from './basic/where'
 // import { executor } from './basic/executor'
-import { PG_EXECUTOR, PG_QUERY } from './ExecutorNodePg'
 
 import type { TObject, Static } from '@sinclair/typebox';
 
@@ -24,12 +24,12 @@ import type { TObject, Static } from '@sinclair/typebox';
 import type { Client, ClientBase, Pool } from 'pg';
 
 
-export class PgView<C, S extends TObject, B extends PgQueryBuilder = PgQueryBuilder> extends BaseView<C, S, B> {
+export class PgView<C, S extends TObject, B extends PgQuery = PgQuery> extends BaseView<C, S, B> {
     protected EXECUTOR = PG_QUERY as QueryExecutor<C, any>;
 
 
     constructor(db: Database<C>, tableName: string, tableSchema: S, tableOptions?: TableOptions) {
-        super(PgQueryBuilder as any, db, tableName, tableSchema, tableOptions);
+        super(PgQuery as any, db, tableName, tableSchema, tableOptions);
     }
 
 
@@ -90,6 +90,8 @@ export class PgView<C, S extends TObject, B extends PgQueryBuilder = PgQueryBuil
 
         return conn.query.call(conn, ...args);
     }
+
+    
 }
 
 

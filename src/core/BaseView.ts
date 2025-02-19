@@ -1,33 +1,14 @@
-import { BaseQuery, } from './BaseDB';
+import { BaseQuery } from './BaseDB';
 import _ from 'lodash';
 
-import type { Database } from './BaseDB';
-import type { DatabaseOptions, TableOptions, QueryBuilder, QueryExecutor } from './types'
+import type { DatabaseOptions, TableOptions, QueryBuilder, QueryExecutor, Database, View } from './types'
 import type { TObject, Static } from '@sinclair/typebox';
 import type { WhereParam, QuerySchema } from '../utils/types';
-
 
 type Provider<B extends QueryBuilder> = {
     new(tableName: string, schema: TObject, tbOptions?: TableOptions, dbOptions?: DatabaseOptions): B
 };
 
-
-
-export interface View<O extends object> {
-    // readonly tableName: string;
-
-    all: () => Promise<Array<O>>;
-    getById: (id: string | number) => Promise<O>
-    getByField: (field: string, value: string | number | Date) => Promise<O>;
-    getByCondition: (condition: WhereParam) => Promise<O>;
-    query: {
-        (): Promise<Array<O>>
-        (query: QuerySchema): Promise<Array<O>>,
-    };
-    queryPagination: (query?: QuerySchema) => Promise<{ total: number, list: Array<O> }>
-    queryByField: (field: string, value?: string | number | boolean) => Promise<Array<O>>;
-    queryByCondition: (condition?: WhereParam, query?: QuerySchema) => Promise<Array<O>>;
-}
 
 export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> extends BaseQuery<C> implements View<Static<S>> {
 

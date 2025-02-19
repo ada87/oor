@@ -1,32 +1,12 @@
 import _ from 'lodash';
 import { Kind } from '@sinclair/typebox';
-import { WhereItem, WhereCondition, QuerySchema, WhereDefine, FieldType, SUFFIX, MagicSuffix, Column } from './types';
-import { throwErr } from './SQLUtil';
+import { getFieldType } from './SQLUtil';
+import { WhereItem, WhereCondition, QuerySchema, WhereDefine, SUFFIX, MagicSuffix, Column } from './types';
+import { throwErr } from './ValidateUtil';
 
 
 const DEFAULT_QUERY_KEY = new Set<string>(['start_', 'count_', 'order_', 'by_', 'keyword_', 'total_']);
 
-export const getFieldType = (schema: any): FieldType => {
-
-    switch (schema[Kind]) {
-        case 'String':
-            return 'string';
-        case 'Number':
-            return 'number';
-        case 'Integer':
-            return 'int';
-        case 'Boolean':
-            return 'boolean';
-        case 'Date':
-            return 'date';
-        case 'Union':
-            if (_.isArray(schema.anyOf) && schema.anyOf.length) {
-                return getFieldType(schema.anyOf[0])
-            }
-        default:
-            return 'string';
-    }
-}
 
 /**
  * Cache Query Field To Where Filed

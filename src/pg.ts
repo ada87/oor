@@ -1,3 +1,4 @@
+// npm i pg @types/pg
 import { Pool } from 'pg'
 import { BaseDB } from './core/BaseDB';
 import { PgTable } from './lib-pg/PgTable';
@@ -9,7 +10,7 @@ import type { PoolConfig } from 'pg';
 import type { TableOptions } from './core';
 import type { TObject } from '@sinclair/typebox';
 
-export * from './core/types';
+export * from './utils/types';
 
 export class PgPool extends BaseDB<PoolConfig | (() => Pool | Promise<Pool>), Pool> {
     private pool: Pool = null;

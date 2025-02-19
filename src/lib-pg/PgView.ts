@@ -2,14 +2,13 @@ import _ from 'lodash';
 import { BaseView, } from '../core/BaseView'
 import { PgQueryBuilder } from './PgQueryBuilder';
 
-import type { Database } from '../core/BaseDB';
-import type { TableOptions, QueryExecutor } from '../core'
+import type { Database, TableOptions, QueryExecutor } from '../core'
 // import { getFieldType } from '../base/utils/QueryBuilder';
 // import { BaseView, TableOptions } from '../base/BaseView';
 // import { insert, update, del, select, count, byField, orderBy, limit } from './basic/builder';
 // import { where, fixWhere } from './basic/where'
 // import { executor } from './basic/executor'
-import { PG_EXECUTOR, PG_QUERY } from './PgExecutor'
+import { PG_EXECUTOR, PG_QUERY } from './ExecutorNodePg'
 
 import type { TObject, Static } from '@sinclair/typebox';
 

@@ -1,1 +1,1 @@
-// elastic search
+// npm i @elastic/elasticsearch

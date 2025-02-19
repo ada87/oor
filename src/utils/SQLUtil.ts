@@ -3,13 +3,36 @@ import dayjs from 'dayjs';
 import { Type } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
 
-import type { MagicSuffix, UDateOptions, UNumericOptions, UStringOptions, Column } from './types';
+import { Kind } from '@sinclair/typebox';
+
+import type { MagicSuffix, UDateOptions, UNumericOptions, UStringOptions, Column, FieldType } from './types';
 import type { TProperties, TPartial, TObject } from '@sinclair/typebox';
 
 
 
 export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull']);
 
+export const getFieldType = (schema: any): FieldType => {
+
+    switch (schema[Kind]) {
+        case 'String':
+            return 'string';
+        case 'Number':
+            return 'number';
+        case 'Integer':
+            return 'int';
+        case 'Boolean':
+            return 'boolean';
+        case 'Date':
+            return 'date';
+        case 'Union':
+            if (_.isArray(schema.anyOf) && schema.anyOf.length) {
+                return getFieldType(schema.anyOf[0])
+            }
+        default:
+            return 'string';
+    }
+}
 
 
 // var STRICT_QUERY = false;
@@ -19,27 +42,6 @@ export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull']);
 
 
 
-export const throwErr = (strict: boolean, err: string[], message?: string) => {
-    if (err.length == 0) return;
-    if (!strict) {
-        console.error(message + '\n      ' + err.join('\n      '));
-        return;
-    }
-    throw new Error(message ? message : err[0], { cause: err.join('\n') as any })
-}
-
-
-export const checkEntity = (strict: boolean, T: TObject, val: any) => {
-    if (!strict) {
-        return;
-    }
-    const result = Value.Errors(T, val);
-    let err = result.First();
-    if (err) {
-
-        throw new Error('Entity Has Some Error')
-    }
-}
 
 
 const getStart = (str: string): [MagicSuffix, string] => {

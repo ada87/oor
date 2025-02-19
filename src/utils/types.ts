@@ -1,5 +1,10 @@
-import type { SchemaOptions, StringOptions, DateOptions, NumberOptions, TProperties, TPartial, TObject } from '@sinclair/typebox';
 import { Type } from '@sinclair/typebox';
+
+import type {
+    SchemaOptions,
+    TProperties, TPartial, TObject,
+    StringOptions, DateOptions, NumberOptions,
+} from '@sinclair/typebox';
 
 
 export type Support = { string: boolean, number: boolean, date: boolean, boolean: boolean }
@@ -52,6 +57,8 @@ export type WhereCondition = {
 export type Sort = { order: string, by: 'asc' | 'desc' };
 
 export type WhereParam = WhereCondition | (WhereCondition | WhereItem)[];
+
+export type WhereStatement = [string, Array<any>];
 
 export type QuerySchema = {
 
@@ -159,23 +166,6 @@ export interface UDateOptions extends Column, DateOptions {
     format?: string
 }
 
-
-
-
-export const UType = {
-    Table: <T extends TProperties>(properties: T): TPartial<TObject<T>> => Type.Partial(Type.Object(properties)),
-    Number: (options?: UNumericOptions) => Type.Number(options),
-    String: (options?: UStringOptions) => Type.String(options),
-    Date: (options?: UDateOptions) => Type.Union([Type.Date(options), Type.Number(), Type.String()], options),
-    Boolean: (options?: Column) => Type.Boolean(options),
-    Integer: (options?: UNumericOptions) => Type.Integer(options),
-}
-
-
-
-
-
-
 export interface UStringOptions extends Column, StringOptions {
     /**
      * Defind a mark: 
@@ -215,4 +205,14 @@ export interface UDateOptions extends Column, DateOptions {
      * 
     */
     format?: string
+}
+
+
+export const UType = {
+    Table: <T extends TProperties>(properties: T): TPartial<TObject<T>> => Type.Partial(Type.Object(properties)),
+    Number: (options?: UNumericOptions) => Type.Number(options),
+    String: (options?: UStringOptions) => Type.String(options),
+    Date: (options?: UDateOptions) => Type.Union([Type.Date(options), Type.Number(), Type.String()], options),
+    Boolean: (options?: Column) => Type.Boolean(options),
+    Integer: (options?: UNumericOptions) => Type.Integer(options),
 }

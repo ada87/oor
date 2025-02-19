@@ -34,3 +34,7 @@ export const setFormat = (timezone: string, formater: string) => {
 export const convertDate = (date: string | Date | number | Dayjs, timezone: string = DEFAULT_TIMEZONE): string => {
     return dayjs(date).tz(timezone).format(TZ_MAP.get(timezone))
 }
+
+export const toDate = (txt: string | number): Date => {
+    return dayjs(txt).toDate();
+}

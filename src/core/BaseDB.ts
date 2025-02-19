@@ -1,9 +1,4 @@
-import type { DatabaseOptions } from './types';
-
-export interface Database<C, Options extends DatabaseOptions = DatabaseOptions> {
-    getConn: () => Promise<C>;
-    getOptions: () => Options;
-}
+import type { DatabaseOptions, Database } from './types';
 
 const DEFAULT_OPTIONS: DatabaseOptions = { pageSize: 20, rowKey: 'id', }
 

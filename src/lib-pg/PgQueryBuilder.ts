@@ -1,8 +1,7 @@
-// import { TObject } from '@sinclair/typebox';
-import { TObject } from '@sinclair/typebox';
-import { BaseQueryBuilder, BaseActionBuilder } from '../core';
 import _ from 'lodash';
+import { BaseQueryBuilder, BaseActionBuilder } from '../core';
 
+import type { TObject } from '@sinclair/typebox';
 
 // export const orderBy: SqlOrderBy = (ftc: Map<string, any>, ctf: Map<string, string>, query?: QuerySchema, default_sort?: Sort) => {
 //     let by = 'desc';

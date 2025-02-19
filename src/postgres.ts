@@ -1,3 +1,4 @@
+// npm i postgres
 import postgres from 'postgres'
 import { BaseDB } from './core/BaseDB';
 import { PgTable } from './lib-pg/PgTable';
@@ -8,16 +9,10 @@ import { PgView } from './lib-pg/PgView'
 import type { Options, Sql, PostgresType } from 'postgres';
 import type { TableOptions } from './core';
 import type { TObject } from '@sinclair/typebox';
-
+import type { PgSQL, ClientTypes } from './lib-pg/ExecutorPostgres';
 export * from './core/types';
 
-export type ClientTypes = Record<string, PostgresType>;
 
-export type PgSQL<T extends ClientTypes = ClientTypes> = Sql<Record<string, postgres.PostgresType> extends T ? {}
-    : { [type in keyof T]: T[type] extends {
-        serialize: (value: infer R) => any,
-        parse: (raw: any) => infer R
-    } ? R : never }>;
 
 export class PgPool<T extends ClientTypes> extends BaseDB<Options<T> | (() => PgSQL), PgSQL> {
     private client: PgSQL = null;

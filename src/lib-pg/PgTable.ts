@@ -1,9 +1,8 @@
 // import _ from 'lodash';
-import { ActionExecutor, QueryBuilder, QueryExecutor } from '../core';
+import { ActionExecutor,  } from '../core';
 // import { getFieldType } from '../core/utils/QueryBuilder';
 import { PgActionBuilder } from './PgQueryBuilder'
-import { PG_EXECUTOR } from './PgExecutor'
-import { BaseTable } from '../core/BaseTable';
+import { PG_EXECUTOR } from './ExecutorNodePg'
 
 import type { Static, TObject } from '@sinclair/typebox';
 

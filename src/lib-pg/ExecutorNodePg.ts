@@ -1,11 +1,5 @@
-// import _ from 'lodash';
-
-
 import type { Pool } from 'pg';
-import type { QueryExecutor, ActionExecutor } from '../core/sql';
-
-
-
+import type { QueryExecutor, ActionExecutor } from '../core';
 
 
 class PgQuery implements QueryExecutor<Pool, object> {

@@ -1,16 +1,15 @@
+// npm i pg-native
 import Client from 'pg-native';
-
 import { BaseDB } from './core/BaseDB';
 import { PgTable } from './lib-pg/PgTable';
 import { PgView } from './lib-pg/PgView'
 
-// export { UType } from './core';
 
 import type { TableOptions } from './core';
 import type { TObject } from '@sinclair/typebox';
 import type { ClientConfig } from 'pg'
 
-export * from './core/types';
+export * from './utils/types';
 
 export class PgClient extends BaseDB<ClientConfig | (() => Client | Promise<Client>), Client> {
     private client: Client = null;

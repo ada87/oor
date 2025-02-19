@@ -1,28 +1,11 @@
-import { BaseView, } from './BaseView';
 import _ from 'lodash';
+import { BaseView } from './BaseView';
 
-import type { ActionExecutor, ActionBuilder } from './types'
-import type { View } from './BaseView'
+import type { ActionExecutor, ActionBuilder, Table } from './types'
 import type { TObject, Static } from '@sinclair/typebox';
 
 
-export interface Table<O extends object> extends View<O> {
-    add: {
-        (conn, sql: string, param: any): Promise<O>,
-        (conn, sql: string, param: any, returning: true): Promise<O>,
-        (conn, sql: string, param: any, returning: false): Promise<Number>,
-    }
-    addBatch: {
-        (conn, sql: string, param: any): Promise<Array<O>>,
-        (conn, sql: string, param: any, returning: true): Promise<O>,
-        (conn, sql: string, param: any, returning: false): Promise<Number>,
-    },
-    execute: {
-        (conn, sql: string, param?: any): Promise<number>,
-        (conn, sql: string, param: any, returning: false): Promise<number>,
-        (conn, sql: string, param: any, returning: true): Promise<Array<O>>,
-    },
-}
+
 
 
 export class BaseTable<C, S extends TObject, B extends ActionBuilder> extends BaseView<C, S, B> implements Table<Static<S>> {

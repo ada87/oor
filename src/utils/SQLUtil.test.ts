@@ -1,13 +1,20 @@
 import _ from 'lodash';
-import { SUFFIX } from './types'
+// import { SUFFIX } from './types'
 // import { , } from './index'
 import { UType } from './types';
+import { TableOptions, DatabaseOptions } from '../core';
 
 // import type { MagicSuffix, WhereItem, FieldType, Support } from './types';
 
 // // Line 2 : Build a Schema , 
 // //          Schema can be used for validate、check, @see @sinclair/typebox
 // //          Some FrameWork support this schema derectly , like fastify 
+// tbName: string, tbSchema: TObject, tbOption: TableOptions, dbOption: DatabaseOptions
+
+export const TABLE_NAME = 'user';
+export const TABLE_OPTIONS: TableOptions = {}
+export const DATABASE_OPTIONS: DatabaseOptions = {}
+
 export const UserSchema = UType.Table({
     id: UType.Integer(),
     name: UType.String({ maxLength: 32 }),
@@ -105,7 +112,7 @@ export const UserSchema = UType.Table({
 
 // ${JSON.stringify(item)} >>>>>>
 
-// ${sql} -- ${JSON.stringify(param)} 
+// ${sql} -- ${JSON.stringify(param)}
 
 // ---------------Support Not Suppored-----------------
 //                     `)

@@ -1,9 +1,8 @@
 import _ from 'lodash';
 
-import type {TableOptions, DatabaseOptions} from './types';
-import type { QueryBuilder } from './index';
-import type { TObject } from '@sinclair/typebox';
-import type { WhereParam,  Sort, Column  } from '../utils/types';
+import type { TableOptions, DatabaseOptions, QueryBuilder} from './types';
+import type  {  TObject } from '@sinclair/typebox';
+import type { WhereParam,  Sort, Column, WhereStatement  } from '../utils/types';
 
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -11,24 +10,22 @@ const GLOBAL_ID_FIELD = new Set<string>(['id', 'uuid', 'guid']);
 
 
 
-export class BaseQueryBuilder implements QueryBuilder {
+export abstract class BaseQueryBuilder implements QueryBuilder {
 
     protected readonly tableName: string;
-
-    // readonly select: string
 
     protected readonly rowKey: string;
 
     protected readonly pageSize: number;
 
-    // protected fieldsQuery: string = '*';
-    // protected fieldsGget: string = '*';
-
     protected COLUMN_MAP: Map<string, Column>;
+
+    private readonly FIELD_QUERY = '*';
+    private readonly FIELD_DETAIL = '*';
 
     protected readonly DEL_MARK: { field: string, value: string | number | boolean, } = null;
     protected readonly DEFAULT_SORT: Sort = null;
-    // protected
+    
 
     protected WHERE_FIX: [string, string] = ['', ' WHERE '];
 
@@ -67,6 +64,8 @@ export class BaseQueryBuilder implements QueryBuilder {
         }
         // let field: string = null, by = 'desc' as any;
         const fields = _.keys(tbSchema.properties);
+
+        let idField = null; 
         for (let field of fields) {
 
             let properties = tbSchema.properties[field];
@@ -74,23 +73,35 @@ export class BaseQueryBuilder implements QueryBuilder {
             this._F2C.set(field, column);
             this._C2F.set(column, field);
             this.COLUMN_MAP.set(field, properties);
-            // if (GLOBAL_ID_FIELD.has(column) && this.rowKey == null) {
-            //     // this._CONFIG.key = column;
-            //     this.rowKey = column;
-            //     SortGuess.push(field)
-            // };
+            if(this.rowKey==null&&idField==null&&GLOBAL_ID_FIELD.has(field)){
+                idField = field;
+            }
+    
             if (properties.isModify) SortGuess.unshift(field); // 默认按最后修改时间
+            if(properties.isCreate) SortGuess.push(field);  // 默认按创建时间
             if (_.has(properties, 'delMark') && properties.delMark != null) {
-
                 this.DEL_MARK = {
                     field: column,
                     value: properties.delMark,
-                    // [column]: properties.delMark
                 };
             }
+
+
+            // let fields_query = [];
+            // let fields_get = [];
+            // _.keys(schema.properties).map(field => {
+            //     let properties = schema.properties[field];
+            //     let select = SelectField(field, properties);
+            //     fields_get.push(select);
+            //     if (properties.ignore === true) return;
+            //     fields_query.push(select);
+            // });
+            // this._CONFIG.fields_query = fields_query.join(',');
+            // this._CONFIG.fields_get = fields_get.join(',')
         };
         // this.DEL_MARK = null;
         if (tbOption?.sort) {
+            
 
             // if (options.sort) {
             // field = options.sort.order;
@@ -98,65 +109,101 @@ export class BaseQueryBuilder implements QueryBuilder {
             // }
         }
         if (this.rowKey == null) {
-            this.rowKey = dbOption?.rowKey || 'id';
+            this.rowKey = dbOption?.rowKey||idField || 'id';
         }
-        // if (field == null && SortGuess.length) field = SortGuess[0];
-        // if (field != null) {
-        //     let column = this._F2C.has(field) ? this._F2C.get(field) : (this._C2F.has(field) ? field : null);
-        //     if (column) {
-        //         this._CONFIG.sort = { order: column, by }
-        //     }
-        // }
-        // this.init(schema, options);
-        // options.pageSize = options.pageSize || 10;
-        // this._table = '';
-    }
-    select(fields?: string): string {
-        throw new Error('Method not implemented.');
-    }
-    byId: (value: string | number) => [string, Array<any>];
-    fixWhere: (where?: string, param?: Array<any>) => [string, Array<any>];
-
-
-    where(condition: WhereParam, startIdx: number = 0): [string, any[]] {
-        let whereClause = '';
-        const params: any[] = [];
-        let idx = startIdx;
-
-        for (const [field, value] of Object.entries(condition)) {
-            if (whereClause.length > 0) {
-                whereClause += ' AND ';
-            }
-            whereClause += `${field} = $${idx}`;
-            params.push(value);
-            idx++;
-        }
-
-        return [whereClause, params];
-    }
-    byField: (field: string, value: string | number | boolean, startIdx?: number) => [string, any[]];
-
-
-    count(): string {
-        return '';
+        
+        // console.log(this.pageSize)
     }
 
+    abstract select(fields?: boolean | string | Array<string>): string;
+    abstract byId(value: string | number): WhereStatement;
+    abstract where(condition: WhereParam, startIdx?: number): WhereStatement;
+    abstract byField(field: string, value: string | number | boolean, startIdx?: number): WhereStatement;
+    abstract count(): string;
+    abstract orderBy(): string;
+    abstract limit(): string;
+    abstract fixWhere(where?: string, param?: Array<any>): WhereStatement;
+    
 
-    // where(query: QuerySchema): string {
+    
+    // select(fields?:boolean| string|Array<string>): string {
+
+    //     if(fields==null||fields==undefined) return `SELECT ${this.FIELD_QUERY} FROM ${this.tableName} `;
+        
+    //     if(typeof fields == 'boolean'){
+    //         if(fields) return `SELECT ${this.FIELD_DETAIL} FROM ${this.tableName} `;
+    //         return `SELECT ${this.FIELD_QUERY} FROM ${this.tableName} `;
+    //     }   
+    //     if(typeof fields == 'string') {
+    //         let txt = fields.trim();
+    //         if(txt.length==0) return `SELECT ${this.FIELD_QUERY} FROM ${this.tableName} `;
+    //         return `SELECT ${txt} FROM ${this.tableName} `;
+    //     }
+    //     if(Array.isArray(fields)){
+    //         let txt = fields.join(',');
+    //         if(txt.length==0) return `SELECT ${this.FIELD_QUERY} FROM ${this.tableName} `;
+    //         return `SELECT ${txt} FROM ${this.tableName} `;
+    //     }
+
+    //     return `SELECT ${ this.FIELD_QUERY} FROM ${this.tableName} `;
+    //     // throw new Error('Method not implemented.');
+    // }
+
+    // byId(value: string | number):WhereStatement {
+    //     return [ 
+    //         `${this.rowKey} = $1`, 
+    //         [value]
+    //     ] 
+    // }
+
+    // fixWhere: (where?: string, param?: Array<any>)
+
+
+    // where(condition: WhereParam, startIdx: number = 0):WhereStatement {
+    //     let whereClause = '';
+    //     const params: any[] = [];
+    //     let idx = startIdx;
+
+    //     for (const [field, value] of Object.entries(condition)) {
+    //         if (whereClause.length > 0) {
+    //             whereClause += ' AND ';
+    //         }
+    //         whereClause += `${field} = $${idx}`;
+    //         params.push(value);
+    //         idx++;
+    //     }
+
+    //     return [whereClause, params];
+    // }
+    // byField(field: string, value: string | number | boolean, startIdx?: number):WhereStatement{
+
+    //     return [
+    //         `${field} = $${startIdx}`,
+    //         [value]
+    //     ]
+    // }
+
+
+    // count(): string {
     //     return '';
     // }
-    // byId(id: string | number): string {
-    //     return ''
-    // }
-    // byField(field: string, value: string | number | boolean | Date): string {
+
+
+    // // where(query: QuerySchema): string {
+    // //     return '';
+    // // }
+    // // byId(id: string | number): string {
+    // //     return ''
+    // // }
+    // // byField(field: string, value: string | number | boolean | Date): string {
+    // //     return '';
+    // // }
+    // orderBy(): string {
     //     return '';
     // }
-    orderBy(): string {
-        return '';
-    }
-    limit(): string {
-        return '';
-    }
+    // limit(): string {
+    //     return '';
+    // }
 
 
 

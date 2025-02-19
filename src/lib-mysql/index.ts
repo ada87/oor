@@ -1,1 +1,1 @@
-// mysql
+// npm i mysql2

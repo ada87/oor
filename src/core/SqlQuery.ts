@@ -1,8 +1,9 @@
 import _ from 'lodash';
 
+import type {TableOptions, DatabaseOptions} from './types';
 import type { QueryBuilder } from './index';
-import type { TObject, Static } from '@sinclair/typebox';
-import type { WhereParam, QuerySchema, Sort, Column, TableOptions, DatabaseOptions } from '../types';
+import type { TObject } from '@sinclair/typebox';
+import type { WhereParam,  Sort, Column  } from '../utils/types';
 
 
 const DEFAULT_PAGE_SIZE = 10;

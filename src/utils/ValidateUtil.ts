@@ -1,4 +1,4 @@
-import { Sort } from "../types";
+import { Sort } from "./types";
 
 const BY_SET = new Set<string>(['asc', 'desc']);
 

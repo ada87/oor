@@ -2,7 +2,7 @@
 
 
 import type { Pool } from 'pg';
-import type { QueryExecutor, ActionExecutor } from '../base/sql';
+import type { QueryExecutor, ActionExecutor } from '../core/sql';
 
 
 

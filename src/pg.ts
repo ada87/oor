@@ -1,14 +1,15 @@
 import { Pool } from 'pg'
-import { BaseDB } from './base/BaseDB';
-import { PgTable } from './pg/PgTable';
-import { PgView } from './pg/PgView'
+import { BaseDB } from './core/BaseDB';
+import { PgTable } from './lib-pg/PgTable';
+import { PgView } from './lib-pg/PgView'
 
-export { UType } from './base/utils/SQLUtil';
+// export { UType } from './utils/SQLUtil';
+
 import type { PoolConfig } from 'pg';
-import type { TableOptions } from './base';
+import type { TableOptions } from './core';
 import type { TObject } from '@sinclair/typebox';
 
-export * from './base/types';
+export * from './core/types';
 
 export class PgPool extends BaseDB<PoolConfig | (() => Pool | Promise<Pool>), Pool> {
     private pool: Pool = null;
@@ -28,12 +29,12 @@ export class PgPool extends BaseDB<PoolConfig | (() => Pool | Promise<Pool>), Po
 
 
 
-    Table<S extends TObject>(tbName: string, tbSchema: S, tbOptions?: TableOptions): PgTable<S> {
+    Table<S extends TObject>(tbName: string, tbSchema: S, tbOptions?: TableOptions): PgTable<Pool, S> {
         return new PgTable(this, tbName, tbSchema, tbOptions);
     }
 
-    View<S extends TObject>(tableName: string, schema: S, options?: TableOptions): PgView<S> {
-        return new PgView(this, tableName, schema, options);
+    View<S extends TObject>(tableName: string, tbSchema: S, tbOptions?: TableOptions): PgView<Pool, S> {
+        return new PgView(this, tableName, tbSchema, tbOptions);
     }
 }
 

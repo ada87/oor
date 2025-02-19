@@ -1,6 +1,6 @@
 // import { TObject } from '@sinclair/typebox';
 import { TObject } from '@sinclair/typebox';
-import { BaseQueryBuilder, BaseActionBuilder } from '../base/sql';
+import { BaseQueryBuilder, BaseActionBuilder } from '../core';
 import _ from 'lodash';
 
 

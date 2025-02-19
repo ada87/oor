@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { Type } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
 
-import type { MagicSuffix, UDateOptions, UNumericOptions, UStringOptions, Column } from '../types';
+import type { MagicSuffix, UDateOptions, UNumericOptions, UStringOptions, Column } from './types';
 import type { TProperties, TPartial, TObject } from '@sinclair/typebox';
 
 
@@ -17,15 +17,6 @@ export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull']);
 // export var ShowSql = null;
 // export var PAGE_SIZE = 10;
 
-
-export const UType = {
-    Table: <T extends TProperties>(properties: T): TPartial<TObject<T>> => Type.Partial(Type.Object(properties)),
-    Number: (options?: UNumericOptions) => Type.Number(options),
-    String: (options?: UStringOptions) => Type.String(options),
-    Date: (options?: UDateOptions) => Type.Union([Type.Date(options), Type.Number(), Type.String()], options),
-    Boolean: (options?: Column) => Type.Boolean(options),
-    Integer: (options?: UNumericOptions) => Type.Integer(options),
-}
 
 
 export const throwErr = (strict: boolean, err: string[], message?: string) => {

@@ -1,30 +1,22 @@
 // import _ from 'lodash';
-import { ActionExecutor, QueryBuilder, QueryExecutor } from '../base/sql';
-import { getFieldType } from '../base/utils/QueryBuilder';
+import { ActionExecutor, QueryBuilder, QueryExecutor } from '../core';
+// import { getFieldType } from '../core/utils/QueryBuilder';
 import { PgActionBuilder } from './PgQueryBuilder'
 import { PG_EXECUTOR } from './PgExecutor'
-import { BaseTable } from '../base/BaseTable';
-// import { insert, update, del, select, count, byField, orderBy, limit } from './builder';
-// import { where, fixWhere } from './where'
-// import { executor } from './executor'
+import { BaseTable } from '../core/BaseTable';
 
-// import type { TableOptions } from '../base';
 import type { Static, TObject } from '@sinclair/typebox';
 
-// Export Some useful global apis/types.
-export type { WhereParam, WhereCondition, WhereItem, QuerySchema, MagicSuffix, } from '../base/types';
 
-export type { Static } from '@sinclair/typebox';
 
-// const PG: SqlBuilder = { select, count, insert, delete: del, update, where, orderBy, limit, byField, }
 
-import type { ClientBase, Pool, } from 'pg';
+import type { ClientBase, } from 'pg';
 import { PgView } from './PgView'
 
 
-export class PgTable<S extends TObject> extends PgView<S, PgActionBuilder> {
+export class PgTable<C, S extends TObject> extends PgView<C, S, PgActionBuilder> {
 
-    protected EXECUTOR = PG_EXECUTOR as ActionExecutor<Pool, any>;
+    protected EXECUTOR = PG_EXECUTOR as ActionExecutor<C, any>;
 
 
     // protected init(schema: T, options?: TableOptions) {
@@ -71,7 +63,7 @@ export class PgTable<S extends TObject> extends PgView<S, PgActionBuilder> {
      * same arguments as pg.query()
      * */
     sql: ClientBase['query'] = async (...args: any[]) => {
-        const conn = await this.getConn();
+        const conn = await this.getConn() as ClientBase;
         return conn.query.call(conn, ...args);
         // return this.getClient().query.call(this.getClient(), ...args);
     }

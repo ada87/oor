@@ -1,4 +1,4 @@
-import { BaseQueryBuilder } from './QueryBuilder';
+import { BaseQueryBuilder } from './SqlQuery';
 
 import type { TObject } from '@sinclair/typebox';
 import type { ActionBuilder } from './index'

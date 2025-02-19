@@ -1,10 +1,9 @@
 import _ from 'lodash';
-import { BaseView, } from '../base/BaseView'
+import { BaseView, } from '../core/BaseView'
 import { PgQueryBuilder } from './PgQueryBuilder';
 
-import type { Database } from '../base/BaseDB';
-import type { TableOptions, } from '../base'
-import type { QueryExecutor } from '../base/sql';
+import type { Database } from '../core/BaseDB';
+import type { TableOptions, QueryExecutor } from '../core'
 // import { getFieldType } from '../base/utils/QueryBuilder';
 // import { BaseView, TableOptions } from '../base/BaseView';
 // import { insert, update, del, select, count, byField, orderBy, limit } from './basic/builder';
@@ -26,11 +25,11 @@ import type { TObject, Static } from '@sinclair/typebox';
 import type { Client, ClientBase, Pool } from 'pg';
 
 
-export class PgView<S extends TObject, B extends PgQueryBuilder = PgQueryBuilder> extends BaseView<S, Client | Pool, B> {
-    protected EXECUTOR = PG_QUERY as QueryExecutor<Client | Pool, any>;
+export class PgView<C, S extends TObject, B extends PgQueryBuilder = PgQueryBuilder> extends BaseView<C, S, B> {
+    protected EXECUTOR = PG_QUERY as QueryExecutor<C, any>;
 
 
-    constructor(db: Database<Client | Pool>, tableName: string, tableSchema: S, tableOptions?: TableOptions) {
+    constructor(db: Database<C>, tableName: string, tableSchema: S, tableOptions?: TableOptions) {
         super(PgQueryBuilder as any, db, tableName, tableSchema, tableOptions);
     }
 
@@ -88,7 +87,7 @@ export class PgView<S extends TObject, B extends PgQueryBuilder = PgQueryBuilder
     sql: ClientBase['query'] = async (...args: any[]) => {
         // this.getClient()
         // const
-        const conn = await this.getConn();
+        const conn = await this.getConn() as ClientBase;
 
         return conn.query.call(conn, ...args);
     }
@@ -103,9 +102,9 @@ export class PgView<S extends TObject, B extends PgQueryBuilder = PgQueryBuilder
 
 // import type { MagicSuffix, WhereItem, FieldType, Support } from './types';
 
-// // Line 2 : Build a Schema , 
+// // Line 2 : Build a Schema ,
 // //          Schema can be used for validate、check, @see @sinclair/typebox
-// //          Some FrameWork support this schema derectly , like fastify 
+// //          Some FrameWork support this schema derectly , like fastify
 // export const UserSchema = UType.Table({
 //     id: UType.Integer(),
 //     name: UType.String({ maxLength: 32 }),

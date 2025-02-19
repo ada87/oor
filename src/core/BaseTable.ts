@@ -1,7 +1,7 @@
 import { BaseView, } from './BaseView';
 import _ from 'lodash';
 
-import type { ActionExecutor, ActionBuilder } from './sql'
+import type { ActionExecutor, ActionBuilder } from './types'
 import type { View } from './BaseView'
 import type { TObject, Static } from '@sinclair/typebox';
 
@@ -25,7 +25,7 @@ export interface Table<O extends object> extends View<O> {
 }
 
 
-export class BaseTable<S extends TObject, C, B extends ActionBuilder> extends BaseView<S, C, B> implements Table<Static<S>> {
+export class BaseTable<C, S extends TObject, B extends ActionBuilder> extends BaseView<C, S, B> implements Table<Static<S>> {
 
     protected EXECUTOR: ActionExecutor<C, Static<S>>;
     add: { (conn: any, sql: string, param: any): Promise<Static<S>>; (conn: any, sql: string, param: any, returning: true): Promise<Static<S>>; (conn: any, sql: string, param: any, returning: false): Promise<Number>; };

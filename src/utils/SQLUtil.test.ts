@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import { SUFFIX } from '../types'
+import { SUFFIX } from './types'
 // import { , } from './index'
-import { UType } from './SQLUtil';
+import { UType } from './types';
 
 // import type { MagicSuffix, WhereItem, FieldType, Support } from './types';
 

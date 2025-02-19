@@ -1,9 +1,9 @@
 import _ from 'lodash';
 import { Kind } from '@sinclair/typebox';
-import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../base/utils/SQLUtil';
+import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../utils/SQLUtil';
 import dayjs from 'dayjs';
 
-import type { WhereParam, WhereItem, WhereCondition, MagicSuffix, Support, Column } from '../base/types';
+import type { WhereParam, WhereItem, WhereCondition, MagicSuffix, Support, Column } from '../utils/types';
 import type { Dayjs } from 'dayjs';
 // import type { SqlWhere } from '../base/Executor/sql';
 

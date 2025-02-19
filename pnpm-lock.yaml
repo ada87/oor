@@ -14,9 +14,6 @@ importers:
       dayjs:
         specifier: ^1.11.13
         version: 1.11.13
-      idb:
-        specifier: ^8.0.2
-        version: 8.0.2
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -36,12 +33,21 @@ importers:
       '@types/sql.js':
         specifier: ^1.4.9
         version: 1.4.9
+      idb:
+        specifier: ^8.0.2
+        version: 8.0.2
       mysql2:
         specifier: ^3.12.0
         version: 3.12.0
       pg:
         specifier: ^8.13.3
-        version: 8.13.3
+        version: 8.13.3(pg-native@3.2.2)
+      pg-native:
+        specifier: ^3.2.2
+        version: 3.2.2
+      postgres:
+        specifier: ^3.4.5
+        version: 3.4.5
       sqlite3:
         specifier: ^5.1.7
         version: 5.1.7
@@ -441,6 +447,9 @@ packages:
     resolution: {integrity: sha512-2WHyXj3OfHSgNyuzDbSxI1w2jgw5gkWSWhS7Qg4bWXx1nLk3jnbwfUeS0PSba3IzpTUWdHxBieELUzXRjQB2zg==}
     engines: {node: '>=0.8'}
 
+  libpq@1.8.14:
+    resolution: {integrity: sha512-/DDvQCiXP0KBMZ31U2mmURKaxoKt9kNqqgrSO2RuBKS+OJjw5b7uHi5jFoV8zPAUa2TNtq2XfcWL1OWDEyjwlg==}
+
   lodash.camelcase@4.3.0:
     resolution: {integrity: sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA==}
 
@@ -530,6 +539,9 @@ packages:
     resolution: {integrity: sha512-eLoBxg6wE/rZkJPhU/xRX1WTpkFEwDJEN96oxFrTsqBdbT5ec295Q+CoHrL9IT0DipqKhmGcaZmwOt8OON5x1w==}
     engines: {node: '>=12.0.0'}
 
+  nan@2.22.0:
+    resolution: {integrity: sha512-nbajikzWTMwsW+eSsNm3QwlOs7het9gGJU5dDZzRTQGk03vyBOauxgI4VakDzE0PtsGTmXPsXTbbjVhRwR5mpw==}
+
   napi-build-utils@1.0.2:
     resolution: {integrity: sha512-ONmRUqK7zj7DWX0D9ADe03wbwOBZxNAfF20PlGfCWQcD3+/MakShIHrMqx9YwPTfxDdF1zLeL+RGZiR9kGMLdg==}
 
@@ -582,6 +594,9 @@ packages:
   pg-int8@1.0.1:
     resolution: {integrity: sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==}
     engines: {node: '>=4.0.0'}
+
+  pg-native@3.2.2:
+    resolution: {integrity: sha512-x0QMoKYwVKr0GDq6m/ZITybAKD+wD3cS5m0fLx3R0CKv+q6dCgDPqcNxVUXB7exj/73j/dT5K2R8y5oEIlglAQ==}
 
   pg-numeric@1.0.2:
     resolution: {integrity: sha512-BM/Thnrw5jm2kKLE5uJkXqqExRUY/toLHda65XgFTBTFYZyopbKjBe29Ii3RbkvlsMoFwD+tHeGaCjjv0gHlyw==}
@@ -652,6 +667,10 @@ packages:
 
   postgres-range@1.1.4:
     resolution: {integrity: sha512-i/hbxIE9803Alj/6ytL7UHQxRvZkI9O4Sy+J3HGc4F4oo/2eQAjTSNJ0bfxyse3bH0nuVesCk+3IRLaMtG3H6w==}
+
+  postgres@3.4.5:
+    resolution: {integrity: sha512-cDWgoah1Gez9rN3H4165peY9qfpEo+SA61oQv65O3cRUE1pOEoJWwddwcqKE8XZYjbblOJlYDlLV4h67HrEVDg==}
+    engines: {node: '>=12'}
 
   prebuild-install@7.1.2:
     resolution: {integrity: sha512-UnNke3IQb6sgarcZIDU3gbMeTp/9SSU1DAIkil7PrqG1vZlBtY5msYccSKSHDqa3hNg436IXK+SNImReuA1wEQ==}
@@ -1293,6 +1312,11 @@ snapshots:
 
   json-bignum@0.0.3: {}
 
+  libpq@1.8.14:
+    dependencies:
+      bindings: 1.5.0
+      nan: 2.22.0
+
   lodash.camelcase@4.3.0: {}
 
   lodash@4.17.21: {}
@@ -1404,6 +1428,8 @@ snapshots:
     dependencies:
       lru-cache: 7.18.3
 
+  nan@2.22.0: {}
+
   napi-build-utils@1.0.2: {}
 
   negotiator@0.6.4:
@@ -1466,11 +1492,16 @@ snapshots:
 
   pg-int8@1.0.1: {}
 
+  pg-native@3.2.2:
+    dependencies:
+      libpq: 1.8.14
+      pg-types: 2.2.0
+
   pg-numeric@1.0.2: {}
 
-  pg-pool@3.7.1(pg@8.13.3):
+  pg-pool@3.7.1(pg@8.13.3(pg-native@3.2.2)):
     dependencies:
-      pg: 8.13.3
+      pg: 8.13.3(pg-native@3.2.2)
 
   pg-protocol@1.7.0: {}
 
@@ -1494,15 +1525,16 @@ snapshots:
       postgres-interval: 3.0.0
       postgres-range: 1.1.4
 
-  pg@8.13.3:
+  pg@8.13.3(pg-native@3.2.2):
     dependencies:
       pg-connection-string: 2.7.0
-      pg-pool: 3.7.1(pg@8.13.3)
+      pg-pool: 3.7.1(pg@8.13.3(pg-native@3.2.2))
       pg-protocol: 1.7.1
       pg-types: 2.2.0
       pgpass: 1.0.5
     optionalDependencies:
       pg-cloudflare: 1.1.1
+      pg-native: 3.2.2
 
   pgpass@1.0.5:
     dependencies:
@@ -1529,6 +1561,8 @@ snapshots:
   postgres-interval@3.0.0: {}
 
   postgres-range@1.1.4: {}
+
+  postgres@3.4.5: {}
 
   prebuild-install@7.1.2:
     dependencies:

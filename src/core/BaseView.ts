@@ -2,9 +2,9 @@ import { BaseQuery, } from './BaseDB';
 import _ from 'lodash';
 
 import type { Database } from './BaseDB';
-import type { QueryBuilder, QueryExecutor } from './sql'
-import type { WhereParam, QuerySchema, Sort, WhereItem, DatabaseOptions, TableOptions } from './types'
+import type { DatabaseOptions, TableOptions, QueryBuilder, QueryExecutor } from './types'
 import type { TObject, Static } from '@sinclair/typebox';
+import type { WhereParam, QuerySchema } from '../utils/types';
 
 
 type Provider<B extends QueryBuilder> = {
@@ -29,7 +29,7 @@ export interface View<O extends object> {
     queryByCondition: (condition?: WhereParam, query?: QuerySchema) => Promise<Array<O>>;
 }
 
-export abstract class BaseView<S extends TObject, C, B extends QueryBuilder> extends BaseQuery<C> implements View<Static<S>> {
+export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> extends BaseQuery<C> implements View<Static<S>> {
 
 
     protected readonly BUILDER: B;

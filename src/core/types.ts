@@ -1,8 +1,37 @@
-import { Extends, type TObject } from '@sinclair/typebox';
-import type { WhereParam, QuerySchema, Sort } from '../types';
+import type { TObject } from '@sinclair/typebox';
+import type { Sort, WhereItem, WhereParam, QuerySchema } from '../utils/types'
 
-export { BaseQueryBuilder } from './QueryBuilder';
-export { BaseActionBuilder } from './ActionBuilder';
+/**
+ * 
+ * Abbr Rule
+ * T = Table  Object
+ * V = View Object
+ * S = Schema
+ * C = Connection
+ * O = Object
+ * Q = Query Condition
+ * W = Where Param
+ *  */
+
+
+export type DatabaseOptions = {
+    pageSize?: number
+    rowKey?: string
+    strictQuery?: boolean
+    strictEntity?: boolean
+}
+
+export type TableOptions = DatabaseOptions & {
+    /**
+     * The Table's Default Sorting Rule : Order Field , By Method
+    */
+    sort?: Sort
+    /**
+     * 默认查询过滤,比如 { field:'disabled',value:0,operation:'<>' }
+     * 设置后，通过 query / all 拼装的 sql 都会带上 AND disabled <> 0 
+    */
+    globalCondition?: WhereItem[];
+}
 
 
 export interface QueryBuilder {

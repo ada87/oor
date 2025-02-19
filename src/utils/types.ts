@@ -1,4 +1,5 @@
-import type { SchemaOptions, StringOptions, DateOptions, NumberOptions } from '@sinclair/typebox';
+import type { SchemaOptions, StringOptions, DateOptions, NumberOptions, TProperties, TPartial, TObject } from '@sinclair/typebox';
+import { Type } from '@sinclair/typebox';
 
 
 export type Support = { string: boolean, number: boolean, date: boolean, boolean: boolean }
@@ -96,7 +97,7 @@ export type QuerySchema = {
 
 
 
-export interface OColumn extends SchemaOptions {
+export interface Column extends SchemaOptions {
     /**
      * 1. if ignore = true , query SELECT will not include this field
      * 2. `table.getById()` will return this field. Actually `table.getById()` aways use SELECT * !
@@ -117,7 +118,7 @@ export interface OColumn extends SchemaOptions {
 
 
 
-export interface UStringOptions extends OColumn, StringOptions {
+export interface UStringOptions extends Column, StringOptions {
     /**
      * Defind a mark: 
      *      1. Delete action will update this filed to mark 
@@ -128,7 +129,7 @@ export interface UStringOptions extends OColumn, StringOptions {
 }
 
 
-export interface UNumericOptions extends OColumn, NumberOptions {
+export interface UNumericOptions extends Column, NumberOptions {
     /**
      * Defind a mark: 
      *      1. Delete action will update this filed to mark 
@@ -140,7 +141,65 @@ export interface UNumericOptions extends OColumn, NumberOptions {
 
 
 
-export interface UDateOptions extends OColumn, DateOptions {
+export interface UDateOptions extends Column, DateOptions {
+    /**
+     * 1. Create Time can not be modify
+     * 2. It will be auto fill with Current Time while INSERT
+     * 3. default；: flase
+    */
+    isCreate?: boolean;
+    /**
+     * 1. Last Modify Time will be fill with Current Time while UPDATE
+     * 2. default；: flase
+    */
+    isModify?: boolean;
+    /**
+     * 
+    */
+    format?: string
+}
+
+
+
+
+export const UType = {
+    Table: <T extends TProperties>(properties: T): TPartial<TObject<T>> => Type.Partial(Type.Object(properties)),
+    Number: (options?: UNumericOptions) => Type.Number(options),
+    String: (options?: UStringOptions) => Type.String(options),
+    Date: (options?: UDateOptions) => Type.Union([Type.Date(options), Type.Number(), Type.String()], options),
+    Boolean: (options?: Column) => Type.Boolean(options),
+    Integer: (options?: UNumericOptions) => Type.Integer(options),
+}
+
+
+
+
+
+
+export interface UStringOptions extends Column, StringOptions {
+    /**
+     * Defind a mark: 
+     *      1. Delete action will update this filed to mark 
+     *      2. Query  action will add conditon with != ${delMark}
+     *      3. Note : A table can only hava ONE delMark.
+    */
+    delMark?: string;
+}
+
+
+export interface UNumericOptions extends Column, NumberOptions {
+    /**
+     * Defind a mark: 
+     *      1. Delete action will update this filed to mark 
+     *      2. Query  action will add conditon with != ${delMark}
+     *      3. Note : A table can only hava ONE delMark.
+    */
+    delMark?: number;
+}
+
+
+
+export interface UDateOptions extends Column, DateOptions {
     /**
      * 1. Create Time can not be modify
      * 2. It will be auto fill with Current Time while INSERT

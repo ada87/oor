@@ -1,135 +1,52 @@
 import _ from 'lodash';
 import { queryToCondition } from '../utils/ConditionUtil';
 import { validateSort } from '../utils/ValidateUtil'
+import { parseOptions, convertField } from './utils';
 
 import type { TableOptions, DatabaseOptions, QueryBuilder } from './types';
 import type { TObject } from '@sinclair/typebox';
 import type { WhereParam, OrderBy, Column, SQLStatement, QuerySchema, WhereCondition, WhereDefine } from '../utils/types';
 
-
-const DEFAULT_PAGE_SIZE = 10;
-const GLOBAL_ID_FIELD = new Set<string>(['id', 'guid', 'uuid']);
-
-// /**
-//  * Auto convert data
-//  * check row data while insert or update
-//  * */
-// protected checkEntity(obj: any, isAdd = false): any {
-//     // checkEntity(this.schema)
-//     let clone: any = {}
-//     this.COLUMN_MAP.forEach((schema, key) => {
-//         let field = schema.column || key;
-//         if (_.has(obj, key)) clone[field] = obj[key];
-//         let type = getFieldType(schema);
-//         if (type == 'date') {
-//             if (schema.isCreate) {
-//                 if (isAdd) {
-//                     clone[field] = new Date();
-//                 } else {
-//                     _.unset(clone, field);
-//                 }
-//                 return;
-//             }
-//             if (schema.isModify) {
-//                 clone[field] = new Date();
-//                 return;
-//             }
-//             if (obj[key] === null || obj[key] === 0) {
-//                 clone[field] = null;
-//             } else {
-//                 clone[field] = toDate(obj[key]);
-//             }
-//         }
-//     })
-//     return clone;
-// }
-
-
-
-
+// QuerySchema => WhereCondition => SQLStatement
 
 export abstract class BaseQuery implements QueryBuilder {
 
     protected readonly tableName: string;
-    protected readonly rowKey: string;
-    protected readonly SORT: OrderBy = null;
-    protected readonly pageSize: number;
-    protected readonly STRICT_QUERY: boolean = false;
+    protected readonly ROW_KEY: string = null;
+    protected readonly PAGE_SIZE: number;
+    protected readonly ORDER_BY: OrderBy = null;
 
-    protected COLUMN_MAP: Map<string, Column>;
+    protected readonly STRICT_QUERY: boolean;
+    protected readonly STRICT_ENTITY: boolean;
+    protected readonly QUERY_FIELDS: string;
+    protected readonly DETAIL_FIELDS: string;
 
-    protected readonly QUERY_FIELDS: string = '*';
-    protected readonly DETAIL_FIELDS: string = '*';
-    protected readonly DEL_MARK: { field: string, value: string | number | boolean, } = null;
-
+    protected readonly COLUMN_MAP: Map<string, Column>;
     private readonly F2C = new Map<string, string>(); // Field To Column
     private readonly C2F = new Map<string, string>(); // Column To Field
+
+    protected readonly DEL_MARK: { field: string, value: string | number | boolean, } = null;
+
 
     private FIELD_CACHE = new Map<string, WhereDefine>();
 
 
     constructor(tbName: string, tbSchema: TObject, tbOptions: TableOptions, dbOptions: DatabaseOptions) {
         this.tableName = tbName;
-        this.rowKey = tbOptions?.rowKey;
-        this.pageSize = tbOptions?.pageSize || dbOptions?.pageSize || DEFAULT_PAGE_SIZE;
-        this.STRICT_QUERY = tbOptions?.strictQuery || dbOptions?.strictQuery || false;
+        const CONFIG = parseOptions(tbSchema, tbOptions, dbOptions);
+        if (CONFIG.rowKey) this.ROW_KEY = CONFIG.rowKey;
+        this.PAGE_SIZE = CONFIG.pageSize;
+        if (CONFIG.orderBy) this.ORDER_BY = CONFIG.orderBy;
 
-        this.COLUMN_MAP = new Map<string, Column>();
-        const GuessSortFields: string[] = [], QueryFields = [], DetailFields = []
-        let GuessIdField: string = null;
+        this.QUERY_FIELDS = CONFIG.queryFields;
+        this.DETAIL_FIELDS = CONFIG.detialFields;
 
-        const fields = _.keys(tbSchema.properties);
-
-        for (let field of fields) {
-
-            let properties = tbSchema.properties[field];
-            let column = properties.column || field;
-            this.F2C.set(field, column);
-            this.F2C.set(column, column);
-            this.C2F.set(column, field);
-            this.C2F.set(field, field);
-            this.COLUMN_MAP.set(field, properties);
-            if (this.rowKey == null && GuessIdField == null && GLOBAL_ID_FIELD.has(field)) {
-                GuessIdField = field;
-            }
-
-
-            if (properties.isModify) GuessSortFields.unshift(field);    // 默认按最后修改时间
-            if (properties.isCreate) GuessSortFields.push(field);       // 默认按创建时间
-
-            if (this.DEL_MARK == null && _.has(properties, 'delMark') && properties.delMark !== null) {
-                this.DEL_MARK = {
-                    field: column,
-                    value: properties.delMark,
-                };
-            }
-            DetailFields.push(this.convertField(field, column));
-            if (properties.ignore !== true) {
-                QueryFields.push(this.convertField(field, column));
-            }
-        };
-
-        if (QueryFields.length > 0) this.QUERY_FIELDS = QueryFields.join(', ');
-        if (DetailFields.length > 0) this.DETAIL_FIELDS = DetailFields.join(', ');
-
-        if (this.rowKey == null) {
-            this.rowKey = GuessIdField || dbOptions?.rowKey || 'id';
-        } else {
-            GuessSortFields.push(this.rowKey);
-        }
-
-        if (tbOptions?.sort) {
-            this.SORT = validateSort(tbOptions.sort, this.F2C);
-        } else if (GuessSortFields.length) {
-            this.SORT = validateSort({ order: GuessSortFields[0], by: 'desc' }, this.F2C);
-        }
-
-    }
-
-
-    convertField(property: string, column?: string): string {
-        if (column == property) return '`' + column + '`';
-        return `\`${column}\` AS \`${property}\``;
+        this.STRICT_QUERY = CONFIG.strictQuery;
+        this.STRICT_ENTITY = CONFIG.strictEntity;
+        this.COLUMN_MAP = CONFIG.COLUMN_MAP;
+        this.F2C = CONFIG.F2C;
+        this.C2F = CONFIG.C2F;
+        this.DEL_MARK = CONFIG.delMark;
     }
 
     convertQuery(query: QuerySchema): WhereCondition {
@@ -153,7 +70,7 @@ export abstract class BaseQuery implements QueryBuilder {
         if (Array.isArray(fields)) {
             const columns = fields.filter(field => this.F2C.has(field)).map(filed => this.F2C.get(filed));
             if (columns.length == 0) return `SELECT ${this.QUERY_FIELDS} FROM ${this.tableName} `;
-            const queryFields = columns.map(column => this.convertField(this.C2F.get(column), column)).join(', ');
+            const queryFields = columns.map(column => convertField(this.C2F.get(column), column)).join(', ');
             return `SELECT ${queryFields} FROM ${this.tableName} `;
         }
 
@@ -168,7 +85,7 @@ export abstract class BaseQuery implements QueryBuilder {
     }
     limit(query?: QuerySchema): string {
         const start = query?.start_ || 0;
-        const count = query?.count_ || this.pageSize;
+        const count = query?.count_ || this.PAGE_SIZE;
         return `LIMIT ${count} OFFSET ${start}`
     }
 
@@ -184,10 +101,13 @@ export abstract class BaseQuery implements QueryBuilder {
     }
 
     byId(value: string | number): SQLStatement {
-        return this.byField(this.rowKey, value);
+        // if (this.ROW_KEY == null) throw ('Row Key is not defined');
+        return this.byField(this.ROW_KEY, value);
     }
 
-    // count: (distinct?: boolean) => string;
+    count(distinct?: boolean): string {
+        return `SELECT COUNT(${distinct ? 'DISTINCT' : ''} ${this.ROW_KEY ? this.ROW_KEY : '*'}) FROM ${this.tableName} `;
+    }
 
     // byQuery: (query: QuerySchema) => SQLStatement;
     // byCondition: (condition: WhereParam) => SQLStatement;

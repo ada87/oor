@@ -33,7 +33,7 @@ export type TableOptions = DatabaseOptions & {
     /**
      * The Table's Default Sorting Rule : Order Field , By Method
     */
-    sort?: OrderBy
+    orderBy?: OrderBy
     /**
      * 默认查询过滤,比如 { field:'disabled',value:0,operation:'<>' }
      * 设置后，通过 query / all 拼装的 sql 都会带上 AND disabled <> 0 
@@ -72,9 +72,8 @@ export interface QueryBuilder {
 
 
     convertQuery: (query: QuerySchema) => WhereCondition;
-    convertField: (column: string, property: string) => string
 
-    // count: (distinct?: boolean) => string;
+    count: (distinct?: boolean) => string;
 
     byField: (field: string, value: string | number | boolean, startIdx?: number) => SQLStatement;
     byId: (value: string | number) => SQLStatement;
@@ -102,9 +101,17 @@ export interface ActionBuilder extends QueryBuilder {
 export interface QueryExecutor<C, O> {
 
 
-    query: (conn: C, sql: string, param?: Array<any> | object) => Promise<Array<O>>;
+    query: {
+        (conn: C, SELECT: string): Promise<Array<O>>;
 
-    queryPagination: (conn: C, select: string, where: string, orderBy: string, param?: Array<any> | object) => Promise<{ total: number, list: Array<O> }>
+        (conn: C, SELECT: string, STATEMENT?: Array<any>): Promise<Array<O>>;
+        // (conn: C, SELECT: string, WHERE: SQLStatement): Promise<Array<O>>;
+        // (conn: C, SELECT: string, ORDER_BY: string): Promise<Array<O>>;
+        // (conn: C, SELECT: string, ORDER_BY: string, WHERE: SQLStatement): Promise<Array<O>>;
+    }
+    count: (conn: C, SELECT: string, WHERE?: WhereCondition) => Promise<number>;
+
+    // queryPagination: (conn: C, select: string, where: string, orderBy: string, param?: Array<any> | object) => Promise<{ total: number, list: Array<O> }>
     // count: (conn: C, sql: string, param?: Array<any> | object) => Promise<number>;
 
     // get: (conn: C, sql: string, param?: Array<any> | object) => Promise<O>;

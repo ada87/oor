@@ -14,7 +14,7 @@ export abstract class BaseDB<ConnectionConfig, C, Options extends DatabaseOption
         this.options = { ...DEFAULT_OPTIONS, options } as any;
     }
 
-    public getOptions(): Options {
+    public getOption(): Options {
         return { ...this.options }
     }
 

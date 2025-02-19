@@ -78,18 +78,29 @@ export abstract class BaseQuery implements QueryBuilder {
     }
 
 
-    orderBy(query?: QuerySchema): string {
+    orderBy(query?: QuerySchema | boolean): string {
+        if (query == undefined || query == null || query === false) return '';
+        if (query === true) {
+            if (this.ORDER_BY) return `ORDER BY \`${this.ORDER_BY.order}\` ${this.ORDER_BY.by}`;
+            return ''
+        }
         let orderyBy = validateSort({ order: query.order_, by: query.by_ }, this.F2C);
         if (orderyBy == null) return '';
         return `ORDER BY \`${orderyBy.order}\` ${orderyBy.by}`;
     }
+    
     limit(query?: QuerySchema): string {
         const start = query?.start_ || 0;
         const count = query?.count_ || this.PAGE_SIZE;
         return `LIMIT ${count} OFFSET ${start}`
     }
 
-    orderByLimit(query?: QuerySchema): string {
+    orderByLimit(query?: QuerySchema | boolean): string {
+        if (query == undefined || query == null || query === false) return '';
+        if (query === true) {
+            return this.orderBy(true)
+        }
+
         return `${this.orderBy(query)} ${this.limit(query)}`
     }
 

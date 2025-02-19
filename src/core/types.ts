@@ -1,3 +1,4 @@
+import type { TObject } from '@sinclair/typebox';
 import type {
     SQLStatement, WhereCondition, WhereItem, WhereParam,
     QuerySchema, OrderBy, Limit, OrderByLimit
@@ -80,12 +81,15 @@ export interface QueryBuilder {
     // byQuery: (query: QuerySchema) => [WhereCondition, OrderByLimit];
     // byCondition: (condition: WhereParam) => SQLStatement;
 
-    orderBy: (query?: QuerySchema) => string;
+    orderBy: (query?: QuerySchema | boolean) => string;
     limit: (query?: QuerySchema) => string;
-    orderByLimit: (query?: QuerySchema) => string;
+    orderByLimit: (query?: QuerySchema | boolean) => string;
 
     where: (condition: WhereParam, startIdx?: number) => SQLStatement;
-    fixWhere: (statement?: SQLStatement) => SQLStatement;
+    fixWhere: {
+        (statement?: SQLStatement): SQLStatement;
+    }
+
 }
 
 
@@ -110,6 +114,11 @@ export interface QueryExecutor<C, O> {
         // (conn: C, SELECT: string, ORDER_BY: string, WHERE: SQLStatement): Promise<Array<O>>;
     }
     count: (conn: C, SELECT: string, WHERE?: WhereCondition) => Promise<number>;
+
+    get: (conn: C, SELECT: string, STATEMENT: Array<any>) => Promise<O>
+    // (conn: C, SELECT: string, WHERE: SQLStatement): Promise<Array<O>>;
+    // (conn: C, SELECT: string, ORDER_BY: string): Promise<Array<O>>;
+    // (conn: C, SELECT: string, ORDER_BY: string, WHERE: SQLStatement): Promise<Array<O>>;
 
     // queryPagination: (conn: C, select: string, where: string, orderBy: string, param?: Array<any> | object) => Promise<{ total: number, list: Array<O> }>
     // count: (conn: C, sql: string, param?: Array<any> | object) => Promise<number>;
@@ -205,4 +214,6 @@ export interface Table<O extends object> extends View<O> {
     //     (conn, sql: string, param: any, returning: true): Promise<Array<O>>,
     // },
 
-}
+}export type QueryProvider<B extends QueryBuilder> = {
+    new(tableName: string, schema: TObject, tbOptions?: TableOptions, dbOptions?: DatabaseOptions): B
+};

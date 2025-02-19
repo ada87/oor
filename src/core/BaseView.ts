@@ -1,13 +1,10 @@
 import { BaseQuery } from './BaseDB';
 
-
-import type { DatabaseOptions, TableOptions, QueryBuilder, QueryExecutor, Database, View } from './types'
+import type { QueryProvider, TableOptions, QueryBuilder, QueryExecutor, Database, View } from './types'
 import type { TObject, Static } from '@sinclair/typebox';
 import type { WhereParam, SQLStatement, QuerySchema, OrderBy } from '../utils/types';
 
-type Provider<B extends QueryBuilder> = {
-    new(tableName: string, schema: TObject, tbOptions?: TableOptions, dbOptions?: DatabaseOptions): B
-};
+
 
 
 export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> extends BaseQuery<C> implements View<Static<S>> {
@@ -22,10 +19,10 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
      * @param schema The Object Schema, oor will not validate the value
      * @param options (Table/View) Options
      */
-    constructor(p: Provider<B>, db: Database<C>, tbName: string, tbSchema: S, tbOptions?: TableOptions) {
+    constructor(P: QueryProvider<B>, db: Database<C>, tbName: string, tbSchema: S, tbOptions?: TableOptions) {
         super(db);
         const dbOptions = db.getOption();
-        this.BUILDER = new p(tbName, tbSchema, tbOptions, dbOptions);
+        this.BUILDER = new P(tbName, tbSchema, tbOptions, dbOptions);
 
         this.init();
     }
@@ -47,19 +44,20 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
         return [SELECT, []];
     }
 
-    protected async _query(SELECT: string, ORDERBY_LIMIT?: string, WHERE?: WhereParam, fixed = true): Promise<Static<S>[]> {
+
+    protected async _query(SELECT: string, ORDER_BY_LIMIT: string, WHERE?: WhereParam, fixed = true): Promise<Static<S>[]> {
         const { BUILDER, EXECUTOR } = this;
-        const [SQL, PARAM] = this.queryStatement(SELECT, ORDERBY_LIMIT, BUILDER.where(WHERE), fixed);;
+        const [SQL, PARAM] = this.queryStatement(SELECT, ORDER_BY_LIMIT, BUILDER.where(WHERE), fixed);;
         const conn = await this.getConn();
         const result = await EXECUTOR.query(conn, SQL, PARAM);
         return result;
     }
 
-    async all(sort?: OrderBy): Promise<Static<S>[]> {
+    async all(): Promise<Static<S>[]> {
         const { BUILDER } = this;
-        let orderBy = sort ? BUILDER.orderBy(sort) : '';
-        const result = await this._query(BUILDER.select(), orderBy);
-        return result
+        const ORDER_BY = BUILDER.orderBy(true);
+        const result = await this._query(BUILDER.select(), ORDER_BY);
+        return result;
     }
 
 
@@ -82,76 +80,49 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
     }
 
     async queryByField(field: string, value: string | number | boolean): Promise<Static<S>[]> {
-        const { BUILDER } = this;
-        const WHERE = BUILDER.byField(field, value);
-        const result = await this.queryByCondition(WHERE);
+        const { BUILDER, EXECUTOR } = this;
+        const STATEMENT = BUILDER.byField(field, value);
+        const ORDER_BY = BUILDER.orderBy(true);
+        const [SQL, PARAM] = this.queryStatement(BUILDER.select(), ORDER_BY, STATEMENT);;
+        const conn = await this.getConn();
+        const result = await EXECUTOR.query(conn, SQL, PARAM);
         return result;
     }
 
-    async queryByCondition(condition?: WhereParam, query?: QuerySchema): Promise<Static<S>[]> {
+    async queryByCondition(condition?: WhereParam, query: QuerySchema | boolean = true): Promise<Static<S>[]> {
         const { BUILDER } = this;
         const SELECT = BUILDER.select();
-        if (query) {
-            const ORDER_BY_LIMIT = BUILDER.orderByLimit(query);
-            return this._query(SELECT, ORDER_BY_LIMIT, condition);
-        }
-        return this._query(SELECT, '', condition);
+        const ORDER_BY_LIMIT = BUILDER.orderByLimit(query);
+        return this._query(SELECT, ORDER_BY_LIMIT, condition);
     }
 
 
-    getById: (id: string | number) => Promise<Static<S>>;
-    getByField: (field: string, value: string | number) => Promise<Static<S>>;
-    getByCondition: (condition: WhereParam) => Promise<Static<S>>;
+    async getById(id: string | number): Promise<Static<S>> {
+        const { BUILDER, EXECUTOR } = this;
+        const STATEMENT = BUILDER.byId(id);
+        const SELECT = BUILDER.select(true);
+        const [SQL, PARAM] = this.queryStatement(SELECT, '', STATEMENT);;
+        const conn = await this.getConn();
+        const result = await EXECUTOR.get(conn, SQL, PARAM);
+        return result;
+    }
+    async getByField(field: string, value: string | number): Promise<Static<S>> {
+        const { BUILDER, EXECUTOR } = this;
+        const SELECT = BUILDER.select(true);
+        const STATEMENT = BUILDER.byField(field, value);
+        // const ORDER_BY = BUILDER.orderBy(true);
+        const [SQL, PARAM] = this.queryStatement(SELECT, '', STATEMENT);;
+        const conn = await this.getConn();
+        const result = await EXECUTOR.get(conn, SQL, PARAM);
+        return result;
+    }
+    async getByCondition(condition: WhereParam): Promise<Static<S>> {
 
-
+        const { BUILDER,EXECUTOR } = this;
+        const SELECT = BUILDER.select(true);
+        const [SQL, PARAM] = this.queryStatement(SELECT, '', BUILDER.where(condition), false);;
+        const conn = await this.getConn();
+        const result = await EXECUTOR.get(conn, SQL, PARAM);
+        return result;
+    }
 }
-
-
-
-
-
-
-// private async _query(WHERE, PARAM: ArrayLike<string | number | boolean> = [], ORDER_BY = '', LIMIT = ''): Promise<Static<S>[]> {
-//     // const { BUILDER, EXECUTOR, _table, _CONFIG: { fields_query } } = this;
-//     // const SQL_QUERY = _BUILDER.select(_table, fields_query);
-//     // const SQL = `${SQL_QUERY} ${WHERE} ${ORDER_BY} ${LIMIT}`;
-//     // const conn = await this.getConn();
-//     // const result = _EXECUTOR.query(conn, SQL, PARAM)
-//     // return result;
-//     return []
-// }
-
-// protected async _get(SQL: string, whereParam?: WhereParam, fixed = false) {
-//     const { BUILDER, EXECUTOR } = this;
-// }
-
-// async getById(id: string | number) {
-//     const { BUILDER, EXECUTOR } = this;
-//     const SQL = BUILDER.select();
-//     const [_WHERE, _PARAM] = BUILDER.byId(id);
-//     // const conn = await this.getConn();
-//     const [WHERE, PARAM] = BUILDER.fixWhere(_WHERE, _PARAM);
-//     const result = await EXECUTOR.get(conn, `${SQL} ${WHERE}`, PARAM);
-
-//     return result;
-// }
-
-// async getByField(field: string, value: string | number): Promise<Static<S>> {
-//     const { BUILDER, EXECUTOR } = this;
-//     const SQL = BUILDER.select();
-//     const [_WHERE, _PARAM] = BUILDER.byField(field, value);
-//     const [WHERE, PARAM] = BUILDER.fixWhere(_WHERE, _PARAM);
-//     const conn = await this.getConn()
-//     const result = await EXECUTOR.get(conn, `${SQL} ${WHERE}`, PARAM);
-//     return result;
-// }
-
-// async getByCondition(condition: WhereParam): Promise<Static<S>> {
-//     const { BUILDER, EXECUTOR } = this;
-//     const SQL = BUILDER.select();
-//     const [_WHERE, _PARAM] = BUILDER.where(condition);
-//     const [WHERE, PARAM] = BUILDER.fixWhere(_WHERE, _PARAM);
-//     const conn = await this.getConn()
-//     const result = await EXECUTOR.get(conn, `${SQL} ${WHERE}`, PARAM);
-//     return result;
-// }

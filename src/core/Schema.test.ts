@@ -18,19 +18,24 @@ class TestDB extends BaseDB<any, any> {
 }
 export const DB = new TestDB({}, { pageSize: 12 });;
 export const TABLE_NAME = 'user';
-export const TABLE_OPTIONS: TableOptions = {}
+export const TABLE_OPTIONS: TableOptions = {
+
+    globalCondition: [{ column: 'age', type: 'int', value: 30, fn: '>' }]
+}
+
 export const DATABASE_OPTIONS: DatabaseOptions = {}
 
+
 export const UserSchema = UType.Table({
-    id: UType.Integer(),
-    name: UType.String({ maxLength: 32 }),
-    age: UType.Integer({ minimum: 0, maximum: 128 }),
-    sex: UType.Boolean(),
-    profile: UType.String({ ignore: true }),
-    address: UType.String({ maxLength: 128 }),
-    salary: UType.Number(),
-    registerDate: UType.Date({ column: 'register_date', isCreate: true }),
-    lastModify: UType.Date({ column: 'last_modify', isModify: true })
+    id: UType.Integer({ title: 'ID' }),
+    name: UType.StringRequired({ maxLength: 32, title: '姓名', }),
+    age: UType.Integer({ minimum: 0, maximum: 128, delMark: 64, title: '年龄' }),
+    sex: UType.Boolean({ title: '性别', default: false }),
+    profile: UType.String({ ignore: true, title: '简介' }),
+    address: UType.String({ maxLength: 128, title: '地址' }),
+    salary: UType.Number({ ignore: true, title: '薪水' }),
+    registerDate: UType.DateRequired({ column: 'register_date', isCreate: true, title: '注册日期', readOnly: true }),
+    lastModify: UType.DateRequired({ column: 'last_modify', isModify: true, title: '最后修改' }),
 });
 
 
@@ -38,7 +43,8 @@ export const PG_VIEW = new PgView(DB, TABLE_NAME, UserSchema, TABLE_OPTIONS);
 
 
 test('Condition', {
-    only: true,
+    skip: true,
+    // only: true,
 }, () => {
     const { BUILDER } = PG_VIEW;
     const where = BUILDER.convertQuery({
@@ -52,9 +58,12 @@ test('Condition', {
 test('Test : Schema', {
     // only: true,
     skip: true,
-}, () => {
+}, async () => {
     const { BUILDER } = PG_VIEW;
+    const user = await PG_VIEW.getById(1);
+    // user.
 
+    // user.registerDate
     console.log(BUILDER.select())
     console.log(BUILDER.select(['name', 'age']))
     console.log(BUILDER.select('name, age, id, name as XXXOO'))

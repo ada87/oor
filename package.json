@@ -25,13 +25,12 @@
   "main": "pg/index.js",
   "scripts": {
     "test": "node --env-file=.env -r ts-node/register node_modules/tsest/run",
-    "watch": "node --env-file=.env -r ts-node/register node_modules/tsest/run --fileName=Schema.test --watch",
+    "watch": "node --env-file=.env -r ts-node/register node_modules/tsest/run --fileName=PgView.test.ts --watch",
     "build": "node -r ts-node/register script.mjs --build"
   },
   "devDependencies": {
     "@elastic/elasticsearch": "^8.17.0",
-    "@types/lodash": "^4.17.15",
-    "@types/node": "^22.13.2",
+    "@types/node": "^22.13.4",
     "@types/pg": "^8.11.11",
     "@types/sql.js": "^1.4.9",
     "idb": "^8.0.2",
@@ -45,9 +44,12 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
+    "@sinclair/typebox": "^0.34.27",
+    "dayjs": "^1.11.13"
+  },
+  "peerDependencies": {
     "@sinclair/typebox": "^0.34.21",
-    "dayjs": "^1.11.13",
-    "lodash": "^4.17.21"
+    "dayjs": "^1.11.13"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

@@ -1,14 +1,15 @@
-import _ from 'lodash';
+import _ from './dash';
 import { validateSort } from '../utils/ValidateUtil';
 
 import type { DatabaseOptions, TableOptions } from './types'
-import { ReturnType, type TObject } from '@sinclair/typebox';
+import type { TObject } from '@sinclair/typebox';
 import type { Column } from '../utils/types';
-import type { OrderBy } from '../utils/types';
 
 const DEFAULT_PAGE_SIZE = 10;
 
-type ParseResult = DatabaseOptions & {
+
+
+type ParseResult = TableOptions & {
     COLUMN_MAP: Map<string, Column>,
     F2C: Map<string, string>,
     C2F: Map<string, string>,
@@ -16,11 +17,12 @@ type ParseResult = DatabaseOptions & {
     queryFields: string,
     detialFields: string,
     delMark?: { field: string, value: string | number | boolean },
-    orderBy?: OrderBy
 }
 
 
 export const convertField = (RESERVED_WORDS: Set<string>, wrapFn: (txt: string) => string, property: string, column?: string): string => {
+
+
     const attr = _.toLower(property);
     const attrIsReserved = RESERVED_WORDS.has(attr);
     if (column == property || column == null) {
@@ -44,6 +46,7 @@ export const parseOptions = (RESERVED_WORDS: Set<string>, tbSchema: TObject, tbO
         C2F: new Map<string, string>(),
         queryFields: '*',
         detialFields: '*',
+        globalCondition: [],
     }
 
 
@@ -101,6 +104,15 @@ export const parseOptions = (RESERVED_WORDS: Set<string>, tbSchema: TObject, tbO
         if (columnSchema && columnSchema.type == 'number') {
             CONFIG.orderBy = { order: CONFIG.rowKey, by: 'desc' };
         }
+    }
+
+    CONFIG.globalCondition = [...tbOptions.globalCondition || []];
+    if (CONFIG.delMark) {
+        CONFIG.globalCondition.push({
+            column: CONFIG.F2C.get(CONFIG.delMark.field),
+            value: CONFIG.delMark.value,
+            fn: '!=',
+        });
     }
 
     return CONFIG;

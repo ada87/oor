@@ -1,4 +1,3 @@
-// import _ from 'lodash';
 // import { ShowSql } from '../../base/Util';
 
 // import type { Client } from '@elastic/elasticsearch';

@@ -6,12 +6,12 @@ import type {
 } from '@sinclair/typebox';
 
 // https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP
-
-export type Support = { string: boolean, number: boolean, date: boolean, boolean: boolean }
 /**
  * Where 判断条件
 */
 export type FieldType = 'string' | 'number' | 'int' | 'boolean' | 'date';
+export type Support = Record<FieldType, boolean>;
+
 
 
 export const SUFFIX = [
@@ -27,6 +27,8 @@ export const SUFFIX = [
 ] as const;
 
 export type MagicSuffix = (typeof SUFFIX)[number];
+
+export type DeleteMark = { field: string, value: string | number | boolean, };
 
 export type WhereDefine = {
     /**
@@ -53,8 +55,7 @@ export type WhereCondition = {
     items: Array<(WhereItem | WhereCondition)>
 }
 
-// import type { SearchRequest, QueryDslQueryContainer, IndexRequest, Script } from '@elastic/elasticsearch/lib/api/types';
-// type sort = SearchRequest['sort']
+
 
 export type OrderBy = { order: string, by: 'asc' | 'desc' };
 export type Limit = { start: number, count: number };
@@ -214,10 +215,27 @@ export interface UDateOptions extends Column, DateOptions {
 
 
 export const UType = {
-    Table: <T extends TProperties>(properties: T): TPartial<TObject<T>> => Type.Partial(Type.Object(properties)),
-    Number: (options?: UNumericOptions) => Type.Number(options),
-    String: (options?: UStringOptions) => Type.String(options),
-    Date: (options?: UDateOptions) => Type.Union([Type.Date(options), Type.Number(), Type.String()], options),
-    Boolean: (options?: Column) => Type.Boolean(options),
-    Integer: (options?: UNumericOptions) => Type.Integer(options),
+    Table: <T extends TProperties>(properties: T): TObject<T> => Type.Object(properties),
+
+    Number: (options?: UNumericOptions) => Type.Optional(Type.Number(options)),
+    String: (options?: UStringOptions) => Type.Optional(Type.String(options)),
+
+    Date: (options?: UDateOptions) => Type.Optional(Type.Date(options)),
+    DateString: (options?: UDateOptions) => Type.Optional(Type.String(options)),
+    DateNumber: (options?: UDateOptions) => Type.Optional(Type.Number(options)),
+
+    Boolean: (options?: Column) => Type.Optional(Type.Boolean(options)),
+    Integer: (options?: UNumericOptions) => Type.Optional(Type.Integer(options)),
+
+    NumberRequired: (options?: UNumericOptions) => Type.Number(options),
+    StringRequired: (options?: UStringOptions) => Type.String(options),
+    // DateRequired: (options?: UDateOptions) => Type.Union([Type.Date(options), Type.Number(), Type.String()], options),
+    DateRequired: (options?: UDateOptions) => Type.Optional(Type.Date(options)),
+    DateStringRequired: (options?: UDateOptions) => Type.Optional(Type.String(options)),
+    DateNumberRequired: (options?: UDateOptions) => Type.Optional(Type.Number(options)),
+
+
+    BooleanRequired: (options?: Column) => Type.Boolean(options),
+    IntegerRequired: (options?: UNumericOptions) => Type.Integer(options),
+
 }

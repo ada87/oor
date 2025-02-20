@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { BaseQuery } from './SqlQuery';
 import { getFieldType } from '../utils/SQLUtil';
 import { toDate } from '../utils/TimeUtil';

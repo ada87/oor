@@ -39,7 +39,8 @@ export abstract class BaseQuery<C> {
      * Get Database connection form provider
     */
     async getConn(): Promise<C> {
-        return this.db.getConn();
+        const conn = await this.db.getConn();;
+        return conn;
     }
 
 }

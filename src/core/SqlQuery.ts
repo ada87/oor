@@ -1,17 +1,15 @@
-import _ from 'lodash';
+import _ from './dash';
 import { queryToCondition } from '../utils/ConditionUtil';
 import { validateSort } from '../utils/ValidateUtil'
 import { parseOptions, convertField } from './utils';
 
 import type { TableOptions, DatabaseOptions, QueryBuilder } from './types';
 import type { TObject } from '@sinclair/typebox';
-import type { WhereParam, OrderBy, Column, SQLStatement, QuerySchema, WhereCondition, WhereDefine } from '../utils/types';
+import type { WhereParam, OrderBy, Column, DeleteMark, SQLStatement, QuerySchema, WhereCondition, WhereDefine, WhereItem } from '../utils/types';
 
-// QuerySchema => WhereCondition => SQLStatement
 
 export abstract class BaseQuery implements QueryBuilder {
     private readonly RESERVED_WORD: Set<string>;
-    private readonly FIELDS_CACHE: Map<string, string>;
 
     protected readonly tableName: string;
     protected readonly ROW_KEY: string = null;
@@ -27,17 +25,18 @@ export abstract class BaseQuery implements QueryBuilder {
     private readonly F2C = new Map<string, string>(); // Field To Column
     private readonly C2F = new Map<string, string>(); // Column To Field
 
-    protected readonly DEL_MARK: { field: string, value: string | number | boolean, } = null;
+    protected readonly DEL_MARK: DeleteMark = null;
+    protected readonly GLOBAL_CONDITION: Array<WhereItem> = [];
 
 
 
     private FIELD_CACHE = new Map<string, WhereDefine>();
 
-    protected abstract initReservedWord(): [Set<string>, Map<string, string>];
+    protected abstract initReservedWord(): Set<string>;
     protected abstract wrapField(field: string): string;
 
     constructor(tbName: string, tbSchema: TObject, tbOptions: TableOptions, dbOptions: DatabaseOptions) {
-        [this.RESERVED_WORD, this.FIELDS_CACHE] = this.initReservedWord();
+        this.RESERVED_WORD = this.initReservedWord();
         this.tableName = convertField(this.RESERVED_WORD, this.wrapField, tbName);
         const CONFIG = parseOptions(this.RESERVED_WORD, tbSchema, tbOptions, dbOptions, this.wrapField);
         if (CONFIG.rowKey) this.ROW_KEY = CONFIG.rowKey;
@@ -53,6 +52,8 @@ export abstract class BaseQuery implements QueryBuilder {
         this.F2C = CONFIG.F2C;
         this.C2F = CONFIG.C2F;
         this.DEL_MARK = CONFIG.delMark;
+        this.GLOBAL_CONDITION = CONFIG.globalCondition;
+
     }
 
     private _wrapColumn(column: string): string {
@@ -119,10 +120,10 @@ export abstract class BaseQuery implements QueryBuilder {
         return `${this.orderBy(query)} ${this.limit(query)}`
     }
 
-    byField(field: string, value: string | number | boolean, startIdx?: number): SQLStatement {
+    byField(field: string, value: string | number | boolean, startIdx: number = 1): SQLStatement {
         if (!this.F2C.has(field)) throw new Error(`Field ${field} not found in Table ${this.tableName}`);
         let column = this.F2C.get(field);
-        let sql = `${this._wrapColumn(column)} = ?`;
+        let sql = `${this._wrapColumn(column)} = $${startIdx}`; // msyql/sqlite 为 "?"
         return [sql, [value]];
     }
 
@@ -135,32 +136,4 @@ export abstract class BaseQuery implements QueryBuilder {
     public abstract where(condition: WhereParam, startIdx?: number): SQLStatement;
     public abstract fixWhere(statement?: SQLStatement): SQLStatement;
 
-
 }
-
-
-// export const where: SqlWhere = (condition: WhereParam): [string, any[]] => {
-//     const pos: QueryPos = { SQL: [], PARAM: [] };
-//     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
-//     let err: string[] = [];
-//     ConditionToWhere(root, pos, err);
-//     throwErr(err, 'Some SQL Error Occur');
-//     if (pos.SQL.length == 0) {
-//         return ['', []]
-//     };
-//     return [pos.SQL.join(" " + root.link + " "), pos.PARAM]
-// }
-
-
-// export const where: SqlWhere = (condition: WhereParam, startIdx = 1): [string, any[]] => {
-//     const pos: QueryPos = { SQL: [], PARAM: [], NUM: startIdx };
-//     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
-//     let err: string[] = [];
-//     ConditionToWhere(root, pos, err);
-//     throwErr(err, 'Some SQL Error Occur');
-//     if (pos.SQL.length == 0) {
-//         return ['', []]
-//     };
-//     return [pos.SQL.join(" " + root.link + " "), pos.PARAM]
-// }
-

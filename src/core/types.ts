@@ -39,14 +39,14 @@ export type TableOptions = DatabaseOptions & {
      * 默认查询过滤,比如 { field:'disabled',value:0,operation:'<>' }
      * 设置后，通过 query / all 拼装的 sql 都会带上 AND disabled <> 0 
     */
-    globalCondition?: WhereItem[];
+    globalCondition?: Array<WhereItem>;
 }
 
 
 
 
 export interface QueryBuilder {
-    
+
     /**
      * Query Fields : Only Return List Field, Not Include Detail Field
      * Detail Field : All Object Fields
@@ -84,9 +84,6 @@ export interface QueryBuilder {
     }
     byField: (field: string, value: string | number | boolean, startIdx?: number) => SQLStatement;
     byId: (value: string | number) => SQLStatement;
-    // byQuery: (query: QuerySchema) => [WhereCondition, OrderByLimit];
-    // byCondition: (condition: WhereParam) => SQLStatement;
-
     orderBy: (query?: QuerySchema | boolean) => string;
     limit: {
         (count: number, start?: number): string
@@ -96,6 +93,7 @@ export interface QueryBuilder {
     orderByLimit: (query?: QuerySchema | boolean) => string;
 
     where: (condition: WhereParam, startIdx?: number) => SQLStatement;
+
     fixWhere: {
         (statement?: SQLStatement): SQLStatement;
     }
@@ -114,23 +112,23 @@ export interface ActionBuilder extends QueryBuilder {
 
 export interface QueryExecutor<C, O> {
 
-
+    
     query: {
 
-        (conn: C, SELECT: string): Promise<Array<O>>;
-        <T>(conn: C, SELECT: string): Promise<T>;
-        (conn: C, SELECT: string, STATEMENT?: Array<any>): Promise<Array<O>>;
-        <T>(conn: C, SELECT: string, STATEMENT?: Array<any>): Promise<T>;
-        // (conn: C, SELECT: string, WHERE: SQLStatement): Promise<Array<O>>;
-        // (conn: C, SELECT: string, ORDER_BY: string): Promise<Array<O>>;
-        // (conn: C, SELECT: string, ORDER_BY: string, WHERE: SQLStatement): Promise<Array<O>>;
-    }
-    // count: (conn: C, SELECT: string, WHERE?: WhereCondition) => Promise<number>;
+        (conn: C, SQL: string): Promise<Array<O>>;
+        <T>(conn: C, SQL: string): Promise<T>;
 
-    get: (conn: C, SELECT: string, STATEMENT?: Array<any>) => Promise<O>
-    // (conn: C, SELECT: string, WHERE: SQLStatement): Promise<Array<O>>;
-    // (conn: C, SELECT: string, ORDER_BY: string): Promise<Array<O>>;
-    // (conn: C, SELECT: string, ORDER_BY: string, WHERE: SQLStatement): Promise<Array<O>>;
+        (conn: C, SQL: string, PARAMS?: Array<any>): Promise<Array<O>>;
+        <T>(conn: C, SQL: string, PARAMS?: Array<any>): Promise<T>;
+    }
+
+    get: {
+        (conn: C, SQL: string, PARAMS?: Array<any>): Promise<O>
+        <T>(conn: C, SQL: string, PARAMS?: Array<any>): Promise<T>
+    }
+    // (conn: C, SQL: string, WHERE: SQLStatement): Promise<Array<O>>;
+    // (conn: C, SQL: string, ORDER_BY: string): Promise<Array<O>>;
+    // (conn: C, SQL: string, ORDER_BY: string, WHERE: SQLStatement): Promise<Array<O>>;
 
     // queryPagination: (conn: C, select: string, where: string, orderBy: string, param?: Array<any> | object) => Promise<{ total: number, list: Array<O> }>
     // count: (conn: C, sql: string, param?: Array<any> | object) => Promise<number>;

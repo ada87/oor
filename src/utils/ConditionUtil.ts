@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _ from '../core/dash';
 import { Kind } from '@sinclair/typebox';
 import { getFieldType } from './SQLUtil';
 import { WhereItem, WhereCondition, QuerySchema, WhereDefine, SUFFIX, MagicSuffix, Column } from './types';

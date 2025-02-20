@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _ from '../core/dash';
 import { getFieldType } from './SQLUtil';
 import { toDate } from './TimeUtil'
 import { Value } from '@sinclair/typebox/value';

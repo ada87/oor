@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { BaseView } from './BaseView';
 
 import type { ActionExecutor, ActionBuilder, Table } from './types'

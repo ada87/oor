@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _ from '../core/dash';
 import { NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../utils/SQLUtil';
 import { throwErr } from '../utils/ValidateUtil';
 import dayjs from 'dayjs';
@@ -9,47 +9,47 @@ import type { Dayjs } from 'dayjs';
 import type { WhereParam, WhereItem, WhereCondition, MagicSuffix, Support } from '../utils/types';
 
 // DOCS
-// https://www.elastic.co/guide/en/elasticsearch/reference/8.5/query-dsl.html
-// https://www.elastic.co/guide/en/elasticsearch/painless/8.5/painless-api-reference.html
+// https://www.elastic.co/guide/en/elasticsearch/reference/8.17/query-dsl.html
+// https://www.elastic.co/guide/en/elasticsearch/painless/8.17/painless-api-reference.html
 export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
 
-    'Min': { string: false, number: true, date: true, boolean: true },
-    'MinThan': { string: false, number: true, date: true, boolean: false },
-    'Max': { string: false, number: true, date: true, boolean: true },
-    'MaxThan': { string: false, number: true, date: true, boolean: false },
+    'Min': { string: false, number: true, int: true, date: true, boolean: true },
+    'MinThan': { string: false, number: true, int: true, date: true, boolean: false },
+    'Max': { string: false, number: true, int: true, date: true, boolean: true },
+    'MaxThan': { string: false, number: true, int: true, date: true, boolean: false },
 
-    'MinH': { string: false, number: false, date: true, boolean: false },
-    'MinD': { string: false, number: false, date: true, boolean: false },
-    'MinM': { string: false, number: false, date: true, boolean: false },
-    'MaxH': { string: false, number: false, date: true, boolean: false },
-    'MaxD': { string: false, number: false, date: true, boolean: false },
-    'MaxM': { string: false, number: false, date: true, boolean: false },
+    'MinH': { string: false, number: false, int: false, date: true, boolean: false },
+    'MinD': { string: false, number: false, int: false, date: true, boolean: false },
+    'MinM': { string: false, number: false, int: false, date: true, boolean: false },
+    'MaxH': { string: false, number: false, int: false, date: true, boolean: false },
+    'MaxD': { string: false, number: false, int: false, date: true, boolean: false },
+    'MaxM': { string: false, number: false, int: false, date: true, boolean: false },
 
-    'Like': { string: true, number: false, date: false, boolean: false },
-    'Likel': { string: true, number: false, date: false, boolean: false },
-    'Liker': { string: true, number: false, date: false, boolean: false },
+    'Like': { string: true, number: false, int: false, date: false, boolean: false },
+    'Likel': { string: true, number: false, int: false, date: false, boolean: false },
+    'Liker': { string: true, number: false, int: false, date: false, boolean: false },
 
-    'Bt': { string: false, number: true, date: true, boolean: false },
-    'BtD': { string: false, number: false, date: true, boolean: false },
-    'BtY': { string: false, number: false, date: true, boolean: false },
-    'BtM': { string: false, number: false, date: true, boolean: false },
+    'Bt': { string: false, number: true, int: true, date: true, boolean: false },
+    'BtD': { string: false, number: false, int: false, date: true, boolean: false },
+    'BtY': { string: false, number: false, int: false, date: true, boolean: false },
+    'BtM': { string: false, number: false, int: false, date: true, boolean: false },
 
-    'Not': { string: true, number: true, date: true, boolean: true },
+    'Not': { string: true, number: true, int: true, date: true, boolean: true },
 
 
-    'In': { string: true, number: true, date: false, boolean: false },
-    'NotIn': { string: true, number: true, date: false, boolean: false },
+    'In': { string: true, number: true, int: true, date: false, boolean: false },
+    'NotIn': { string: true, number: true, int: true, date: false, boolean: false },
 
-    'IsNull': { string: true, number: true, date: true, boolean: true },
-    'NotNull': { string: true, number: true, date: true, boolean: true },
+    'IsNull': { string: true, number: true, int: true, date: true, boolean: true },
+    'NotNull': { string: true, number: true, int: true, date: true, boolean: true },
 
-    '>': { string: false, number: true, date: true, boolean: true },
-    '>=': { string: false, number: true, date: true, boolean: false },
-    '<': { string: false, number: true, date: true, boolean: true },
-    '<=': { string: false, number: true, date: true, boolean: false },
-    '=': { string: true, number: true, date: true, boolean: true },
-    '!=': { string: true, number: true, date: true, boolean: true },
-    '<>': { string: true, number: true, date: true, boolean: true },
+    '>': { string: false, number: true, int: true, date: true, boolean: true },
+    '>=': { string: false, number: true, int: true, date: true, boolean: false },
+    '<': { string: false, number: true, int: true, date: true, boolean: true },
+    '<=': { string: false, number: true, int: true, date: true, boolean: false },
+    '=': { string: true, number: true, int: true, date: true, boolean: true },
+    '!=': { string: true, number: true, int: true, date: true, boolean: true },
+    '<>': { string: true, number: true, int: true, date: true, boolean: true },
 
 }
 
@@ -371,7 +371,7 @@ export const fixQuery = (fixFilter?: QueryDslQueryContainer, query?: QueryDslQue
     }
 
     if (!_.has(query, 'constant_score')) {
-        return _.merge({}, fixFilter, query)
+        // return _.merge({}, fixFilter, query)
     }
 
 

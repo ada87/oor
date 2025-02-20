@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _ from '../core/dash';
 import dayjs from 'dayjs';
 import { Type } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';

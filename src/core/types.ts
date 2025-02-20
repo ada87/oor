@@ -1,7 +1,7 @@
 import type { TObject } from '@sinclair/typebox';
 import type {
     SQLStatement, WhereCondition, WhereItem, WhereParam,
-    QuerySchema, OrderBy, Limit, OrderByLimit
+    QuerySchema, OrderBy, Limit, OrderByLimit, QueryParam
 } from '../utils/types'
 
 /**
@@ -39,7 +39,8 @@ export type TableOptions = DatabaseOptions & {
      * 默认查询过滤,比如 { field:'disabled',value:0,operation:'<>' }
      * 设置后，通过 query / all 拼装的 sql 都会带上 AND disabled <> 0 
     */
-    globalCondition?: Array<WhereItem>;
+    globalCondition?: QueryParam 
+    // | Array<WhereItem>;
 }
 
 
@@ -112,7 +113,7 @@ export interface ActionBuilder extends QueryBuilder {
 
 export interface QueryExecutor<C, O> {
 
-    
+
     query: {
 
         (conn: C, SQL: string): Promise<Array<O>>;

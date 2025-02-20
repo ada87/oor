@@ -2,7 +2,7 @@ import { BaseQuery } from './BaseDB';
 
 import type { QueryProvider, TableOptions, QueryBuilder, QueryExecutor, Database, View } from './types'
 import type { TObject, Static } from '@sinclair/typebox';
-import type { WhereParam, SQLStatement, QuerySchema } from '../utils/types';
+import type { WhereParam, SQLStatement, QuerySchema, QueryOrderBy } from '../utils/types';
 
 
 export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> extends BaseQuery<C> implements View<Static<S>> {
@@ -50,7 +50,7 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
         const { EXECUTOR } = this;
         const [SQL, PARAM] = this.queryStatement(SELECT, STATEMENT, ORDER_BY_LIMIT, fixed);;
         const conn = await this.getConn();
-        this.logSQL(SQL, PARAM);
+        // this.logSQL(SQL, PARAM);
         const result = await EXECUTOR.query(conn, SQL, PARAM);
         return result;
     }
@@ -107,7 +107,7 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
         return await this.queryByCondition(CONDITION, query);
     }
 
-    protected async _get(SELECT: string, STATEMENT: SQLStatement, ORDER_BY_LIMIT: string = 'LIMIT 1 OFFSET 0', fixed = false): Promise<Static<S>> {
+    protected async _get(SELECT: string, STATEMENT: SQLStatement, ORDER_BY_LIMIT: string = 'LIMIT 1 OFFSET 0', fixed = true): Promise<Static<S>> {
         const { EXECUTOR } = this;
         const [SQL, PARAM] = this.queryStatement(SELECT, STATEMENT, ORDER_BY_LIMIT, fixed);;
         const conn = await this.getConn();
@@ -131,7 +131,7 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
         return result;
     }
 
-    async getByCondition(condition: WhereParam, query?: QuerySchema): Promise<Static<S>> {
+    async getByCondition(condition: WhereParam, query?: QueryOrderBy): Promise<Static<S>> {
         const { BUILDER } = this;
         const SELECT = BUILDER.select(true);
         const STATEMENT = BUILDER.where(condition);

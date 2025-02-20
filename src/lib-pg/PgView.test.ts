@@ -1,6 +1,6 @@
 import test from 'node:test';
 import { TABLE_NAME, TABLE_OPTIONS, UserSchema } from '../core/Schema.test';
-import { PG } from '../pg';
+import { PG, QuerySchema } from '../pg';
 
 
 const USER = PG.View(TABLE_NAME, UserSchema, TABLE_OPTIONS);
@@ -55,8 +55,7 @@ test('GET', {
 
     // const GET_BY_FIELD = await USER.getByField('name', '张丽')
     // console.log(GET_BY_FIELD)
-
-    const GET_BY_QUERY = await USER.getByQuery({
+    const query: QuerySchema = {
         _count_: 2,
         // nameLike: '丽',
         idMin: 100,
@@ -66,7 +65,18 @@ test('GET', {
         _order_: 'id',
         _by_: 'desc',
 
-    })
+    }
+    // const statement = USER.BUILDER.where(USER.BUILDER.convertQuery(query));
+
+    // const ok = USER.BUILDER.fixWhere(statement);
+    // console.log(ok)
+
+
+    // console.log(USER.BUILDER.select());
+    // const where = USER.BUILDER.convertQuery(query);
+    // console.log(where)
+
+    const GET_BY_QUERY = await USER.getByQuery(query)
     console.log(GET_BY_QUERY)
 
     // const result = await USER.query({ idMin: 11, idMax: 20 })

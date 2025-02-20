@@ -5,7 +5,7 @@ import { parseOptions, convertField } from './utils';
 
 import type { TableOptions, DatabaseOptions, QueryBuilder } from './types';
 import type { TObject } from '@sinclair/typebox';
-import type { WhereParam, OrderBy, Column, DeleteMark, SQLStatement, QuerySchema, WhereCondition, WhereDefine, WhereItem } from '../utils/types';
+import type { WhereParam, OrderBy, Column, SQLStatement, QuerySchema, WhereCondition, WhereDefine, WhereItem, QueryParam } from '../utils/types';
 
 
 export abstract class BaseQuery implements QueryBuilder {
@@ -25,7 +25,7 @@ export abstract class BaseQuery implements QueryBuilder {
     private readonly F2C = new Map<string, string>(); // Field To Column
     private readonly C2F = new Map<string, string>(); // Column To Field
 
-    protected readonly DEL_MARK: DeleteMark = null;
+    // protected readonly DEL_MARK: DeleteMark = null;
     protected readonly GLOBAL_CONDITION: Array<WhereItem> = [];
 
 
@@ -51,7 +51,7 @@ export abstract class BaseQuery implements QueryBuilder {
         this.COLUMN_MAP = CONFIG.COLUMN_MAP;
         this.F2C = CONFIG.F2C;
         this.C2F = CONFIG.C2F;
-        this.DEL_MARK = CONFIG.delMark;
+        // this.DEL_MARK = CONFIG.delMark;
         this.GLOBAL_CONDITION = CONFIG.globalCondition;
 
     }
@@ -60,7 +60,7 @@ export abstract class BaseQuery implements QueryBuilder {
         return convertField(this.RESERVED_WORD, this.wrapField, column)
     }
 
-    convertQuery(query: QuerySchema): WhereCondition {
+    convertQuery(query: QueryParam): WhereCondition {
         return queryToCondition(this.STRICT_QUERY, query, this.COLUMN_MAP, this.FIELD_CACHE);
     }
 

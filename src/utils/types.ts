@@ -9,7 +9,7 @@ import type {
 /**
  * Where 判断条件
 */
-export type FieldType = 'string' | 'number' | 'int' | 'boolean' | 'date';
+export type FieldType = 'string' | 'number' | 'integer' | 'boolean' | 'date';
 export type Support = Record<FieldType, boolean>;
 
 
@@ -66,7 +66,9 @@ export type WhereParam = WhereCondition | Array<(WhereCondition | WhereItem)>;
 
 export type SQLStatement = [string, Array<any>];
 
-export type QuerySchema = {
+
+export type QueryParam = Record<string, string | number | boolean | Date>
+export type QueryOrderBy = {
 
     /**
      * The Start pos
@@ -105,8 +107,9 @@ export type QuerySchema = {
      * Extend Query 
      * Use Maggic Suffix to build query condition
      * */
-    [props: string]: string | number | boolean | Date
+    // [props: string]: string | number | boolean | Date
 };
+export type QuerySchema = QueryParam & QueryOrderBy;
 
 
 
@@ -213,27 +216,26 @@ export interface UDateOptions extends Column, DateOptions {
     format?: string
 }
 
-
+// Type.Number
 export const UType = {
     Table: <T extends TProperties>(properties: T): TObject<T> => Type.Object(properties),
 
-    Number: (options?: UNumericOptions) => Type.Optional(Type.Number(options)),
+    Double: (options?: UNumericOptions) => Type.Optional(Type.Number(options)),
     String: (options?: UStringOptions) => Type.Optional(Type.String(options)),
 
     Date: (options?: UDateOptions) => Type.Optional(Type.Date(options)),
     DateString: (options?: UDateOptions) => Type.Optional(Type.String(options)),
-    DateNumber: (options?: UDateOptions) => Type.Optional(Type.Number(options)),
+    DateLong: (options?: UDateOptions) => Type.Optional(Type.Number(options)),
 
     Boolean: (options?: Column) => Type.Optional(Type.Boolean(options)),
     Integer: (options?: UNumericOptions) => Type.Optional(Type.Integer(options)),
 
-    NumberRequired: (options?: UNumericOptions) => Type.Number(options),
+    DoubleRequired: (options?: UNumericOptions) => Type.Number(options),
     StringRequired: (options?: UStringOptions) => Type.String(options),
     // DateRequired: (options?: UDateOptions) => Type.Union([Type.Date(options), Type.Number(), Type.String()], options),
-    DateRequired: (options?: UDateOptions) => Type.Optional(Type.Date(options)),
-    DateStringRequired: (options?: UDateOptions) => Type.Optional(Type.String(options)),
-    DateNumberRequired: (options?: UDateOptions) => Type.Optional(Type.Number(options)),
-
+    DateRequired: (options?: UDateOptions) => Type.Date(options),
+    DateStringRequired: (options?: UDateOptions) => Type.String(options),
+    DateLongRequired: (options?: UDateOptions) => Type.Number(options),
 
     BooleanRequired: (options?: Column) => Type.Boolean(options),
     IntegerRequired: (options?: UNumericOptions) => Type.Integer(options),

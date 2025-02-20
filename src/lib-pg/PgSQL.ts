@@ -15,12 +15,20 @@ export class PgQuery extends BaseQuery {
         return '"' + filed + '"';
     }
 
-    where(condition: WhereParam, startIdx?: number): SQLStatement {
+    where(condition: WhereParam, startIdx: number = 1): SQLStatement {
         if (condition == null) return ['', []];
         return where(this.STRICT_QUERY, condition, startIdx)
     }
     fixWhere(statement?: SQLStatement): SQLStatement {
-        return statement;
+        if (this.GLOBAL_CONDITION == null || this.GLOBAL_CONDITION.length == 0) {
+            return statement == null ? ['', []] : statement;
+        }
+        if (statement == null) {
+            return this.where(this.GLOBAL_CONDITION);
+        }
+        const [WHERE, PARAM] = this.where(this.GLOBAL_CONDITION, statement ? statement[1].length + 1 : 1);
+        return [`(${WHERE}) AND (${statement[0]})`, [...statement[1], ...PARAM]]
+
     }
 
 

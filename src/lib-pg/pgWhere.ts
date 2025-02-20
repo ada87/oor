@@ -1,6 +1,6 @@
 import _ from '../core/dash';
 import dayjs from 'dayjs';
-import { NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../utils/SQLUtil';
+import { NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString, ˝ } from '../utils/SQLUtil';
 import { Kind } from '@sinclair/typebox';
 import { throwErr } from '../utils/ValidateUtil'
 
@@ -14,47 +14,46 @@ type QueryPos = { SQL: string[]; PARAM: any[], NUM: number; }
 // https://www.postgresql.org/docs/15/queries-table-expressions.html
 export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
 
-    'Min': { string: true, number: true, int: true, date: true, boolean: true },
-    'MinThan': { string: true, number: true, int: true, date: true, boolean: false },
-    'Max': { string: true, number: true, int: true, date: true, boolean: true },
-    'MaxThan': { string: true, number: true, int: true, date: true, boolean: false },
+    'Min': { string: true, number: true, integer: true, date: true, boolean: true },
+    'MinThan': { string: true, number: true, integer: true, date: true, boolean: false },
+    'Max': { string: true, number: true, integer: true, date: true, boolean: true },
+    'MaxThan': { string: true, number: true, integer: true, date: true, boolean: false },
 
-    'MinH': { string: false, number: false, int: false, date: true, boolean: false },
-    'MinD': { string: false, number: false, int: false, date: true, boolean: false },
-    'MinM': { string: false, number: false, int: false, date: true, boolean: false },
-    'MaxH': { string: false, number: false, int: false, date: true, boolean: false },
-    'MaxD': { string: false, number: false, int: false, date: true, boolean: false },
-    'MaxM': { string: false, number: false, int: false, date: true, boolean: false },
+    'MinH': { string: false, number: false, integer: false, date: true, boolean: false },
+    'MinD': { string: false, number: false, integer: false, date: true, boolean: false },
+    'MinM': { string: false, number: false, integer: false, date: true, boolean: false },
+    'MaxH': { string: false, number: false, integer: false, date: true, boolean: false },
+    'MaxD': { string: false, number: false, integer: false, date: true, boolean: false },
+    'MaxM': { string: false, number: false, integer: false, date: true, boolean: false },
 
-    'Like': { string: true, number: false, int: false, date: false, boolean: false },
-    'Likel': { string: true, number: false, int: false, date: false, boolean: false },
-    'Liker': { string: true, number: false, int: false, date: false, boolean: false },
+    'Like': { string: true, number: false, integer: false, date: false, boolean: false },
+    'Likel': { string: true, number: false, integer: false, date: false, boolean: false },
+    'Liker': { string: true, number: false, integer: false, date: false, boolean: false },
 
-    'Bt': { string: false, number: true, int: true, date: true, boolean: false },
-    'BtD': { string: false, number: false, int: false, date: true, boolean: false },
-    'BtY': { string: false, number: false, int: false, date: true, boolean: false },
-    'BtM': { string: false, number: false, int: false, date: true, boolean: false },
+    'Bt': { string: false, number: true, integer: true, date: true, boolean: false },
+    'BtD': { string: false, number: false, integer: false, date: true, boolean: false },
+    'BtY': { string: false, number: false, integer: false, date: true, boolean: false },
+    'BtM': { string: false, number: false, integer: false, date: true, boolean: false },
 
-    'Not': { string: true, number: true, int: true, date: true, boolean: true },
+    'Not': { string: true, number: true, integer: true, date: true, boolean: true },
 
-    'In': { string: true, number: true, int: true, date: false, boolean: false },
-    'NotIn': { string: true, number: true, int: true, date: false, boolean: false },
+    'In': { string: true, number: true, integer: true, date: false, boolean: false },
+    'NotIn': { string: true, number: true, integer: true, date: false, boolean: false },
 
-    'IsNull': { string: true, number: true, int: true, date: true, boolean: true },
-    'NotNull': { string: true, number: true, int: true, date: true, boolean: true },
+    'IsNull': { string: true, number: true, integer: true, date: true, boolean: true },
+    'NotNull': { string: true, number: true, integer: true, date: true, boolean: true },
 
-    // 'IsDistinct': { string: true, number: true,int:true, date: false, boolean: false },
-    // 'NotDistinct': { string: true, number: true,int:true, date: false, boolean: false },
 
-    '>': { string: true, number: true, int: true, date: true, boolean: true },
-    '>=': { string: true, number: true, int: true, date: true, boolean: false },
-    '<': { string: true, number: true, int: true, date: true, boolean: true },
-    '<=': { string: true, number: true, int: true, date: true, boolean: false },
-    '=': { string: true, number: true, int: true, date: true, boolean: true },
-    '!=': { string: true, number: true, int: true, date: true, boolean: true },
-    '<>': { string: true, number: true, int: true, date: true, boolean: true },
+    '>': { string: true, number: true, integer: true, date: true, boolean: true },
+    '>=': { string: true, number: true, integer: true, date: true, boolean: false },
+    '<': { string: true, number: true, integer: true, date: true, boolean: true },
+    '<=': { string: true, number: true, integer: true, date: true, boolean: false },
+    '=': { string: true, number: true, integer: true, date: true, boolean: true },
+    '!=': { string: true, number: true, integer: true, date: true, boolean: true },
+    '<>': { string: true, number: true, integer: true, date: true, boolean: true },
 
 }
+
 
 const isSupport = (item: WhereItem, err: string[]): boolean => {
     let suffix = SUFFIX_MATRIX[item.fn] || SUFFIX_MATRIX['='];
@@ -300,14 +299,16 @@ const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
 
 const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
     let item = { ...whereItem, fn: whereItem.fn ? whereItem.fn : '=', type: whereItem.type ? whereItem.type : 'string' }
-    console.log(whereItem)
     if (!isSupport(item, err)) return;
     if (NullCondition(item, pos)) return;
     switch (item.type) {
         case 'number':
-        case 'int':
-            whereNumber(item, pos, err, item.type == 'int' ? parseInt : parseFloat);
-            return;
+            whereNumber(item, pos, err, parseFloat);
+            return
+        // @ts-ignore
+        // case 'int':
+        //     whereNumber(item, pos, err, parseInt);
+        //     return;
         case 'string':
             whereText(item, pos, err);
             return;
@@ -348,7 +349,6 @@ const ConditionToWhere = (condition: WhereCondition, pos: QueryPos, err: string[
 
 export const where = (STRICT: boolean, condition: WhereParam, startIdx = 1): SQLStatement => {
     const pos: QueryPos = { SQL: [], PARAM: [], NUM: startIdx };
-    // console.log(condition)
     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
     let err: string[] = [];
     ConditionToWhere(root, pos, err);
@@ -379,6 +379,7 @@ const convert = (kind, value) => {
 
 export const fixWhere = (globalCondition: WhereItem[]): [string, string] => {
     let ITEMS: WhereItem[] = [];
+
 
 
     return null

@@ -1,22 +1,24 @@
 import _ from './dash';
 import { validateSort } from '../utils/ValidateUtil';
+import { getFieldType } from '../utils/SQLUtil';
 
 import type { DatabaseOptions, TableOptions } from './types'
 import type { TObject } from '@sinclair/typebox';
-import type { Column } from '../utils/types';
+import type { Column, DeleteMark, WhereItem } from '../utils/types';
+import { queryToCondition } from '../utils/ConditionUtil';
 
 const DEFAULT_PAGE_SIZE = 10;
 
 
 
-type ParseResult = TableOptions & {
+type ParseResult = Omit<TableOptions, 'globalCondition'> & {
     COLUMN_MAP: Map<string, Column>,
     F2C: Map<string, string>,
     C2F: Map<string, string>,
 
     queryFields: string,
     detialFields: string,
-    delMark?: { field: string, value: string | number | boolean },
+    globalCondition: Array<WhereItem>
 }
 
 
@@ -52,6 +54,7 @@ export const parseOptions = (RESERVED_WORDS: Set<string>, tbSchema: TObject, tbO
 
     const GuessSortFields: string[] = [], QueryFields = [], DetailFields = []
     const fields = _.keys(tbSchema.properties);
+    let delMark: WhereItem = null;
 
     for (let field of fields) {
 
@@ -69,11 +72,9 @@ export const parseOptions = (RESERVED_WORDS: Set<string>, tbSchema: TObject, tbO
         if (properties.isModify) GuessSortFields.unshift(field);    // 默认按最后修改时间
         if (properties.isCreate) GuessSortFields.push(field);       // 默认按创建时间
 
-        if (CONFIG.delMark == null && _.has(properties, 'delMark') && properties.delMark !== null) {
-            CONFIG.delMark = {
-                field: column,
-                value: properties.delMark,
-            };
+        if (properties.delMark !== undefined && properties.delMark !== null) {
+            const type = getFieldType(properties);
+            delMark = { column, type, fn: '!=', value: properties.delMark }
         }
         DetailFields.push(convertField(RESERVED_WORDS, wrapFn, field, column));
         if (properties.ignore !== true) {
@@ -105,16 +106,18 @@ export const parseOptions = (RESERVED_WORDS: Set<string>, tbSchema: TObject, tbO
             CONFIG.orderBy = { order: CONFIG.rowKey, by: 'desc' };
         }
     }
-
-    CONFIG.globalCondition = [...tbOptions.globalCondition || []];
-    if (CONFIG.delMark) {
-        CONFIG.globalCondition.push({
-            column: CONFIG.F2C.get(CONFIG.delMark.field),
-            value: CONFIG.delMark.value,
-            fn: '!=',
-        });
+    if (tbOptions.globalCondition == null) {
+        CONFIG.globalCondition = [];
+    } else {
+        if (_.isArray(tbOptions.globalCondition)) {
+            CONFIG.globalCondition = [...tbOptions.globalCondition]
+        } else {
+            CONFIG.globalCondition = queryToCondition(CONFIG.strictQuery, tbOptions.globalCondition, CONFIG.COLUMN_MAP, new Map()).items as any;
+        }
     }
-
+    if (delMark) {
+        CONFIG.globalCondition.unshift(delMark);
+    }
     return CONFIG;
 
 }

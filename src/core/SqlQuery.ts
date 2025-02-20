@@ -10,6 +10,8 @@ import type { WhereParam, OrderBy, Column, SQLStatement, QuerySchema, WhereCondi
 // QuerySchema => WhereCondition => SQLStatement
 
 export abstract class BaseQuery implements QueryBuilder {
+    private readonly RESERVED_WORD: Set<string>;
+    private readonly FIELDS_CACHE: Map<string, string>;
 
     protected readonly tableName: string;
     protected readonly ROW_KEY: string = null;
@@ -28,12 +30,16 @@ export abstract class BaseQuery implements QueryBuilder {
     protected readonly DEL_MARK: { field: string, value: string | number | boolean, } = null;
 
 
+
     private FIELD_CACHE = new Map<string, WhereDefine>();
 
+    protected abstract initReservedWord(): [Set<string>, Map<string, string>];
+    protected abstract wrapField(field: string): string;
 
     constructor(tbName: string, tbSchema: TObject, tbOptions: TableOptions, dbOptions: DatabaseOptions) {
-        this.tableName = tbName;
-        const CONFIG = parseOptions(tbSchema, tbOptions, dbOptions);
+        [this.RESERVED_WORD, this.FIELDS_CACHE] = this.initReservedWord();
+        this.tableName = convertField(this.RESERVED_WORD, this.wrapField, tbName);
+        const CONFIG = parseOptions(this.RESERVED_WORD, tbSchema, tbOptions, dbOptions, this.wrapField);
         if (CONFIG.rowKey) this.ROW_KEY = CONFIG.rowKey;
         this.PAGE_SIZE = CONFIG.pageSize;
         if (CONFIG.orderBy) this.ORDER_BY = CONFIG.orderBy;
@@ -47,6 +53,10 @@ export abstract class BaseQuery implements QueryBuilder {
         this.F2C = CONFIG.F2C;
         this.C2F = CONFIG.C2F;
         this.DEL_MARK = CONFIG.delMark;
+    }
+
+    private _wrapColumn(column: string): string {
+        return convertField(this.RESERVED_WORD, this.wrapField, column)
     }
 
     convertQuery(query: QuerySchema): WhereCondition {
@@ -70,44 +80,49 @@ export abstract class BaseQuery implements QueryBuilder {
         if (Array.isArray(fields)) {
             const columns = fields.filter(field => this.F2C.has(field)).map(filed => this.F2C.get(filed));
             if (columns.length == 0) return `SELECT ${this.QUERY_FIELDS} FROM ${this.tableName} `;
-            const queryFields = columns.map(column => convertField(this.C2F.get(column), column)).join(', ');
+            const queryFields = columns.map(column => convertField(this.RESERVED_WORD, this.wrapField, this.C2F.get(column), column)).join(', ');
             return `SELECT ${queryFields} FROM ${this.tableName} `;
         }
 
         return `SELECT ${this.QUERY_FIELDS} FROM ${this.tableName} `;
     }
 
+    count(field?: boolean | string, distinct?: boolean) {
+        let countFiled = _.isString(field) ? field : (this.ROW_KEY || '*');
+        let isDistinct = typeof distinct === 'boolean' ? distinct : (
+            typeof field === 'boolean' ? field : false
+        );
+        return `SELECT COUNT(${isDistinct ? 'DISTINCT ' : ''}${this._wrapColumn(countFiled)}) AS total FROM ${this.tableName}`;
+    }
 
     orderBy(query?: QuerySchema | boolean): string {
         if (query == undefined || query == null || query === false) return '';
         if (query === true) {
-            if (this.ORDER_BY) return `ORDER BY \`${this.ORDER_BY.order}\` ${this.ORDER_BY.by}`;
+            if (this.ORDER_BY) return `ORDER BY ${this._wrapColumn(this.ORDER_BY.order)} ${this.ORDER_BY.by}`;
             return ''
         }
-        let orderyBy = validateSort({ order: query.order_, by: query.by_ }, this.F2C);
+        let orderyBy = validateSort({ order: query._order_, by: query._by_ }, this.F2C);
         if (orderyBy == null) return '';
-        return `ORDER BY \`${orderyBy.order}\` ${orderyBy.by}`;
+        return `ORDER BY ${this._wrapColumn(orderyBy.order)} ${orderyBy.by}`;
     }
-    
-    limit(query?: QuerySchema): string {
-        const start = query?.start_ || 0;
-        const count = query?.count_ || this.PAGE_SIZE;
-        return `LIMIT ${count} OFFSET ${start}`
+
+    limit(query?: QuerySchema | number, start: number = 0): string {
+        if (_.isNumber(query)) return `LIMIT ${query} OFFSET ${start}`
+        const _start = query?._start_ || 0;
+        const _count = query?._count_ || this.PAGE_SIZE;
+        return `LIMIT ${_count} OFFSET ${_start}`
     }
 
     orderByLimit(query?: QuerySchema | boolean): string {
         if (query == undefined || query == null || query === false) return '';
-        if (query === true) {
-            return this.orderBy(true)
-        }
-
+        if (query === true) return this.orderBy(true);
         return `${this.orderBy(query)} ${this.limit(query)}`
     }
 
     byField(field: string, value: string | number | boolean, startIdx?: number): SQLStatement {
         if (!this.F2C.has(field)) throw new Error(`Field ${field} not found in Table ${this.tableName}`);
         let column = this.F2C.get(field);
-        let sql = `\`${column}\` = ?`;
+        let sql = `${this._wrapColumn(column)} = ?`;
         return [sql, [value]];
     }
 
@@ -116,15 +131,9 @@ export abstract class BaseQuery implements QueryBuilder {
         return this.byField(this.ROW_KEY, value);
     }
 
-    count(distinct?: boolean): string {
-        return `SELECT COUNT(${distinct ? 'DISTINCT' : ''} ${this.ROW_KEY ? this.ROW_KEY : '*'}) FROM ${this.tableName} `;
-    }
 
-    // byQuery: (query: QuerySchema) => SQLStatement;
-    // byCondition: (condition: WhereParam) => SQLStatement;
-
-    abstract where: (condition: WhereParam, startIdx?: number) => SQLStatement;
-    abstract fixWhere: (statement?: SQLStatement) => SQLStatement;
+    public abstract where(condition: WhereParam, startIdx?: number): SQLStatement;
+    public abstract fixWhere(statement?: SQLStatement): SQLStatement;
 
 
 }

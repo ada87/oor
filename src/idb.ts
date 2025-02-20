@@ -1,1 +1,1 @@
-// idb
+// npm i idb @sinclair/typebox

@@ -46,6 +46,7 @@ export type TableOptions = DatabaseOptions & {
 
 
 export interface QueryBuilder {
+    
     /**
      * Query Fields : Only Return List Field, Not Include Detail Field
      * Detail Field : All Object Fields
@@ -74,15 +75,24 @@ export interface QueryBuilder {
 
     convertQuery: (query: QuerySchema) => WhereCondition;
 
-    count: (distinct?: boolean) => string;
+    count: {
+        (): string;
+        (distinct: true): string;
+        (field: string): string;
+        (field: string, distinct: true): string;
 
+    }
     byField: (field: string, value: string | number | boolean, startIdx?: number) => SQLStatement;
     byId: (value: string | number) => SQLStatement;
     // byQuery: (query: QuerySchema) => [WhereCondition, OrderByLimit];
     // byCondition: (condition: WhereParam) => SQLStatement;
 
     orderBy: (query?: QuerySchema | boolean) => string;
-    limit: (query?: QuerySchema) => string;
+    limit: {
+        (count: number, start?: number): string
+        (query: QuerySchema): string;
+    }
+
     orderByLimit: (query?: QuerySchema | boolean) => string;
 
     where: (condition: WhereParam, startIdx?: number) => SQLStatement;
@@ -106,16 +116,18 @@ export interface QueryExecutor<C, O> {
 
 
     query: {
-        (conn: C, SELECT: string): Promise<Array<O>>;
 
+        (conn: C, SELECT: string): Promise<Array<O>>;
+        <T>(conn: C, SELECT: string): Promise<T>;
         (conn: C, SELECT: string, STATEMENT?: Array<any>): Promise<Array<O>>;
+        <T>(conn: C, SELECT: string, STATEMENT?: Array<any>): Promise<T>;
         // (conn: C, SELECT: string, WHERE: SQLStatement): Promise<Array<O>>;
         // (conn: C, SELECT: string, ORDER_BY: string): Promise<Array<O>>;
         // (conn: C, SELECT: string, ORDER_BY: string, WHERE: SQLStatement): Promise<Array<O>>;
     }
-    count: (conn: C, SELECT: string, WHERE?: WhereCondition) => Promise<number>;
+    // count: (conn: C, SELECT: string, WHERE?: WhereCondition) => Promise<number>;
 
-    get: (conn: C, SELECT: string, STATEMENT: Array<any>) => Promise<O>
+    get: (conn: C, SELECT: string, STATEMENT?: Array<any>) => Promise<O>
     // (conn: C, SELECT: string, WHERE: SQLStatement): Promise<Array<O>>;
     // (conn: C, SELECT: string, ORDER_BY: string): Promise<Array<O>>;
     // (conn: C, SELECT: string, ORDER_BY: string, WHERE: SQLStatement): Promise<Array<O>>;
@@ -179,7 +191,6 @@ export interface View<O extends object = object> {
 
 export interface Table<O extends object> extends View<O> {
 
-    // checkEntity: (entity: O) => O;
     // add: {
     //     (conn, sql: string, param: any): Promise<O>,
     //     (conn, sql: string, param: any, returning: true): Promise<O>,
@@ -199,6 +210,14 @@ export interface Table<O extends object> extends View<O> {
     // }
 
 
+    // updateBatch:{
+    //     (conn, sql: string, param: any): Promise<O>,
+    //     (conn, sql: string, param: any, returning: true): Promise<O>,
+    //     (conn, sql: string, param: any, returning: false): Promise<Number>,
+    // }
+
+
+
     // updateById:(id: number | string)=> Promise<number>
     // updateByField:(field: string, value: string | number | boolean)=>Promise<number> ;
     // updateByQuery:(query: QuerySchema)=>Promise<number> 
@@ -214,6 +233,9 @@ export interface Table<O extends object> extends View<O> {
     //     (conn, sql: string, param: any, returning: true): Promise<Array<O>>,
     // },
 
-}export type QueryProvider<B extends QueryBuilder> = {
+}
+
+
+export type QueryProvider<B extends QueryBuilder> = {
     new(tableName: string, schema: TObject, tbOptions?: TableOptions, dbOptions?: DatabaseOptions): B
 };

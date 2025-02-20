@@ -2,18 +2,13 @@ import _ from 'lodash';
 import { validateSort } from '../utils/ValidateUtil';
 
 import type { DatabaseOptions, TableOptions } from './types'
-import type { TObject } from '@sinclair/typebox';
+import { ReturnType, type TObject } from '@sinclair/typebox';
 import type { Column } from '../utils/types';
 import type { OrderBy } from '../utils/types';
 
 const DEFAULT_PAGE_SIZE = 10;
-const GLOBAL_ID_FIELD = new Set<string>(['id', 'guid', 'uuid']);
-
 
 type ParseResult = DatabaseOptions & {
-    // rowKey?: string,
-    // pageSize: number,
-    // STRICT_QUERY: boolean,
     COLUMN_MAP: Map<string, Column>,
     F2C: Map<string, string>,
     C2F: Map<string, string>,
@@ -25,13 +20,21 @@ type ParseResult = DatabaseOptions & {
 }
 
 
-export const convertField = (property: string, column?: string): string => {
-    if (column == property) return '`' + column + '`';
-    return `\`${column}\` AS \`${property}\``;
+export const convertField = (RESERVED_WORDS: Set<string>, wrapFn: (txt: string) => string, property: string, column?: string): string => {
+    const attr = _.toLower(property);
+    const attrIsReserved = RESERVED_WORDS.has(attr);
+    if (column == property || column == null) {
+        if (attrIsReserved) return wrapFn(property);
+        return property;
+    }
+    const field = _.toLower(column);
+    const fieldIsReserved = RESERVED_WORDS.has(field);
+    return `${fieldIsReserved ? wrapFn(column) : column} AS ${attrIsReserved ? wrapFn(property) : property}`;
+
 }
 
 
-export const parseOptions = (tbSchema: TObject, tbOptions: TableOptions, dbOptions: DatabaseOptions): ParseResult => {
+export const parseOptions = (RESERVED_WORDS: Set<string>, tbSchema: TObject, tbOptions: TableOptions, dbOptions: DatabaseOptions, wrapFn: (txt: string) => string): ParseResult => {
     const CONFIG: ParseResult = {
         pageSize: tbOptions?.pageSize || dbOptions?.pageSize || DEFAULT_PAGE_SIZE,
         strictQuery: tbOptions?.strictQuery || dbOptions?.strictQuery || false,
@@ -39,15 +42,12 @@ export const parseOptions = (tbSchema: TObject, tbOptions: TableOptions, dbOptio
         COLUMN_MAP: new Map<string, Column>(),
         F2C: new Map<string, string>(),
         C2F: new Map<string, string>(),
-        queryFields: ' * ',
-        detialFields: ' * ',
+        queryFields: '*',
+        detialFields: '*',
     }
-
-    var rowKey = tbOptions?.rowKey;
 
 
     const GuessSortFields: string[] = [], QueryFields = [], DetailFields = []
-    let GuessIdField: string = null;
     const fields = _.keys(tbSchema.properties);
 
     for (let field of fields) {
@@ -55,15 +55,13 @@ export const parseOptions = (tbSchema: TObject, tbOptions: TableOptions, dbOptio
         let properties = tbSchema.properties[field];
         let column = properties.column || field;
         CONFIG.F2C.set(field, column);
-        CONFIG.F2C.set(column, column);
         CONFIG.C2F.set(column, field);
-        CONFIG.C2F.set(field, field);
         CONFIG.COLUMN_MAP.set(field, properties);
-
-        if (rowKey == null && GuessIdField == null && GLOBAL_ID_FIELD.has(field)) {
-            GuessIdField = column;
+        if (field != column) {
+            CONFIG.C2F.set(field, field);
+            CONFIG.F2C.set(column, column);
+            CONFIG.COLUMN_MAP.set(column, properties);
         }
-
 
         if (properties.isModify) GuessSortFields.unshift(field);    // 默认按最后修改时间
         if (properties.isCreate) GuessSortFields.push(field);       // 默认按创建时间
@@ -74,37 +72,45 @@ export const parseOptions = (tbSchema: TObject, tbOptions: TableOptions, dbOptio
                 value: properties.delMark,
             };
         }
-        DetailFields.push(convertField(field, column));
+        DetailFields.push(convertField(RESERVED_WORDS, wrapFn, field, column));
         if (properties.ignore !== true) {
-            QueryFields.push(convertField(field, column));
+            QueryFields.push(convertField(RESERVED_WORDS, wrapFn, field, column));
         }
     };
 
     if (QueryFields.length > 0) CONFIG.queryFields = QueryFields.join(', ');
     if (DetailFields.length > 0) CONFIG.detialFields = DetailFields.join(', ');
 
-    if (rowKey == null) {
-        if (GuessIdField) {
-            rowKey = GuessIdField;
-        } else if (dbOptions?.rowKey && CONFIG.F2C.has(dbOptions.rowKey)) {
-            rowKey = CONFIG.F2C.get(dbOptions.rowKey);
+
+    if (tbOptions.rowKey) {
+        if (CONFIG.F2C.has(tbOptions.rowKey)) {
+            CONFIG.rowKey = CONFIG.F2C.get(tbOptions.rowKey);
         }
     }
-    if (rowKey) {
-        CONFIG.rowKey = rowKey;
+    if (CONFIG.rowKey == null && dbOptions?.rowKey && CONFIG.F2C.has(dbOptions.rowKey)) {
+        CONFIG.rowKey = CONFIG.F2C.get(dbOptions.rowKey);
     }
+
 
     if (tbOptions?.orderBy) {
         CONFIG.orderBy = validateSort(tbOptions.orderBy, CONFIG.F2C);
     } else if (GuessSortFields.length) {
         CONFIG.orderBy = validateSort({ order: GuessSortFields[0], by: 'desc' }, CONFIG.F2C);
-    } else if (rowKey) {
-        CONFIG.orderBy = { order: rowKey, by: 'desc' };
+    } else if (CONFIG.rowKey) {
+        const columnSchema = CONFIG.COLUMN_MAP.get(CONFIG.C2F.get(CONFIG.rowKey));
+        if (columnSchema && columnSchema.type == 'number') {
+            CONFIG.orderBy = { order: CONFIG.rowKey, by: 'desc' };
+        }
     }
 
     return CONFIG;
 
 }
+
+// type CheckQuery = (query: TObject) => BodyInit;
+// const CheckQueryBuilder = (): CheckQuery =>  {
+//     return () => null
+// }
 
 
 

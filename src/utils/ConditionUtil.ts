@@ -5,7 +5,7 @@ import { WhereItem, WhereCondition, QuerySchema, WhereDefine, SUFFIX, MagicSuffi
 import { throwErr } from './ValidateUtil';
 
 
-const DEFAULT_QUERY_KEY = new Set<string>(['start_', 'count_', 'order_', 'by_', 'keyword_', 'total_']);
+const DEFAULT_QUERY_KEY = new Set<string>(['_start_', '_count_', '_order_', '_by_', '_keyword_', '_cid_', '_total_']);
 
 
 /**
@@ -33,8 +33,7 @@ const fieldToDef = (key: string, COLUMN_MAP: Map<string, Column>): WhereDefine =
         return null;
     }
     const fieldType = getFieldType(SCHEMA);
-    // @ts-ignore // field only use in inner , use for Query Buider validate
-    let def: WhereDefine = { field: query_field, column: SCHEMA.column || query_field, type: fieldType, fn: suffix };
+    let def: WhereDefine = {  column: SCHEMA.column || query_field, type: fieldType, fn: suffix };
 
 
     return def;
@@ -67,15 +66,14 @@ export const queryToCondition = (strict: boolean, query: QuerySchema, COLUMN_MAP
             err.push(key)
             return
         };
-        // @ts-ignore
-        let queryItem = defineToItem(define, COLUMN_MAP.get(define.column || define.field), query[key])
+        let queryItem = defineToItem(define, COLUMN_MAP.get(define.column), query[key])
         if (queryItem == null) {
             err.push(key + ' \' value has problem : ' + String(query[key]))
             return;
         }
         ROOT.items.push(queryItem);
     });
-    // let keyword = _.trim(query.keyword_);
+    // let keyword = _.trim(query._keyword_);
     // if (keyword) {
     //     let OR: WhereCondition = { link: 'OR', items: [] }
     //     for (let [key, value] of COLUMN_MAP) {

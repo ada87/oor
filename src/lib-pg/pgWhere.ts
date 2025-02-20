@@ -1,8 +1,10 @@
 import _ from 'lodash';
 import { NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../utils/SQLUtil';
+import { Kind } from '@sinclair/typebox';
+import { throwErr } from '../utils/ValidateUtil'
 import dayjs from 'dayjs';
 
-import type { WhereItem, WhereCondition, MagicSuffix, Support } from '../utils/types';
+import type { WhereItem, WhereParam, WhereCondition, MagicSuffix, Support, SQLStatement, Column } from '../utils/types';
 import type { Dayjs } from 'dayjs';
 // import type { SqlWhere } from '../base/Executor/sql';
 
@@ -342,53 +344,55 @@ const ConditionToWhere = (condition: WhereCondition, pos: QueryPos, err: string[
 };
 
 
-// export const where: SqlWhere = (condition: WhereParam, startIdx = 1): [string, any[]] => {
-//     const pos: QueryPos = { SQL: [], PARAM: [], NUM: startIdx };
-//     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
-//     let err: string[] = [];
-//     ConditionToWhere(root, pos, err);
-//     throwErr(err, 'Some SQL Error Occur');
-//     if (pos.SQL.length == 0) {
-//         return ['', []]
-//     };
-//     return [pos.SQL.join(" " + root.link + " "), pos.PARAM]
-// }
+export const where = (STRICT: boolean, condition: WhereParam, startIdx = 1): SQLStatement => {
+    const pos: QueryPos = { SQL: [], PARAM: [], NUM: startIdx };
+    // console.log(condition)
+    let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
+    let err: string[] = [];
+    ConditionToWhere(root, pos, err);
+    throwErr(STRICT, err, 'Some SQL Error Occur');
+    if (pos.SQL.length == 0) {
+        return ['', []]
+    };
+    return [pos.SQL.join(" " + root.link + " "), pos.PARAM]
+}
 
 
 
-// export const fixWhere = (COLUMN_MAP: Map<string, Column>, extra: WhereItem[]): [string, string] => {
-//     let ITEMS: WhereItem[] = [];
-//     let ctf = new Map<string, string>();
-//     const convert = (kind, value) => {
-//         switch (kind) {
-//             case 'Boolean':
-//                 return value;
-//             case 'Number':
-//                 return parseFloat(value);
-//             case 'Integer':
-//                 return parseInt(value);
-//             default:
-//                 return value + '';
-//         }
-//     }
-//     for (let [key, val] of COLUMN_MAP) {
-//         if (_.has(val, 'delMark')) {
-//             ITEMS.push({ column: (val.column || key), fn: '<>', value: convert(val[Kind as any], val.delMark) })
-//         }
-//         ctf.set((val.column || key), key);
-//     }
-//     extra.map(item => {
-//         // inner usage field
-//         // @ts-ignore
-//         let schema = COLUMN_MAP.get(item.field) || COLUMN_MAP.get(ctf.get(item.field));
-//         if (schema == null) return;
-//         ITEMS.push({ ...item, value: convert(schema[Kind as any], item.value) });
-//     })
-//     if (ITEMS.length == 0) return ['', ' WHERE '];
-//     let [SQL, PARAM] = where(ITEMS);
-//     if (SQL.length == 0) return ['', ' WHERE '];
-//     PARAM.map((item, i) => {
-//         SQL = SQL.replaceAll(`$${i + 1}`, _.isNumber(item) ? (item + '') : `'${item}'`)
-//     });
-//     return [' WHERE ' + SQL, ' AND ']
-// }
+const convert = (kind, value) => {
+    switch (kind) {
+        case 'Boolean':
+            return value;
+        case 'Number':
+            return parseFloat(value);
+        case 'Integer':
+            return parseInt(value);
+        default:
+            return value + '';
+    }
+}
+export const fixWhere = (COLUMN_MAP: Map<string, Column>, extra: WhereItem[]): [string, string] => {
+    let ITEMS: WhereItem[] = [];
+    let ctf = new Map<string, string>();
+
+    for (let [key, val] of COLUMN_MAP) {
+        if (_.has(val, 'delMark')) {
+            ITEMS.push({ column: (val.column || key), fn: '<>', value: convert(val[Kind as any], val.delMark) })
+        }
+        ctf.set((val.column || key), key);
+    }
+    extra.map(item => {
+        // inner usage field
+        // @ts-ignore
+        let schema = COLUMN_MAP.get(item.field) || COLUMN_MAP.get(ctf.get(item.field));
+        if (schema == null) return;
+        ITEMS.push({ ...item, value: convert(schema[Kind as any], item.value) });
+    })
+    if (ITEMS.length == 0) return ['', ' WHERE '];
+    let [SQL, PARAM] = where(false, ITEMS);
+    if (SQL.length == 0) return ['', ' WHERE '];
+    PARAM.map((item, i) => {
+        SQL = SQL.replaceAll(`$${i + 1}`, _.isNumber(item) ? (item + '') : `'${item}'`)
+    });
+    return [' WHERE ' + SQL, ' AND ']
+}

@@ -2,8 +2,6 @@ import type { DatabaseOptions, Database } from './types';
 
 const DEFAULT_OPTIONS: DatabaseOptions = { pageSize: 20, rowKey: 'id', }
 
-
-
 export abstract class BaseDB<ConnectionConfig, C, Options extends DatabaseOptions = DatabaseOptions> implements Database<C, Options> {
 
     protected config: ConnectionConfig;

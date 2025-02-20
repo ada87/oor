@@ -27,6 +27,9 @@ import type { Client, ClientBase, Pool } from 'pg';
 export class PgView<C, S extends TObject, B extends PgQuery = PgQuery> extends BaseView<C, S, B> {
     protected EXECUTOR = PG_QUERY as QueryExecutor<C, any>;
 
+    // protected init(): void {
+    //     console.log('sfda')
+    // }
 
     constructor(db: Database<C>, tableName: string, tableSchema: S, tableOptions?: TableOptions) {
         super(PgQuery as any, db, tableName, tableSchema, tableOptions);

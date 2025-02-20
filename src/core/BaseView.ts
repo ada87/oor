@@ -2,14 +2,14 @@ import { BaseQuery } from './BaseDB';
 
 import type { QueryProvider, TableOptions, QueryBuilder, QueryExecutor, Database, View } from './types'
 import type { TObject, Static } from '@sinclair/typebox';
-import type { WhereParam, SQLStatement, QuerySchema, OrderBy } from '../utils/types';
+import type { WhereParam, SQLStatement, QuerySchema } from '../utils/types';
 
 
 
 
 export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> extends BaseQuery<C> implements View<Static<S>> {
 
-    protected readonly BUILDER: B;
+    public readonly BUILDER: B;
 
     protected abstract readonly EXECUTOR: QueryExecutor<C, Static<S>>;
 
@@ -23,11 +23,9 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
         super(db);
         const dbOptions = db.getOption();
         this.BUILDER = new P(tbName, tbSchema, tbOptions, dbOptions);
-
         this.init();
     }
     protected init() { };
-
 
     protected queryStatement(SELECT: string, ORDER_BY_LIMIT: string = '', STATEMENT?: SQLStatement, fixed = true): SQLStatement {
         const { BUILDER } = this;
@@ -75,8 +73,8 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
         const count = BUILDER.count();
         const conn = await this.getConn();
         const list = await this.queryByCondition(where, query);
-        const total = await EXECUTOR.count(conn, count, where);
-        return { list, total }
+        // const total = await EXECUTOR.count(conn, count, where);
+        return { list, total:100 }
     }
 
     async queryByField(field: string, value: string | number | boolean): Promise<Static<S>[]> {
@@ -118,7 +116,7 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
     }
     async getByCondition(condition: WhereParam): Promise<Static<S>> {
 
-        const { BUILDER,EXECUTOR } = this;
+        const { BUILDER, EXECUTOR } = this;
         const SELECT = BUILDER.select(true);
         const [SQL, PARAM] = this.queryStatement(SELECT, '', BUILDER.where(condition), false);;
         const conn = await this.getConn();

@@ -1,6 +1,6 @@
 import { test } from 'tsest'
 import { PG } from './pg';
-import { UserSchema } from './utils/SQLUtil.test'
+// import { UserSchema } from './utils/SQLUtil.test'
 
 // const USER = PG.Table('public.user', UserSchema);
 

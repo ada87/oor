@@ -4,8 +4,7 @@ import { BaseDB } from './core/BaseDB';
 import { PgTable } from './lib-pg/PgTable';
 import { PgView } from './lib-pg/PgView'
 
-// export { UType } from './utils/SQLUtil';
-
+// https://www.postgresql.org/docs/17/sql-select.html
 import type { PoolConfig } from 'pg';
 import type { TableOptions } from './core';
 import type { TObject } from '@sinclair/typebox';

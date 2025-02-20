@@ -3,7 +3,7 @@ import { getFieldType } from './SQLUtil';
 import { toDate } from './TimeUtil'
 import { Value } from '@sinclair/typebox/value';
 
-import type { View, QueryBuilder } from '../core'
+// import type { View, QueryBuilder } from '../core'
 import type { Column, OrderBy } from "./types";
 import type { TObject } from '@sinclair/typebox';
 

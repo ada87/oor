@@ -70,36 +70,36 @@ export type QuerySchema = {
     /**
      * The Start pos
      */
-    start_?: number;
+    _start_?: number;
     /**
      * PageSize
      */
-    count_?: number;
+    _count_?: number;
     /**
      * Not : Not Support yet!
     */
-    keyword_?: string;
+    _keyword_?: string;
     /**
      * The Sort column field
      * default {modify_date} desc -> {key} desc -> Not sort
     */
-    order_?: string;
+    _order_?: string;
     /**
      * The Sort column method
     */
-    by_?: 'asc' | 'desc';
+    _by_?: 'asc' | 'desc';
     /**
      * If specify cid_ field, The Query will skip Steps:
      *      1. use last cached sql condition (exclude <start,count,order,by>)
      *      2. use last total (in pagition query).
      * do specify sid_ in second can upper the performane in pagition query.
     */
-    cid_?: number;
+    _cid_?: number;
     /**
      * If specify total_ field, The Query will skip the count(total) query and return in total derectly.
      * do specify total_ in second can upper the performane in pagition query.
     */
-    total_?: number;
+    _total_?: number;
     /**
      * Extend Query 
      * Use Maggic Suffix to build query condition

@@ -11,10 +11,6 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
 
     protected abstract readonly EXECUTOR: QueryExecutor<C, Static<S>>;
 
-    private logSQL(sql: string, param: any) {
-        console.log(sql, param)
-
-    }
 
     /**
      * @param tableName Data table name, "${schemaName}.${tableName}"  
@@ -50,7 +46,6 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
         const { EXECUTOR } = this;
         const [SQL, PARAM] = this.queryStatement(SELECT, STATEMENT, ORDER_BY_LIMIT, fixed);;
         const conn = await this.getConn();
-        // this.logSQL(SQL, PARAM);
         const result = await EXECUTOR.query(conn, SQL, PARAM);
         return result;
     }
@@ -75,8 +70,6 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
         const [QUERY_SQL, QUERY_PARAM] = this.queryStatement(SELECT, STATEMENT, ORDER_BY_LIMIT);
         const [COUNT_SQL, COUNT_PARAM] = this.queryStatement(COUNT, STATEMENT, '');
         const conn = await this.getConn();
-        this.logSQL(QUERY_SQL, QUERY_PARAM);
-        this.logSQL(COUNT_SQL, COUNT_PARAM);
         const [list, countResp] = await Promise.all([
             EXECUTOR.query(conn, QUERY_SQL, QUERY_PARAM),
             EXECUTOR.get<{ total: string }>(conn, COUNT_SQL, COUNT_PARAM)
@@ -111,7 +104,6 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
         const { EXECUTOR } = this;
         const [SQL, PARAM] = this.queryStatement(SELECT, STATEMENT, ORDER_BY_LIMIT, fixed);;
         const conn = await this.getConn();
-        this.logSQL(SQL, PARAM);
         const result = await EXECUTOR.get(conn, SQL, PARAM);
         return result;
     }

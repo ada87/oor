@@ -1,7 +1,7 @@
 import _ from '../core/dash';
 import dayjs from 'dayjs';
-import { Type } from '@sinclair/typebox';
-import { Value } from '@sinclair/typebox/value';
+// import { Type } from '@sinclair/typebox';
+// import { Value } from '@sinclair/typebox/value';
 
 import { Kind } from '@sinclair/typebox';
 
@@ -18,7 +18,7 @@ export const getFieldType = (schema: any): FieldType => {
         case 'String':
             return 'string';
         case 'Number':
-            return 'number';
+            return 'double';
         case 'Integer':
             return 'integer';
         case 'Boolean':

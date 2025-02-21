@@ -1,19 +1,30 @@
 import { Type } from '@sinclair/typebox';
 
+
+
 import type {
     SchemaOptions, TProperties, TPartial,
     TObject, StringOptions, DateOptions, NumberOptions,
 } from '@sinclair/typebox';
 
-// https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP
 /**
- * Where 判断条件
+ * For now , OOR is only support 5 types:
+ * TODO : JSON, BIT
 */
-export type FieldType = 'string' | 'number' | 'integer' | 'boolean' | 'date';
+export type FieldType = 'string' | 'double' | 'integer' | 'boolean' | 'date';
 export type Support = Record<FieldType, boolean>;
 
+export enum RETURN {
+    IS_SUCCESS,
+    EFFECT_COUNT,
+    OBJECT_DATA,
+    OBJECT_KEY,
+    ORGIN_RESULT,
+}
 
-
+/**
+ * Field Suffix
+*/
 export const SUFFIX = [
     'Min', 'MinThan', 'Max', 'MaxThan',                 // commom  > , >= , <  ,  <=
     'MinH', 'MinD', 'MinM', 'MaxH', 'MaxD', 'MaxM',     // Only Date Hour / Day / Month
@@ -45,6 +56,10 @@ export type WhereDefine = {
     */
     fn?: MagicSuffix,
 }
+/**
+ * The Row Key Type
+*/
+export type RowKeyType = string | number;;
 
 export type WhereItem = WhereDefine & {
     value: string | number | boolean | Date,
@@ -65,7 +80,6 @@ export type OrderByLimit = Limit | OrderBy & Limit;
 export type WhereParam = WhereCondition | Array<(WhereCondition | WhereItem)>;
 
 export type SQLStatement = [string, Array<any>];
-
 
 export type QueryParam = Record<string, string | number | boolean | Date>
 export type QueryOrderBy = {
@@ -107,7 +121,6 @@ export type QueryOrderBy = {
      * Extend Query 
      * Use Maggic Suffix to build query condition
      * */
-    // [props: string]: string | number | boolean | Date
 };
 export type QuerySchema = QueryParam & QueryOrderBy;
 
@@ -141,7 +154,7 @@ export interface UStringOptions extends Column, StringOptions {
      *      2. Query  action will add conditon with != ${delMark}
      *      3. Note : A table can only hava ONE delMark.
     */
-    delMark?: string;
+    // delMark?: string;
 }
 
 
@@ -153,6 +166,7 @@ export interface UNumericOptions extends Column, NumberOptions {
      *      3. Note : A table can only hava ONE delMark.
     */
     delMark?: number;
+    // format?: string
 }
 
 
@@ -182,7 +196,7 @@ export interface UStringOptions extends Column, StringOptions {
      *      2. Query  action will add conditon with != ${delMark}
      *      3. Note : A table can only hava ONE delMark.
     */
-    delMark?: string;
+    // delMark?: string;
 }
 
 
@@ -193,7 +207,7 @@ export interface UNumericOptions extends Column, NumberOptions {
      *      2. Query  action will add conditon with != ${delMark}
      *      3. Note : A table can only hava ONE delMark.
     */
-    delMark?: number;
+    // delMark?: number;
 }
 
 
@@ -219,25 +233,70 @@ export interface UDateOptions extends Column, DateOptions {
 // Type.Number
 export const UType = {
     Table: <T extends TProperties>(properties: T): TObject<T> => Type.Object(properties),
-
+    /**
+     * Store Type : float / double
+    */
     Double: (options?: UNumericOptions) => Type.Optional(Type.Number(options)),
-    String: (options?: UStringOptions) => Type.Optional(Type.String(options)),
-
-    Date: (options?: UDateOptions) => Type.Optional(Type.Date(options)),
-    DateString: (options?: UDateOptions) => Type.Optional(Type.String(options)),
-    DateLong: (options?: UDateOptions) => Type.Optional(Type.Number(options)),
-
-    Boolean: (options?: Column) => Type.Optional(Type.Boolean(options)),
+    /**
+     * Store Type : integer / long
+    */
     Integer: (options?: UNumericOptions) => Type.Optional(Type.Integer(options)),
+    /**
+     * Store Type : varchar / text /  string
+    */
+    String: (options?: UStringOptions) => Type.Optional(Type.String(options)),
+    /**
+     * Store Type : date
+    */
+    Date: (options?: UDateOptions) => Type.Optional(Type.Date(options)),
+    /**
+     * Store Type : varchar / string
+    */
+    DateString: (options?: UDateOptions) => Type.Optional(Type.String(options)),
+    /**
+     * Store Type : long / timestamp
+    */
+    DateLong: (options?: UDateOptions) => Type.Optional(Type.Number(options)),
+    /**
+     * Store Type : boolean
+    */
+    Boolean: (options?: Column) => Type.Optional(Type.Boolean(options)),
+    /**
+     * Store Type : bit / int (0 = false / 1 = true)
+    */
+    BooleanInteger: (options?: Column) => Type.Optional(Type.Integer(options)),
 
+    /**
+     * Store Type : float / double (not null)
+    */
     DoubleRequired: (options?: UNumericOptions) => Type.Number(options),
-    StringRequired: (options?: UStringOptions) => Type.String(options),
-    // DateRequired: (options?: UDateOptions) => Type.Union([Type.Date(options), Type.Number(), Type.String()], options),
-    DateRequired: (options?: UDateOptions) => Type.Date(options),
-    DateStringRequired: (options?: UDateOptions) => Type.String(options),
-    DateLongRequired: (options?: UDateOptions) => Type.Number(options),
-
-    BooleanRequired: (options?: Column) => Type.Boolean(options),
+    /**
+     * Store Type : integer / long (not null)
+    */
     IntegerRequired: (options?: UNumericOptions) => Type.Integer(options),
+    /**
+     * Store Type : varchar / text /  string (not null)
+    */
+    StringRequired: (options?: UStringOptions) => Type.String(options),
+    /**
+     * Store Type : date (not null)
+    */
+    DateRequired: (options?: UDateOptions) => Type.Date(options),
+    /**
+     * Store Type : varchar / string (not null)
+    */
+    DateStringRequired: (options?: UDateOptions) => Type.String(options),
+    /**
+     * Store Type : long / timestamp (not null)
+    */
+    DateLongRequired: (options?: UDateOptions) => Type.Number(options),
+    /**
+     * Store Type : boolean (not null)
+    */
+    BooleanRequired: (options?: Column) => Type.Boolean(options),
+    /**
+     * Store Type : bit / int (0 = false / 1 = true) (not null)
+    */
+    BooleanIntegerRequired: (options?: Column) => Type.Optional(Type.Integer(options)),
 
 }

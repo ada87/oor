@@ -1,23 +1,16 @@
-// import _ from 'lodash';
 import { BaseTable } from '../core';
-// import { getFieldType } from '../core/utils/QueryBuilder';
 import { PgAction } from './PgSQL'
 import { PG_EXECUTOR } from './ExecutorNodePg'
 
+import type { QueryResult } from 'pg';
 import type { TObject } from '@sinclair/typebox';
-
-
-import type { Database, TableOptions, ActionExecutor, QueryExecutor } from '../core'
-
-
-import type { ClientBase, } from 'pg';
-// import { PgView } from './PgView'
+import type { Database, TableOptions, ActionExecutor } from '../core'
 
 
 export class PgTable<C, S extends TObject> extends BaseTable<C, S, PgAction> {
 
 
-    protected EXECUTOR = PG_EXECUTOR as ActionExecutor<C, any>;
+    protected EXECUTOR = PG_EXECUTOR as ActionExecutor<C, any, QueryResult>;
 
     constructor(db: Database<C>, tableName: string, tableSchema: S, tableOptions?: TableOptions) {
         super(PgAction, db, tableName, tableSchema, tableOptions);
@@ -71,9 +64,9 @@ export class PgTable<C, S extends TObject> extends BaseTable<C, S, PgAction> {
     /**
      * same arguments as pg.query()
      * */
-    sql: ClientBase['query'] = async (...args: any[]) => {
-        const conn = await this.getConn() as ClientBase;
-        return conn.query.call(conn, ...args);
-        // return this.getClient().query.call(this.getClient(), ...args);
-    }
+    // sql: ClientBase['query'] = async (...args: any[]) => {
+    //     const conn = await this.getConn() as ClientBase;
+    //     return conn.query.call(conn, ...args);
+    //     // return this.getClient().query.call(this.getClient(), ...args);
+    // }
 }

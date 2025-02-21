@@ -1,7 +1,9 @@
 import { BaseView } from './BaseView';
+import { RETURN } from '../utils/types';
 
-import type { ActionExecutor, ActionBuilder, Table } from './types'
+import type { ActionExecutor, ActionBuilder, Table, } from './types'
 import type { TObject, Static } from '@sinclair/typebox';
+import type { WhereParam, SQLStatement, QuerySchema, QueryOrderBy, RowKeyType } from '../utils/types';
 
 
 // /**
@@ -19,12 +21,60 @@ import type { TObject, Static } from '@sinclair/typebox';
 // }
 
 
+
 export class BaseTable<C, S extends TObject, B extends ActionBuilder> extends BaseView<C, S, B> implements Table<Static<S>> {
 
     protected EXECUTOR: ActionExecutor<C, Static<S>>;
 
 
-    
+
+    async _execute(STATEMENT: SQLStatement, returning: RETURN) {
+        const { EXECUTOR, BUILDER } = this;
+        const RETURNING = BUILDER.returning(returning);
+        const conn = await this.getConn();
+        const result = await EXECUTOR.execute(conn, STATEMENT[0] + ' ' + RETURNING, STATEMENT[1]);
+        const rtn = EXECUTOR.convert(result, returning);
+        return rtn;
+    }
+
+    async _executeBatch(STATEMENT: SQLStatement[], returning: RETURN) {
+        const { EXECUTOR, BUILDER } = this;
+        const RETURNING = BUILDER.returning(returning);
+        const conn = await this.getConn();
+        const result = await EXECUTOR.execute(conn, STATEMENT[0] + ' ' + RETURNING, STATEMENT[1]);
+        const rtn = EXECUTOR.convertBatch(result, returning);
+        return rtn;
+    }
+
+
+    /**
+     * Insert a record
+    */
+    async add(data: Static<S>): Promise<boolean>;
+    async add(data: Static<S>, returnType: RETURN.IS_SUCCESS): Promise<boolean>;
+    async add(data: Static<S>, returnType: RETURN.EFFECT_COUNT): Promise<number>;
+    async add(data: Static<S>, returnType: RETURN.OBJECT_DATA): Promise<Static<S>>;
+    async add(data: Static<S>, returnType: RETURN.OBJECT_KEY): Promise<RowKeyType>;
+    async add(data: Static<S>, returnType: RETURN.ORGIN_RESULT): Promise<any>;
+    async add(data: Static<S>, returnType?: RETURN): Promise<any> {
+        const { BUILDER } = this;
+        const STATEMENT = BUILDER.insert(data);
+        const result = await this._execute(STATEMENT, returnType);
+        return result as any;
+    }
+
+    // /**
+    //  * Delete a row by primary id
+    // */
+    // async deleteById(id: number | string): Promise<number> {
+    //     const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key, mark } } = this;
+    //     if (key == null) throw new Error(`Table ${_table} do not have a Primary Key`);
+    //     if (mark) return this.update({ ...mark, [key]: id })
+    //     const SQL = _BUILDER.delete(_table);
+    //     const [WHERE, PARAM] = _BUILDER.byField(key, id);
+    //     const conn = await this.getConn();
+    //     return await _EXECUTOR.execute(conn, `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
+    // }
 
 
     // deleteByField(field: string, value: string | number | boolean): Promise<number> {
@@ -52,18 +102,6 @@ export class BaseTable<C, S extends TObject, B extends ActionBuilder> extends Ba
     //     return await _EXECUTOR.execute(conn, `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
     // }
 
-    // /**
-    //  * Delete a row by primary id
-    // */
-    // async deleteById(id: number | string): Promise<number> {
-    //     const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key, mark } } = this;
-    //     if (key == null) throw new Error(`Table ${_table} do not have a Primary Key`);
-    //     if (mark) return this.update({ ...mark, [key]: id })
-    //     const SQL = _BUILDER.delete(_table);
-    //     const [WHERE, PARAM] = _BUILDER.byField(key, id);
-    //     const conn = await this.getConn();
-    //     return await _EXECUTOR.execute(conn, `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
-    // }
 
     // /**
     //  * Update a record, By Primary Key in the obj
@@ -108,16 +146,6 @@ export class BaseTable<C, S extends TObject, B extends ActionBuilder> extends Ba
     //     return _EXECUTOR.execute(conn, `${SQL} ${this.fixWhere(WHERE)}`, [...FIELD_SET, ...PARAM]);
     // }
 
-    // /**
-    //  * Insert a record
-    // */
-    // async add(object: Static<S>): Promise<Static<S>> {
-    //     const { _table, _BUILDER, _EXECUTOR } = this;
-    //     let entity = this.checkEntity(object, true);
-    //     const [SQL, PARAM] = _BUILDER.insert(_table, entity);
-    //     const conn = await this.getConn();
-    //     return _EXECUTOR.add(conn, `${SQL}`, PARAM);
-    // }
 }
 
 

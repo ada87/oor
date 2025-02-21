@@ -1,5 +1,7 @@
-import type { Pool } from 'pg';
-import type { QueryExecutor, ActionExecutor } from '../core';
+import { RETURN } from './../utils/types'
+
+import type { Pool, QueryResult } from 'pg';
+import type { QueryExecutor, ActionExecutor, } from '../core';
 
 
 class PgQuery implements QueryExecutor<Pool, object> {
@@ -17,23 +19,55 @@ class PgQuery implements QueryExecutor<Pool, object> {
 
 }
 
-class PgExecutor extends PgQuery implements ActionExecutor<Pool, any> {
-    add: {
-        <O extends object>(conn: any, sql: string, param: any): Promise<O>;
-        <O extends object>(conn: any, sql: string, param: any, returning: true): Promise<O>;
-        (conn: any, sql: string, param: any, returning: false): Promise<Number>;
-    };
-    addBatch: {
-        <O extends object>(conn: any, sql: string, param: any): Promise<Array<O>>;
-        <O extends object>(conn: any, sql: string, param: any, returning: true): Promise<O>;
-        (conn: any, sql: string, param: any, returning: false): Promise<Number>;
-    };
-    execute: {
-        (conn: any, sql: string, param?: any): Promise<number>;
-        (conn: any, sql: string, param: any, returning: false): Promise<number>;
-        <O extends object>(conn: any, sql: string, param: any, returning: true): Promise<Array<O>>;
-    };
+class PgExecutor extends PgQuery implements ActionExecutor<Pool, any, QueryResult> {
+    convert(result: QueryResult<any>, returning: RETURN = RETURN.EFFECT_COUNT) {
+        switch (returning) {
+            case RETURN.ORGIN_RESULT:
+                return result;
+            case RETURN.EFFECT_COUNT:
+                return result.rowCount;
+            case RETURN.IS_SUCCESS:
+                return result.rowCount > 0;
+            case RETURN.OBJECT_KEY:
+
+            case RETURN.OBJECT_DATA:
+                if (result.rows.length > 0) {
+                    return result.rows[0];
+                }
+                return null;;
+            default:
+                return result.rowCount;
+        }
+    }
+
+    convertBatch(result: QueryResult<any>, returning: RETURN = RETURN.EFFECT_COUNT) {
+        switch (returning) {
+            case RETURN.ORGIN_RESULT:
+                return result;
+            case RETURN.EFFECT_COUNT:
+                return result.rowCount;
+            case RETURN.IS_SUCCESS:
+                return result.rowCount > 0;
+            case RETURN.OBJECT_KEY:
+            case RETURN.OBJECT_DATA:
+                return result.rows as any;
+            default:
+                return result.rowCount;
+        }
+    }
+
+
+    async execute(conn: Pool, sql: string, params?: Array<any>) {
+        console.log(sql, params)
+        const result = await conn.query(sql, params);
+        return result
+    }
+
+
+
 }
+
+
 
 export const PG_QUERY = new PgQuery();
 export const PG_EXECUTOR = new PgExecutor();

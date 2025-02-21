@@ -1,12 +1,10 @@
 import _ from '../core/dash';
 import dayjs from 'dayjs';
-import { NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString, ˝ } from '../utils/SQLUtil';
-import { Kind } from '@sinclair/typebox';
+import { NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../utils/SQLUtil';
 import { throwErr } from '../utils/ValidateUtil'
 
-import type { WhereItem, WhereParam, WhereCondition, MagicSuffix, Support, SQLStatement, Column, DeleteMark } from '../utils/types';
+import type { WhereItem, WhereParam, WhereCondition, MagicSuffix, Support, SQLStatement, } from '../utils/types';
 import type { Dayjs } from 'dayjs';
-// import type { SqlWhere } from '../base/Executor/sql';
 
 
 type QueryPos = { SQL: string[]; PARAM: any[], NUM: number; }
@@ -14,43 +12,43 @@ type QueryPos = { SQL: string[]; PARAM: any[], NUM: number; }
 // https://www.postgresql.org/docs/15/queries-table-expressions.html
 export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
 
-    'Min': { string: true, number: true, integer: true, date: true, boolean: true },
-    'MinThan': { string: true, number: true, integer: true, date: true, boolean: false },
-    'Max': { string: true, number: true, integer: true, date: true, boolean: true },
-    'MaxThan': { string: true, number: true, integer: true, date: true, boolean: false },
+    'Min': { string: true, double: true, integer: true, date: true, boolean: true },
+    'MinThan': { string: true, double: true, integer: true, date: true, boolean: false },
+    'Max': { string: true, double: true, integer: true, date: true, boolean: true },
+    'MaxThan': { string: true, double: true, integer: true, date: true, boolean: false },
 
-    'MinH': { string: false, number: false, integer: false, date: true, boolean: false },
-    'MinD': { string: false, number: false, integer: false, date: true, boolean: false },
-    'MinM': { string: false, number: false, integer: false, date: true, boolean: false },
-    'MaxH': { string: false, number: false, integer: false, date: true, boolean: false },
-    'MaxD': { string: false, number: false, integer: false, date: true, boolean: false },
-    'MaxM': { string: false, number: false, integer: false, date: true, boolean: false },
+    'MinH': { string: false, double: false, integer: false, date: true, boolean: false },
+    'MinD': { string: false, double: false, integer: false, date: true, boolean: false },
+    'MinM': { string: false, double: false, integer: false, date: true, boolean: false },
+    'MaxH': { string: false, double: false, integer: false, date: true, boolean: false },
+    'MaxD': { string: false, double: false, integer: false, date: true, boolean: false },
+    'MaxM': { string: false, double: false, integer: false, date: true, boolean: false },
 
-    'Like': { string: true, number: false, integer: false, date: false, boolean: false },
-    'Likel': { string: true, number: false, integer: false, date: false, boolean: false },
-    'Liker': { string: true, number: false, integer: false, date: false, boolean: false },
+    'Like': { string: true, double: false, integer: false, date: false, boolean: false },
+    'Likel': { string: true, double: false, integer: false, date: false, boolean: false },
+    'Liker': { string: true, double: false, integer: false, date: false, boolean: false },
 
-    'Bt': { string: false, number: true, integer: true, date: true, boolean: false },
-    'BtD': { string: false, number: false, integer: false, date: true, boolean: false },
-    'BtY': { string: false, number: false, integer: false, date: true, boolean: false },
-    'BtM': { string: false, number: false, integer: false, date: true, boolean: false },
+    'Bt': { string: false, double: true, integer: true, date: true, boolean: false },
+    'BtD': { string: false, double: false, integer: false, date: true, boolean: false },
+    'BtY': { string: false, double: false, integer: false, date: true, boolean: false },
+    'BtM': { string: false, double: false, integer: false, date: true, boolean: false },
 
-    'Not': { string: true, number: true, integer: true, date: true, boolean: true },
+    'Not': { string: true, double: true, integer: true, date: true, boolean: true },
 
-    'In': { string: true, number: true, integer: true, date: false, boolean: false },
-    'NotIn': { string: true, number: true, integer: true, date: false, boolean: false },
+    'In': { string: true, double: true, integer: true, date: false, boolean: false },
+    'NotIn': { string: true, double: true, integer: true, date: false, boolean: false },
 
-    'IsNull': { string: true, number: true, integer: true, date: true, boolean: true },
-    'NotNull': { string: true, number: true, integer: true, date: true, boolean: true },
+    'IsNull': { string: true, double: true, integer: true, date: true, boolean: true },
+    'NotNull': { string: true, double: true, integer: true, date: true, boolean: true },
 
 
-    '>': { string: true, number: true, integer: true, date: true, boolean: true },
-    '>=': { string: true, number: true, integer: true, date: true, boolean: false },
-    '<': { string: true, number: true, integer: true, date: true, boolean: true },
-    '<=': { string: true, number: true, integer: true, date: true, boolean: false },
-    '=': { string: true, number: true, integer: true, date: true, boolean: true },
-    '!=': { string: true, number: true, integer: true, date: true, boolean: true },
-    '<>': { string: true, number: true, integer: true, date: true, boolean: true },
+    '>': { string: true, double: true, integer: true, date: true, boolean: true },
+    '>=': { string: true, double: true, integer: true, date: true, boolean: false },
+    '<': { string: true, double: true, integer: true, date: true, boolean: true },
+    '<=': { string: true, double: true, integer: true, date: true, boolean: false },
+    '=': { string: true, double: true, integer: true, date: true, boolean: true },
+    '!=': { string: true, double: true, integer: true, date: true, boolean: true },
+    '<>': { string: true, double: true, integer: true, date: true, boolean: true },
 
 }
 
@@ -302,13 +300,12 @@ const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
     if (!isSupport(item, err)) return;
     if (NullCondition(item, pos)) return;
     switch (item.type) {
-        case 'number':
+        case 'double':
             whereNumber(item, pos, err, parseFloat);
             return
-        // @ts-ignore
-        // case 'int':
-        //     whereNumber(item, pos, err, parseInt);
-        //     return;
+        case 'integer':
+            whereNumber(item, pos, err, parseInt);
+            return;
         case 'string':
             whereText(item, pos, err);
             return;
@@ -361,46 +358,31 @@ export const where = (STRICT: boolean, condition: WhereParam, startIdx = 1): SQL
 
 
 
-const convert = (kind, value) => {
-    switch (kind) {
-        case 'Boolean':
-            return value;
-        case 'Number':
-            return parseFloat(value);
-        case 'Integer':
-            return parseInt(value);
-        default:
-            return value + '';
-    }
-}
-// function fixWhere(delMark: DeleteMark, extra: WhereItem[]);
+
+// export const fixWhere = (globalCondition: WhereItem[]): [string, string] => {
+//     let ITEMS: WhereItem[] = [];
 
 
 
-export const fixWhere = (globalCondition: WhereItem[]): [string, string] => {
-    let ITEMS: WhereItem[] = [];
+//     return null
+//     // let ctf = new Map<string, string>();
 
-
-
-    return null
-    // let ctf = new Map<string, string>();
-
-    // for (let [key, val] of COLUMN_MAP) {
-    //     if (_.has(val, 'delMark')) {
-    //         ITEMS.push({ column: (val.column || key), fn: '<>', value: convert(val[Kind as any], val.delMark) })
-    //     }
-    //     ctf.set((val.column || key), key);
-    // }
-    // extra.map(item => {
-    //     let schema = COLUMN_MAP.get(item.column) || COLUMN_MAP.get(ctf.get(item.column));
-    //     if (schema == null) return;
-    //     ITEMS.push({ ...item, value: convert(schema[Kind as any], item.value) });
-    // })
-    // if (ITEMS.length == 0) return ['', ' WHERE '];
-    // let [SQL, PARAM] = where(false, ITEMS);
-    // if (SQL.length == 0) return ['', ' WHERE '];
-    // PARAM.map((item, i) => {
-    //     SQL = SQL.replaceAll(`$${i + 1}`, _.isNumber(item) ? (item + '') : `'${item}'`)
-    // });
-    // return [' WHERE ' + SQL, ' AND ']
-}
+//     // for (let [key, val] of COLUMN_MAP) {
+//     //     if (_.has(val, 'delMark')) {
+//     //         ITEMS.push({ column: (val.column || key), fn: '<>', value: convert(val[Kind as any], val.delMark) })
+//     //     }
+//     //     ctf.set((val.column || key), key);
+//     // }
+//     // extra.map(item => {
+//     //     let schema = COLUMN_MAP.get(item.column) || COLUMN_MAP.get(ctf.get(item.column));
+//     //     if (schema == null) return;
+//     //     ITEMS.push({ ...item, value: convert(schema[Kind as any], item.value) });
+//     // })
+//     // if (ITEMS.length == 0) return ['', ' WHERE '];
+//     // let [SQL, PARAM] = where(false, ITEMS);
+//     // if (SQL.length == 0) return ['', ' WHERE '];
+//     // PARAM.map((item, i) => {
+//     //     SQL = SQL.replaceAll(`$${i + 1}`, _.isNumber(item) ? (item + '') : `'${item}'`)
+//     // });
+//     // return [' WHERE ' + SQL, ' AND ']
+// }

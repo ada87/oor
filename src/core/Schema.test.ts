@@ -20,7 +20,7 @@ export const DB = new TestDB({}, { pageSize: 12 });;
 export const TABLE_NAME = 'user';
 export const TABLE_OPTIONS: TableOptions = {
 
-    globalCondition: { age: 1 }
+    // globalCondition: { age: 1 }
 }
 
 export const DATABASE_OPTIONS: DatabaseOptions = {}
@@ -34,8 +34,8 @@ export const UserSchema = UType.Table({
     profile: UType.String({ ignore: true, title: '简介' }),
     address: UType.String({ maxLength: 128, title: '地址' }),
     salary: UType.Double({ ignore: true, title: '薪水' }),
-    registerDate: UType.DateRequired({ column: 'register_date', isCreate: true, title: '注册日期', readOnly: true }),
-    lastModify: UType.DateRequired({ column: 'last_modify', isModify: true, title: '最后修改' }),
+    registerDate: UType.Date({ column: 'register_date', isCreate: true, title: '注册日期', readOnly: true }),
+    lastModify: UType.Date({ column: 'last_modify', isModify: true, title: '最后修改' }),
 });
 
 

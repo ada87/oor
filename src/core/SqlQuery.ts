@@ -1,7 +1,7 @@
 import _ from './dash';
 import { queryToCondition } from '../utils/ConditionUtil';
 import { validateSort } from '../utils/ValidateUtil'
-import { parseOptions, convertField } from './utils';
+import { parseOptions, convertField, } from './utils';
 
 import type { TableOptions, DatabaseOptions, QueryBuilder } from './types';
 import type { TObject } from '@sinclair/typebox';
@@ -87,6 +87,7 @@ export abstract class BaseQuery implements QueryBuilder {
 
         return `SELECT ${this.QUERY_FIELDS} FROM ${this.tableName} `;
     }
+
 
     count(field?: boolean | string, distinct?: boolean) {
         let countFiled = _.isString(field) ? field : (this.ROW_KEY || '*');

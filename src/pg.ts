@@ -38,26 +38,49 @@ export class PgPool extends BaseDB<PoolConfig | (() => Pool | Promise<Pool>), Po
     }
 }
 
-
+/**
+ * A Quick PG Database Provider.
+ * For use , must set local environment variables :
+ * 
+ * - PG_URL
+ *  OR
+ * - PG_HOST (REQUIRED)
+ * - PG_PORT        (DEFAULT: 5432)
+ * - PG_USER
+ * - PG_PASS
+ * - PG_DB   (REQUIRED)
+*/
 export const PG = new PgPool(() => {
-    let config: PoolConfig = {};
+    if (process.env.PG_URL) return new Pool({ connectionString: process.env.PG_URL });
 
+    let config: PoolConfig = {};
     try {
-        config.host = process.env.PG_HOST;
-        config.port = parseInt(process.env.PG_PORT);
-        config.user = process.env.PG_USER;
-        config.database = process.env.PG_DB;
-        config.password = process.env.PG_PASS;
+
+        if (process.env.PG_HOST) {
+            config.host = process.env.PG_HOST;
+        } else {
+            throw new Error('PG_HOST is required')
+        }
+
+        if (process.env.PG_PORT) {
+            config.port = parseInt(process.env.PG_PORT);
+        } else {
+            config.port = 5432;
+        }
+        if (process.env.PG_DB) {
+            config.database = process.env.PG_DB;
+        } else {
+            throw new Error('PG_DB is required')
+        }
+        if (process.env.PG_USER) {
+            config.user = process.env.PG_USER;
+            if (process.env.PG_PASS) config.password = process.env.PG_PASS;
+        }
+
     } catch (error) {
         throw (error)
     }
 
+    // console.log(config)
     return new Pool(config);
 })
-
-
-// pg @types/pg
-// postgres
-// mysql2
-// @libsql/client
-// better-sqlite3 @types/better-sqlite3

@@ -1,11 +1,11 @@
-import { where, fixWhere } from './pgWhere';
+import { where } from './pgWhere';
 import { BaseQuery, BaseAction } from '../core';
 import { RESERVED_WORDS, FIELDS_MAP } from './RESERVED_WORDS';;
 
 import type { SQLStatement, WhereParam } from '../utils/types';
 
 
-export class PgQuery extends BaseQuery {
+export class PgQuery extends BaseAction {
 
     protected initReservedWord() {
         return RESERVED_WORDS;
@@ -44,9 +44,9 @@ export class PgAction extends PgQuery implements BaseAction {
     //     // console.log('inti')
     //     return [null, null]  as any
     // } 
-    protected checkEntity(obj: any, isAdd?: boolean) {
-        throw new Error('Method not implemented.');
-    }
+    // protected checkEntity(obj: any, isAdd?: boolean) {
+    //     throw new Error('Method not implemented.');
+    // }
     // insert: (data: TObject, PgQuery?: boolean) => [string, any[]];
     // update: (data: TObject, returning?: boolean) => [string, any[]];
     // delete: () => string;

@@ -1,8 +1,11 @@
 import type { TObject } from '@sinclair/typebox';
 import type {
     SQLStatement, WhereCondition, WhereItem, WhereParam,
-    QuerySchema, OrderBy, Limit, OrderByLimit, QueryParam
+    QuerySchema, OrderBy, Limit, OrderByLimit, QueryParam,
+    RETURN, RowKeyType
 } from '../utils/types'
+
+
 
 /**
  * Abbr Rule
@@ -39,7 +42,7 @@ export type TableOptions = DatabaseOptions & {
      * 默认查询过滤,比如 { field:'disabled',value:0,operation:'<>' }
      * 设置后，通过 query / all 拼装的 sql 都会带上 AND disabled <> 0 
     */
-    globalCondition?: QueryParam 
+    globalCondition?: QueryParam
     // | Array<WhereItem>;
 }
 
@@ -103,11 +106,11 @@ export interface QueryBuilder {
 
 
 export interface ActionBuilder extends QueryBuilder {
-    // insert: (data: TObject, returning?: boolean) => SQLStatement;
-    // update: (data: TObject, returning?: boolean) => SQLStatement;
-    // delById: (id: string | number) => SQLStatement;
+    insert: (data: object) => SQLStatement;
+    update: (data: object) => SQLStatement;
+    delete: () => SQLStatement;
 
-    // delete: () => SQLStatement;
+    returning: (returnType: RETURN) => string
 }
 
 
@@ -127,42 +130,32 @@ export interface QueryExecutor<C, O> {
         (conn: C, SQL: string, PARAMS?: Array<any>): Promise<O>
         <T>(conn: C, SQL: string, PARAMS?: Array<any>): Promise<T>
     }
-    // (conn: C, SQL: string, WHERE: SQLStatement): Promise<Array<O>>;
-    // (conn: C, SQL: string, ORDER_BY: string): Promise<Array<O>>;
-    // (conn: C, SQL: string, ORDER_BY: string, WHERE: SQLStatement): Promise<Array<O>>;
-
-    // queryPagination: (conn: C, select: string, where: string, orderBy: string, param?: Array<any> | object) => Promise<{ total: number, list: Array<O> }>
-    // count: (conn: C, sql: string, param?: Array<any> | object) => Promise<number>;
-
-    // get: (conn: C, sql: string, param?: Array<any> | object) => Promise<O>;
-    // query: <O extends object>(conn: C, sql: string, param?: object) => Promise<Array<O>>;
-
-    // get: <O extends object>(conn: C, sql: string, param?: any) => Promise<O>;
-
 }
 
 
 
 
 
-export interface ActionExecutor<C, O> extends QueryExecutor<C, O> {
-    add: {
-        (conn, sql: string, param: any): Promise<O>,
-        (conn, sql: string, param: any, returning: true): Promise<O>,
-        (conn, sql: string, param: any, returning: false): Promise<Number>,
-    }
-    addBatch: {
-        (conn, sql: string, param: any): Promise<Array<O>>,
-        (conn, sql: string, param: any, returning: true): Promise<O>,
-        (conn, sql: string, param: any, returning: false): Promise<Number>,
-    },
-    execute: {
-        (conn, sql: string, param?: any): Promise<number>,
-        (conn, sql: string, param: any, returning: false): Promise<number>,
-        (conn, sql: string, param: any, returning: true): Promise<Array<O>>,
-    },
+export interface ActionExecutor<C, O, R = any> extends QueryExecutor<C, O> {
+    execute: (conn: C, SQL: string, PARAMS?: Array<any>) => Promise<R>
 
-    // exec: (conn: C, sql: string, param?: Array<any> | object) => Promise<number>;
+    convert: {
+        (result: R, returnType?: RETURN): number;
+        (result: R, returnType: RETURN.EFFECT_COUNT): number;
+        (result: R, returnType: RETURN.IS_SUCCESS): boolean;
+        (result: R, returnType: RETURN.OBJECT_KEY): Partial<O>;
+        (result: R, returnType: RETURN.OBJECT_DATA): O;
+        (result: R, returnType: RETURN.ORGIN_RESULT): R;
+    }
+    convertBatch: {
+        <T extends RETURN>(result: R, returnType?: T): T extends RETURN.EFFECT_COUNT ? number :
+            T extends RETURN.IS_SUCCESS ? boolean :
+            T extends RETURN.OBJECT_KEY ? Array<Partial<O>> :
+            T extends RETURN.OBJECT_DATA ? Array<O> :
+            R;
+    }
+
+
 
 }
 
@@ -181,8 +174,8 @@ export interface View<O extends object = object> {
     queryByField: (field: string, value: string | number | boolean, sort?: OrderBy) => Promise<Array<O>>;
     queryByCondition: (condition?: WhereParam, sort?: OrderByLimit) => Promise<Array<O>>;
 
-    getById: (id: string | number) => Promise<O>
-    getByField: (field: string, value: string | number) => Promise<O>;
+    getById: (id: RowKeyType) => Promise<O>
+    getByField: (field: string, value: string | number | boolean) => Promise<O>;
     getByCondition: (condition: WhereParam) => Promise<O>;
 
 }
@@ -190,47 +183,105 @@ export interface View<O extends object = object> {
 
 export interface Table<O extends object> extends View<O> {
 
-    // add: {
-    //     (conn, sql: string, param: any): Promise<O>,
-    //     (conn, sql: string, param: any, returning: true): Promise<O>,
-    //     (conn, sql: string, param: any, returning: false): Promise<Number>,
-    // }
-
+    add: {
+        (data: O): Promise<boolean>,
+        (data: O, returnType: RETURN.IS_SUCCESS): Promise<boolean>,
+        (data: O, returnType: RETURN.EFFECT_COUNT): Promise<number>,
+        (data: O, returnType: RETURN.OBJECT_DATA): Promise<O>,
+        (data: O, returnType: RETURN.OBJECT_KEY): Promise<RowKeyType>,
+        (data: O, returnType: RETURN.ORGIN_RESULT): Promise<any>,
+    }
     // addBatch: {
-    //     (conn, sql: string, param: any): Promise<Array<O>>,
-    //     (conn, sql: string, param: any, returning: true): Promise<O>,
-    //     (conn, sql: string, param: any, returning: false): Promise<Number>,
+    //     (data: Array<O>): Promise<number>,
+    //     (data: Array<O>, returnType?: RETURN.EFFECT_COUNT): Promise<number>,
+    //     (data: Array<O>, returnType: RETURN.IS_SUCCESS): Promise<boolean>,
+    //     (data: Array<O>, returnType: RETURN.OBJECT_DATA): Promise<Array<O>>,
     // },
 
-    // update:{
-    //     (conn, sql: string, param: any): Promise<O>,
-    //     (conn, sql: string, param: any, returning: true): Promise<O>,
-    //     (conn, sql: string, param: any, returning: false): Promise<Number>,
+    // update: {
+    //     (data: Partial<O>): Promise<boolean>,
+    //     (data: Partial<O>, returnType?: RETURN.IS_SUCCESS): Promise<boolean>,
+    //     (data: Partial<O>, returnType: RETURN.OBJECT_DATA): Promise<O>,
+    // }
+
+    // updateById: {
+    //     (id: RowKeyType, data: Partial<O>): Promise<boolean>,
+    //     (id: RowKeyType, data: Partial<O>, returnType?: RETURN.IS_SUCCESS): Promise<boolean>,
+    //     (id: RowKeyType, data: Partial<O>, returnType: RETURN.OBJECT_DATA): Promise<O>,
+    // }
+    // updateBatch: {
+    //     (data: Array<Partial<O>>): Promise<number>,
+    //     (data: Array<Partial<O>>, returnType?: RETURN.EFFECT_COUNT): Promise<number>,
+    //     (data: Array<Partial<O>>, returnType: RETURN.IS_SUCCESS): Promise<boolean>,
+    //     (data: Array<Partial<O>>, returnType: RETURN.OBJECT_DATA): Promise<Array<O>>,
+    // },
+
+    // updateByField: {
+    //     (field: string, value: string | number | boolean, data: Partial<O>): Promise<number>,
+    //     (field: string, value: string | number | boolean, data: Partial<O>, returnType?: RETURN.EFFECT_COUNT): Promise<number>,
+    //     (field: string, value: string | number | boolean, data: Partial<O>, returnType: RETURN.IS_SUCCESS): Promise<boolean>,
+    //     (field: string, value: string | number | boolean, data: Partial<O>, returnType: RETURN.OBJECT_ID): Promise<Array<number | string>>,
+    //     (field: string, value: string | number | boolean, data: Partial<O>, returnType: RETURN.OBJECT_DATA): Promise<Array<O>>,
+    // },
+
+    // updateByQuery: {
+    //     (query: QueryParam, data: Partial<O>): Promise<number>,
+    //     (query: QueryParam, data: Partial<O>, returnType?: RETURN.EFFECT_COUNT): Promise<number>,
+    //     (query: QueryParam, data: Partial<O>, returnType: RETURN.IS_SUCCESS): Promise<boolean>,
+    //     (query: QueryParam, data: Partial<O>, returnType: RETURN.OBJECT_ID): Promise<Array<number | string>>,
+    //     (query: QueryParam, data: Partial<O>, returnType: RETURN.OBJECT_DATA): Promise<Array<O>>,
+    // },
+
+    // updateByCondition: {
+    //     (condition: WhereParam, data: Partial<O>): Promise<number>,
+    //     (condition: WhereParam, data: Partial<O>, returnType?: RETURN.EFFECT_COUNT): Promise<number>,
+    //     (condition: WhereParam, data: Partial<O>, returnType: RETURN.IS_SUCCESS): Promise<boolean>,
+    //     (condition: WhereParam, data: Partial<O>, returnType: RETURN.OBJECT_ID): Promise<Array<number | string>>,
+    //     (condition: WhereParam, data: Partial<O>, returnType: RETURN.OBJECT_DATA): Promise<Array<O>>,
+    // },
+
+
+    // // truncate: () => Promise<boolean>;
+
+    // deleteById: {
+    //     (id: RowKeyType, data: Partial<O>): Promise<boolean>,
+    //     (id: RowKeyType, data: Partial<O>, returnType?: RETURN.IS_SUCCESS): Promise<boolean>,
+    //     (id: RowKeyType, data: Partial<O>, returnType: RETURN.OBJECT_DATA): Promise<O>,
     // }
 
 
-    // updateBatch:{
-    //     (conn, sql: string, param: any): Promise<O>,
-    //     (conn, sql: string, param: any, returning: true): Promise<O>,
-    //     (conn, sql: string, param: any, returning: false): Promise<Number>,
+    // deleteByIds: {
+    //     (id: RowKeyType | Array<RowKeyType>, data: Partial<O>): Promise<number>,
+    //     (id: RowKeyType | Array<RowKeyType>, data: Partial<O>, returnType?: RETURN.EFFECT_COUNT): Promise<number>,
+    //     (id: RowKeyType | Array<RowKeyType>, data: Partial<O>, returnType?: RETURN.IS_SUCCESS): Promise<boolean>,
+    //     (id: RowKeyType | Array<RowKeyType>, data: Partial<O>, returnType: RETURN.OBJECT_DATA): Promise<O>,
     // }
-
-
-
-    // updateById:(id: number | string)=> Promise<number>
-    // updateByField:(field: string, value: string | number | boolean)=>Promise<number> ;
-    // updateByQuery:(query: QuerySchema)=>Promise<number> 
-    // updateByCondition:(condition: WhereParam)=> Promise<number> 
-
-    // deleteById:(id: number | string)=> Promise<number>
-    // deleteByField:(field: string, value: string | number | boolean)=>Promise<number> ;
-    // deleteByQuery:(query: QuerySchema)=>Promise<number> 
-    // deleteByCondition:(condition: WhereParam)=> Promise<number> 
-    // execute: {
-    //     (conn, sql: string, param?: any): Promise<number>,
-    //     (conn, sql: string, param: any, returning: false): Promise<number>,
-    //     (conn, sql: string, param: any, returning: true): Promise<Array<O>>,
+    // deleteByField: {
+    //     (field: string, value: string | number | boolean, data: Partial<O>): Promise<number>,
+    //     (field: string, value: string | number | boolean, data: Partial<O>, returnType?: RETURN.EFFECT_COUNT): Promise<number>,
+    //     (field: string, value: string | number | boolean, data: Partial<O>, returnType: RETURN.IS_SUCCESS): Promise<boolean>,
+    //     (field: string, value: string | number | boolean, data: Partial<O>, returnType: RETURN.OBJECT_ID): Promise<Array<number | string>>,
+    //     (field: string, value: string | number | boolean, data: Partial<O>, returnType: RETURN.OBJECT_DATA): Promise<Array<O>>,
     // },
+
+    // deleteByQuery: {
+    //     (query: QueryParam, data: Partial<O>): Promise<number>,
+    //     (query: QueryParam, data: Partial<O>, returnType?: RETURN.EFFECT_COUNT): Promise<number>,
+    //     (query: QueryParam, data: Partial<O>, returnType: RETURN.IS_SUCCESS): Promise<boolean>,
+    //     (query: QueryParam, data: Partial<O>, returnType: RETURN.OBJECT_ID): Promise<Array<number | string>>,
+    //     (query: QueryParam, data: Partial<O>, returnType: RETURN.OBJECT_DATA): Promise<Array<O>>,
+    // },
+
+    // deleteByCondition: {
+    //     (condition: WhereParam, data: Partial<O>): Promise<number>,
+    //     (condition: WhereParam, data: Partial<O>, returnType?: RETURN.EFFECT_COUNT): Promise<number>,
+    //     (condition: WhereParam, data: Partial<O>, returnType: RETURN.IS_SUCCESS): Promise<boolean>,
+    //     (condition: WhereParam, data: Partial<O>, returnType: RETURN.OBJECT_ID): Promise<Array<number | string>>,
+    //     (condition: WhereParam, data: Partial<O>, returnType: RETURN.OBJECT_DATA): Promise<Array<O>>,
+    // },
+
+
+
 
 }
 

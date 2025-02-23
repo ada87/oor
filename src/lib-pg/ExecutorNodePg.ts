@@ -20,17 +20,17 @@ class PgQuery implements QueryExecutor<Pool, object> {
 }
 
 class PgExecutor extends PgQuery implements ActionExecutor<Pool, any, QueryResult> {
-    convert(result: QueryResult<any>, returning: RETURN = RETURN.EFFECT_COUNT) {
+    convert(result: QueryResult<any>, returning: RETURN = RETURN.COUNT) {
         switch (returning) {
-            case RETURN.ORGIN_RESULT:
+            case RETURN.ORIGIN:
                 return result;
-            case RETURN.EFFECT_COUNT:
+            case RETURN.COUNT:
                 return result.rowCount;
-            case RETURN.IS_SUCCESS:
+            case RETURN.SUCCESS:
                 return result.rowCount > 0;
-            case RETURN.OBJECT_KEY:
+            case RETURN.KEY:
 
-            case RETURN.OBJECT_DATA:
+            case RETURN.INFO:
                 if (result.rows.length > 0) {
                     return result.rows[0];
                 }
@@ -40,16 +40,16 @@ class PgExecutor extends PgQuery implements ActionExecutor<Pool, any, QueryResul
         }
     }
 
-    convertBatch(result: QueryResult<any>, returning: RETURN = RETURN.EFFECT_COUNT) {
+    convertBatch(result: QueryResult<any>, returning: RETURN = RETURN.COUNT) {
         switch (returning) {
-            case RETURN.ORGIN_RESULT:
+            case RETURN.ORIGIN:
                 return result;
-            case RETURN.EFFECT_COUNT:
+            case RETURN.COUNT:
                 return result.rowCount;
-            case RETURN.IS_SUCCESS:
+            case RETURN.SUCCESS:
                 return result.rowCount > 0;
-            case RETURN.OBJECT_KEY:
-            case RETURN.OBJECT_DATA:
+            case RETURN.KEY:
+            case RETURN.INFO:
                 return result.rows as any;
             default:
                 return result.rowCount;

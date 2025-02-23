@@ -103,15 +103,15 @@ export abstract class BaseQuery implements QueryBuilder {
             if (this.ORDER_BY) return `ORDER BY ${this._wrapColumn(this.ORDER_BY.order)} ${this.ORDER_BY.by}`;
             return ''
         }
-        let orderyBy = validateSort({ order: query._order_, by: query._by_ }, this.F2C);
+        let orderyBy = validateSort({ order: query._order, by: query._by }, this.F2C);
         if (orderyBy == null) return '';
         return `ORDER BY ${this._wrapColumn(orderyBy.order)} ${orderyBy.by}`;
     }
 
     limit(query?: QuerySchema | number, start: number = 0): string {
         if (_.isNumber(query)) return `LIMIT ${query} OFFSET ${start}`
-        const _start = query?._start_ || 0;
-        const _count = query?._count_ || this.PAGE_SIZE;
+        const _start = query?._start || 0;
+        const _count = query?._count || this.PAGE_SIZE;
         return `LIMIT ${_count} OFFSET ${_start}`
     }
 

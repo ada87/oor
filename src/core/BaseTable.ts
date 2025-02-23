@@ -22,7 +22,7 @@ import type { WhereParam, SQLStatement, QuerySchema, QueryOrderBy, RowKeyType } 
 
 
 
-export class BaseTable<C, S extends TObject, B extends ActionBuilder> extends BaseView<C, S, B> implements Table<Static<S>> {
+export class BaseTable<C, S extends TObject, B extends ActionBuilder, R = any> extends BaseView<C, S, B> implements Table<Static<S>, R> {
 
     protected EXECUTOR: ActionExecutor<C, Static<S>>;
 
@@ -51,14 +51,32 @@ export class BaseTable<C, S extends TObject, B extends ActionBuilder> extends Ba
      * Insert a record
     */
     async add(data: Static<S>): Promise<boolean>;
-    async add(data: Static<S>, returnType: RETURN.IS_SUCCESS): Promise<boolean>;
-    async add(data: Static<S>, returnType: RETURN.EFFECT_COUNT): Promise<number>;
-    async add(data: Static<S>, returnType: RETURN.OBJECT_DATA): Promise<Static<S>>;
-    async add(data: Static<S>, returnType: RETURN.OBJECT_KEY): Promise<RowKeyType>;
-    async add(data: Static<S>, returnType: RETURN.ORGIN_RESULT): Promise<any>;
+    async add(data: Static<S>, returnType: RETURN.SUCCESS): Promise<boolean>;
+    async add(data: Static<S>, returnType: RETURN.COUNT): Promise<number>;
+    async add(data: Static<S>, returnType: RETURN.INFO): Promise<Static<S>>;
+    async add(data: Static<S>, returnType: RETURN.KEY): Promise<RowKeyType>;
+    async add(data: Static<S>, returnType: RETURN.ORIGIN): Promise<R>;
     async add(data: Static<S>, returnType?: RETURN): Promise<any> {
         const { BUILDER } = this;
         const STATEMENT = BUILDER.insert(data);
+        const result = await this._execute(STATEMENT, returnType);
+        return result as any;
+    }
+
+
+    /**
+     * Update a record (By ID)
+    */
+    async update(data: Static<S>): Promise<boolean>;
+    async update(data: Static<S>, returnType: RETURN.SUCCESS): Promise<boolean>;
+    async update(data: Static<S>, returnType: RETURN.COUNT): Promise<number>;
+    async update(data: Static<S>, returnType: RETURN.INFO): Promise<Static<S>>;
+    async update(data: Static<S>, returnType: RETURN.KEY): Promise<RowKeyType>;
+    async update(data: Static<S>, returnType: RETURN.ORIGIN): Promise<R>;
+    async update(data: Static<S>, returnType?: RETURN): Promise<any> {
+        const { BUILDER } = this;
+        const STATEMENT = BUILDER.update(data);
+        // BUILDER.
         const result = await this._execute(STATEMENT, returnType);
         return result as any;
     }

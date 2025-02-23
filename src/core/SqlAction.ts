@@ -53,6 +53,7 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
 
         return [`UPDATE  ${this.tableName} SET ${query.join(',')}`, param];
     }
+
     delete(): SQLStatement {
         return [`DELETE FROM ${this.tableName}`, []]
     }
@@ -60,12 +61,12 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
     returning(returning: RETURN) {
 
         switch (returning) {
-            case RETURN.IS_SUCCESS:
-            case RETURN.EFFECT_COUNT:
+            case RETURN.SUCCESS:
+            case RETURN.COUNT:
                 return ''
-            case RETURN.OBJECT_DATA:
+            case RETURN.INFO:
                 return 'RETURNING ' + this.DETAIL_FIELDS;
-            case RETURN.OBJECT_KEY:
+            case RETURN.KEY:
                 if (this.ROW_KEY == null) throw (`This table has no primary key`);
                 return 'RETURNING ' + this.wrapField(this.ROW_KEY);
             default:

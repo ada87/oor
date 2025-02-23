@@ -45,14 +45,14 @@
   },
   "dependencies": {
     "@sinclair/typebox": "^0.34.27",
-    "dayjs": "^1.11.13"
+    "dayjs": "^1.11.13",
+    "lodash": "^4.17.21"
   },
   "peerDependencies": {
     "@sinclair/typebox": "^0.34.21",
     "dayjs": "^1.11.13"
   },
   "pnpm": {
-    "onlyBuiltDependencies": [
-    ]
+    "onlyBuiltDependencies": []
   }
 }

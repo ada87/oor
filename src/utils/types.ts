@@ -15,11 +15,11 @@ export type FieldType = 'string' | 'double' | 'integer' | 'boolean' | 'date';
 export type Support = Record<FieldType, boolean>;
 
 export enum RETURN {
-    IS_SUCCESS,
-    EFFECT_COUNT,
-    OBJECT_DATA,
-    OBJECT_KEY,
-    ORGIN_RESULT,
+    SUCCESS,
+    COUNT,
+    INFO,
+    KEY,
+    ORIGIN,
 }
 
 /**
@@ -87,36 +87,36 @@ export type QueryOrderBy = {
     /**
      * The Start pos
      */
-    _start_?: number;
+    _start?: number;
     /**
      * PageSize
      */
-    _count_?: number;
+    _count?: number;
     /**
      * Not : Not Support yet!
     */
-    _keyword_?: string;
+    _keyword?: string;
     /**
      * The Sort column field
      * default {modify_date} desc -> {key} desc -> Not sort
     */
-    _order_?: string;
+    _order?: string;
     /**
      * The Sort column method
     */
-    _by_?: 'asc' | 'desc';
+    _by?: 'asc' | 'desc';
     /**
      * If specify cid_ field, The Query will skip Steps:
      *      1. use last cached sql condition (exclude <start,count,order,by>)
      *      2. use last total (in pagition query).
      * do specify sid_ in second can upper the performane in pagition query.
     */
-    _cid_?: number;
+    _cid?: number;
     /**
      * If specify total_ field, The Query will skip the count(total) query and return in total derectly.
      * do specify total_ in second can upper the performane in pagition query.
     */
-    _total_?: number;
+    _total?: number;
     /**
      * Extend Query 
      * Use Maggic Suffix to build query condition

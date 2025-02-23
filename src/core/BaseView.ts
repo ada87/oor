@@ -127,7 +127,7 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
         const { BUILDER } = this;
         const SELECT = BUILDER.select(true);
         const STATEMENT = BUILDER.where(condition);
-        const ORDER_BY_LIMIT = (query && query._order_ && query._by_) ? BUILDER.orderByLimit({ ...query, _count_: 1 }) : undefined
+        const ORDER_BY_LIMIT = (query && query._order && query._by) ? BUILDER.orderByLimit({ ...query, _count: 1 }) : undefined
         const result = await this._get(SELECT, STATEMENT, ORDER_BY_LIMIT);
         return result;
     }

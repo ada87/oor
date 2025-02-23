@@ -51,7 +51,7 @@ test('Condition', {
     const { BUILDER } = PG_VIEW;
     const where = BUILDER.convertQuery({
         idMin: 100, idMax: 199, sex: 1, age: new Date(),
-        _order_: 'id', _by_: 'asc', _start_: 100, _count_: 100
+        _order: 'id', _by: 'asc', _start: 100, _count: 100
     });
     console.log(BUILDER.where(where))
 })
@@ -88,19 +88,19 @@ test('Test : Schema', {
     console.log(BUILDER.limit())                    // PAGE_SIZE
     console.log(BUILDER.limit(10))
     console.log(BUILDER.limit(10, 100))
-    console.log(BUILDER.limit({ _start_: 100, _count_: 100 }))
-    console.log(BUILDER.limit({ _start_: 100, }))   //PAGESIZE
+    console.log(BUILDER.limit({ _start: 100, _count: 100 }))
+    console.log(BUILDER.limit({ _start: 100, }))   //PAGESIZE
     console.log(BUILDER.limit({}))                  //PAGESIZE
 
     console.log(BUILDER.orderBy())
     console.log(BUILDER.orderBy(false))
     console.log(BUILDER.orderBy(true))
-    console.log(BUILDER.orderBy({ _order_: 'id', _by_: 'asc' }))
+    console.log(BUILDER.orderBy({ _order: 'id', _by: 'asc' }))
 
     console.log(BUILDER.orderByLimit())
     console.log(BUILDER.orderByLimit(false))
     console.log(BUILDER.orderByLimit(true))
-    console.log(BUILDER.orderByLimit({ _order_: 'id', _by_: 'asc', _start_: 100, _count_: 100 }))
+    console.log(BUILDER.orderByLimit({ _order: 'id', _by: 'asc', _start: 100, _count: 100 }))
 
     // console.log(BUILDER.where({ id: 100 }))
 

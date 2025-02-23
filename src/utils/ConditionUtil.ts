@@ -5,7 +5,7 @@ import { WhereItem, WhereCondition, QuerySchema, WhereDefine, SUFFIX, MagicSuffi
 import { throwErr } from './ValidateUtil';
 
 
-const DEFAULT_QUERY_KEY = new Set<string>(['_start_', '_count_', '_order_', '_by_', '_keyword_', '_cid_', '_total_']);
+const DEFAULT_QUERY_KEY = new Set<string>(['_start', '_count', '_order', '_by', '_keyword', '_cid', '_total']);
 
 
 /**

@@ -1,11 +1,11 @@
 import _ from './dash';
 import { validateSort } from '../utils/ValidateUtil';
 import { getFieldType } from '../utils/SQLUtil';
+import { queryToCondition } from '../utils/ConditionUtil';
 
 import type { DatabaseOptions, TableOptions } from './types'
 import type { TObject } from '@sinclair/typebox';
 import type { Column, DeleteMark, WhereItem } from '../utils/types';
-import { queryToCondition } from '../utils/ConditionUtil';
 
 const DEFAULT_PAGE_SIZE = 10;
 

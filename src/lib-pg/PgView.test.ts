@@ -29,7 +29,7 @@ test('queryPagination', {
 
 
     const QUERY_PAGINATION = await USER.queryPagination({
-        _count_: 2,
+        _count: 2,
         nameLike: '丽',
         idMin: 100,
         salaryMinThan: 1000,
@@ -56,14 +56,14 @@ test('GET', {
     // const GET_BY_FIELD = await USER.getByField('name', '张丽')
     // console.log(GET_BY_FIELD)
     const query: QuerySchema = {
-        _count_: 2,
+        _count: 2,
         // nameLike: '丽',
         idMin: 100,
         salaryMinThan: 1000,
         salaryMax: 2000,
         sex: true,
-        _order_: 'id',
-        _by_: 'desc',
+        _order: 'id',
+        _by: 'desc',
 
     }
     // const statement = USER.BUILDER.where(USER.BUILDER.convertQuery(query));

@@ -91,8 +91,8 @@
 
 //     // this three is same
 //     // const result = await User.queryByProperties('name', '陆磊');
-//     // const result = await User.queryByCondition([{ field: 'name', value: '陆磊' }]);
-//     // const result = await User.queryByCondition({ link: 'AND', items: [{ field: 'name', value: '陆磊' }]});
+//     // const result = await User.queryByWhere([{ field: 'name', value: '陆磊' }]);
+//     // const result = await User.queryByWhere({ link: 'AND', items: [{ field: 'name', value: '陆磊' }]});
 
 
 //     console.log(result);
@@ -147,7 +147,7 @@
 //     const result = await User.update({ id: 1 });
 //     // const result = await User.update({ id: 2 });
 //     // const result = await User.updateByField({ age: 30 }, 'id', 2);
-//     // const result = await User.updateByCondition({ age: 30 }, [{ field: 'id', condition: '<', value: 10 }]);
+//     // const result = await User.updateByWhere({ age: 30 }, [{ field: 'id', condition: '<', value: 10 }]);
 //     // const result = await User.updateByQuery({ age: 38 }, { idMax: 10, sex: false });
 //     console.log(result)
 // })
@@ -160,7 +160,7 @@
 //     // const result = await User.deleteById(2);
 //     // const result = await User.deleteByField('id', 3);
 //     // const result = await User.deleteByQuery( { idMax: 10, sex: false });
-//     const result = await User.deleteByCondition([{ column: 'id', fn: '<', value: 10 }]);
+//     const result = await User.deleteByWhere([{ column: 'id', fn: '<', value: 10 }]);
 //     console.log(result)
 // })
 //     // .skip()

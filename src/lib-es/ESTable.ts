@@ -53,7 +53,7 @@
 //         if (mark) return this.updateByField(mark, field, value)
 //         let schema = COLUMN_MAP.get(field);
 //         let column = (schema && schema.column) ? schema.column : field;
-//         return this.deleteByCondition([{ column, value }])
+//         return this.deleteByWhere([{ column, value }])
 //     }
 
 //     /**
@@ -63,12 +63,12 @@
 //         const { _CONFIG: { mark } } = this;
 //         if (mark) return this.updateByQuery(mark, query)
 //         const condition = queryToCondition(query, this._CONFIG.COLUMN_MAP, this._QUERY_CACHE);
-//         return this.deleteByCondition(condition);
+//         return this.deleteByWhere(condition);
 //     }
 
-//     deleteByCondition(condition: WhereParam): Promise<number> {
+//     deleteByWhere(condition: WhereParam): Promise<number> {
 //         const { _CONFIG: { mark, globalFilter }, _index } = this;
-//         if (mark) return this.updateByCondition(mark, condition)
+//         if (mark) return this.updateByWhere(mark, condition)
 //         const param = where(condition)
 //         const query = fixQuery(globalFilter, param)
 //         return actions.deleteByQuery(this.getClient(), _index, query);
@@ -97,14 +97,14 @@
 //     */
 //     updateByField(obj: Static<S>, field: string, value: string | number | boolean): Promise<number> {
 //         let column = this.getColumn(field);
-//         return this.updateByCondition(obj, [{ column, value, fn: '=' }])
+//         return this.updateByWhere(obj, [{ column, value, fn: '=' }])
 //     }
 
 //     updateByQuery(obj: Static<S>, query: QuerySchema): Promise<number> {
 //         const condition = queryToCondition(query, this._CONFIG.COLUMN_MAP, this._QUERY_CACHE);
-//         return this.updateByCondition(obj, condition);
+//         return this.updateByWhere(obj, condition);
 //     }
-//     updateByCondition(obj: Static<S>, condition?: WhereParam): Promise<number> {
+//     updateByWhere(obj: Static<S>, condition?: WhereParam): Promise<number> {
 //         const { _index, _CONFIG: { COLUMN_MAP, globalFilter } } = this;
 //         let entity = this.checkEntity(obj);
 //         const scripts = [];

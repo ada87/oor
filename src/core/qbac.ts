@@ -170,95 +170,7 @@
     // }
 
 
-    // /**
-    //  * @see WhereCondition
-    //  * Use a WhereCondition Query Data 
-    // */
-    // queryByCondition(condition?: WhereParam, limit?: QuerySchema): Promise<Static<S>[]> {
-    //     const [WHERE, PARAM] = this._BUILDER.where(condition);
-    //     if (limit) {
-    //         const [ORDER_BY, LIMIT] = this.orderByLimit(limit);
-    //         return this._query(this.fixWhere(WHERE), PARAM, ORDER_BY, LIMIT);
-    //     }
 
-    //     return this._query(this.fixWhere(WHERE), PARAM);
-    // }
-
-
-    // /**
-    //  * @see QuerySchema
-    //  * Use a QuerySchema Query Data 
-    // */
-    // query(query?: QuerySchema): Promise<Static<S>[]> {
-    //     const { _QUERY_CACHE, _CONFIG: { COLUMN_MAP } } = this;
-    //     const condition = queryToCondition(query, COLUMN_MAP, _QUERY_CACHE);
-    //     return this.queryByCondition(condition, query)
-    // }
-
-    // /**
-    //  * @see QuerySchema
-    //  * Use a QuerySchema Query Data With Page
-    //  * this will return a object with {total:number,list:ArrayLike<T>}
-    // */
-    // async queryPager(query?: QuerySchema): Promise<{ total: number, list: Static<S>[] }> {
-    //     let total = 0;
-    //     const { _table, _BUILDER, _EXECUTOR, _QUERY_CACHE, _CONFIG: { COLUMN_MAP } } = this;
-    //     const condition = queryToCondition(query, COLUMN_MAP, _QUERY_CACHE);
-    //     const [WHERE, PARAM] = _BUILDER.where(condition);
-    //     if (_.has(query, 'total_') && _.isNumber(query.total_)) {
-    //         total = query.total_;
-    //     } else {
-    //         const SQL_COUNT = `${_BUILDER.count(_table)} ${this.fixWhere(WHERE)}`;
-    //         const conn = await this.getConn();
-    //         const countResult = await _EXECUTOR.get(conn, SQL_COUNT, PARAM);
-    //         if (countResult == null) {
-    //             return {
-    //                 total: 0,
-    //                 list: [],
-    //             }
-    //         }
-    //         total = parseInt(countResult.total);
-    //     }
-    //     const [ORDER_BY, LIMIT] = this.orderByLimit(query);
-    //     const list = await this._query(this.fixWhere(WHERE), PARAM, ORDER_BY, LIMIT)
-    //     return { total, list }
-    // }
-
-    // /**
-    //  * Fetch All Records form the Table / View
-    // */
-    // async all(): Promise<Static<S>[]> {
-    //     const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_query, WHERE_FIX } } = this;
-    //     const SQL = _BUILDER.select(_table, fields_query) + WHERE_FIX[0];
-    //     const conn = await this.getConn();;
-    //     return _EXECUTOR.query(conn, SQL);
-    // }
-
-    // /**
-    //  * Get A record form Table / View By Primary key.
-    //  * This method will return All column. Even if the IGNORE column.
-    // */
-    // async getById(id: number | string): Promise<Static<S>> {
-    //     const { _table, _BUILDER, _EXECUTOR, _CONFIG: { key, fields_get } } = this;
-    //     if (key == null) throw new Error(`Table ${_table} do not have a Primary Key`);
-    //     const SQL = _BUILDER.select(_table, fields_get);
-    //     const [WHERE, PARAM] = _BUILDER.byField(key, id);
-    //     const conn = await this.getConn()
-    //     return _EXECUTOR.get(conn, `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
-    // }
-    // /**
-    //  * Get A record form Table / View By Specify Field = value.
-    //  * This method will return All column. Even if the IGNORE column.
-    //  * Note : If result has multi records , return the first row
-    //  *        Want return all records?  use `queryByField`
-    // */
-    // async getByField(field: string, value?: string | number): Promise<Static<S>> {
-    //     const { _table, _BUILDER, _EXECUTOR, _CONFIG: { fields_get } } = this;
-    //     const SQL = _BUILDER.select(_table, fields_get);
-    //     const [WHERE, PARAM] = _BUILDER.byField(field, value);
-    //     const conn = await this.getConn()
-    //     return _EXECUTOR.get(conn, `${SQL} ${this.fixWhere(WHERE)}`, PARAM);
-    // }
 
     // /**
     //  * Get records form Table / View By Specify Property = value.
@@ -293,7 +205,7 @@
 
 
 
-// export const select: SqlSelect = (table: string, fields: string = '*'): string => `SELECT ${fields || '*'} FROM ${table} `;
+
 
 // export const count: SqlCount = (table: string) => `SELECT count(0) AS total FROM ${table}`;
 

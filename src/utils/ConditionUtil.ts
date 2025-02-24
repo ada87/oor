@@ -35,7 +35,6 @@ const fieldToDef = (key: string, COLUMN_MAP: Map<string, Column>): WhereDefine =
     const fieldType = getFieldType(SCHEMA);
     let def: WhereDefine = {  column: SCHEMA.column || query_field, type: fieldType, fn: suffix };
 
-
     return def;
 }
 
@@ -53,7 +52,7 @@ export const queryToCondition = (strict: boolean, query: QuerySchema, COLUMN_MAP
         let define: WhereDefine = null;
         if (FIELD_CACHE.has(key)) {
             define = FIELD_CACHE.get(key);
-            if (define == null) return; // ignore default and error condition
+            if (define == null) return; // ignore default and error
         } else if (DEFAULT_QUERY_KEY.has(key)) {
             FIELD_CACHE.set(key, null);
             return;
@@ -73,6 +72,7 @@ export const queryToCondition = (strict: boolean, query: QuerySchema, COLUMN_MAP
         }
         ROOT.items.push(queryItem);
     });
+    
     // let keyword = _.trim(query._keyword_);
     // if (keyword) {
     //     let OR: WhereCondition = { link: 'OR', items: [] }

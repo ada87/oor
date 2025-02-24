@@ -1,15 +1,16 @@
 import _ from './dash';
 import { queryToCondition } from '../utils/ConditionUtil';
 import { validateSort } from '../utils/ValidateUtil'
-import { parseOptions, convertField, } from './utils';
+import { parseOptions, } from './utils';
 
 import type { TableOptions, DatabaseOptions, QueryBuilder } from './types';
 import type { TObject } from '@sinclair/typebox';
-import type { WhereParam, OrderBy, Column, SQLStatement, QuerySchema, WhereCondition, WhereDefine, WhereItem, QueryParam } from '../utils/types';
+import type { WhereParam, OrderBy, Column, SQLStatement, QuerySchema, WhereCondition, WhereDefine, WhereItem, QueryParam, RowKeyType, DeleteMark } from '../utils/types';
 
 
 export abstract class BaseQuery implements QueryBuilder {
     private readonly RESERVED_WORD: Set<string>;
+    protected readonly SCHEMA: TObject;
 
     protected readonly tableName: string;
     protected readonly ROW_KEY: string = null;
@@ -22,13 +23,30 @@ export abstract class BaseQuery implements QueryBuilder {
     protected readonly DETAIL_FIELDS: string;
 
     protected readonly COLUMN_MAP: Map<string, Column>;
-    private readonly F2C = new Map<string, string>(); // Field To Column
-    private readonly C2F = new Map<string, string>(); // Column To Field
+    protected readonly DEL_MARK: DeleteMark = null;
 
-    // protected readonly DEL_MARK: DeleteMark = null;
+    /**
+     * filed to filed
+     * no wraped column to filed
+     * wraped column (no select) to filed
+     * wraped column (select) to field
+    */
+    protected readonly C2F = new Map<string, string>(); // Column To Field , SUPPORT Wraped Field and Selected field
+
+    /**
+     * filed to wraped column
+     * not column to wraped column
+     * wraped column to wraped column
+    */
+    protected readonly F2W = new Map<string, string>(); // Field To Column (ONLY WRAP : SELECT "user")
+    /**
+     * filed to wraped column (select)
+     * not column to wraped column  (select)
+     * wraped column to wraped column (select)
+    */
+    protected readonly F2S = new Map<string, string>(); // Field To Column (WITH AS : SELECT "user" AS userName)
+
     protected readonly GLOBAL_CONDITION: Array<WhereItem> = [];
-
-
 
     private FIELD_CACHE = new Map<string, WhereDefine>();
 
@@ -36,12 +54,15 @@ export abstract class BaseQuery implements QueryBuilder {
     protected abstract wrapField(field: string): string;
 
     constructor(tbName: string, tbSchema: TObject, tbOptions: TableOptions, dbOptions: DatabaseOptions) {
+        this.SCHEMA = tbSchema
         this.RESERVED_WORD = this.initReservedWord();
-        this.tableName = convertField(this.RESERVED_WORD, this.wrapField, tbName);
-        const CONFIG = parseOptions(this.RESERVED_WORD, tbSchema, tbOptions, dbOptions, this.wrapField);
+
+        const CONFIG = parseOptions(this.RESERVED_WORD, tbName, tbSchema, tbOptions, dbOptions, this.wrapField);
+        this.tableName = CONFIG.tableName;
         if (CONFIG.rowKey) this.ROW_KEY = CONFIG.rowKey;
         this.PAGE_SIZE = CONFIG.pageSize;
         if (CONFIG.orderBy) this.ORDER_BY = CONFIG.orderBy;
+        if (CONFIG.delMark) this.DEL_MARK = CONFIG.delMark;
 
         this.QUERY_FIELDS = CONFIG.queryFields;
         this.DETAIL_FIELDS = CONFIG.detialFields;
@@ -49,15 +70,22 @@ export abstract class BaseQuery implements QueryBuilder {
         this.STRICT_QUERY = CONFIG.strictQuery;
         this.STRICT_ENTITY = CONFIG.strictEntity;
         this.COLUMN_MAP = CONFIG.COLUMN_MAP;
-        this.F2C = CONFIG.F2C;
         this.C2F = CONFIG.C2F;
+        this.F2W = CONFIG.F2W;
+        this.F2S = CONFIG.F2S;
         // this.DEL_MARK = CONFIG.delMark;
         this.GLOBAL_CONDITION = CONFIG.globalCondition;
 
     }
 
-    private _wrapColumn(column: string): string {
-        return convertField(this.RESERVED_WORD, this.wrapField, column)
+
+    /**
+     * 字段：
+     * 是否在 select 子名中
+    */
+    protected _wrapColumn(column: string, select: boolean = false): string {
+        if (select) return this.F2S.get(column) || column;
+        return this.F2W.get(column);
     }
 
     convertQuery(query: QueryParam): WhereCondition {
@@ -66,7 +94,6 @@ export abstract class BaseQuery implements QueryBuilder {
 
 
     select(fields?: boolean | string | Array<string>): string {
-
         if (fields == null || fields == undefined) return `SELECT ${this.QUERY_FIELDS} FROM ${this.tableName} `;
 
         if (typeof fields == 'boolean') {
@@ -79,10 +106,10 @@ export abstract class BaseQuery implements QueryBuilder {
             return `SELECT ${txt} FROM ${this.tableName} `;
         }
         if (Array.isArray(fields)) {
-            const columns = fields.filter(field => this.F2C.has(field)).map(filed => this.F2C.get(filed));
+            const columns = fields.filter(field => this.F2S.has(field)).map(filed => this.F2S.get(filed));
             if (columns.length == 0) return `SELECT ${this.QUERY_FIELDS} FROM ${this.tableName} `;
-            const queryFields = columns.map(column => convertField(this.RESERVED_WORD, this.wrapField, this.C2F.get(column), column)).join(', ');
-            return `SELECT ${queryFields} FROM ${this.tableName} `;
+            // const queryFields = columns.map(column => convertField(this.RESERVED_WORD, this.wrapField, this.C2F.get(column), column)).join(', ');
+            return `SELECT ${columns.join(', ')} FROM ${this.tableName} `;
         }
 
         return `SELECT ${this.QUERY_FIELDS} FROM ${this.tableName} `;
@@ -103,7 +130,7 @@ export abstract class BaseQuery implements QueryBuilder {
             if (this.ORDER_BY) return `ORDER BY ${this._wrapColumn(this.ORDER_BY.order)} ${this.ORDER_BY.by}`;
             return ''
         }
-        let orderyBy = validateSort({ order: query._order, by: query._by }, this.F2C);
+        let orderyBy = validateSort({ order: query._order, by: query._by }, this.F2W);
         if (orderyBy == null) return '';
         return `ORDER BY ${this._wrapColumn(orderyBy.order)} ${orderyBy.by}`;
     }
@@ -122,14 +149,16 @@ export abstract class BaseQuery implements QueryBuilder {
     }
 
     byField(field: string, value: string | number | boolean, startIdx: number = 1): SQLStatement {
-        if (!this.F2C.has(field)) throw new Error(`Field ${field} not found in Table ${this.tableName}`);
-        let column = this.F2C.get(field);
-        let sql = `${this._wrapColumn(column)} = $${startIdx}`; // msyql/sqlite 为 "?"
+        if (!this.F2W.has(field)) throw new Error(`Field ${field} not found in Table ${this.tableName}`);
+        // const query = this.convertQuery({ [field]: value });
+        // const STATEMENT = this.where(query, startIdx);   // 用这个有些bool 可以转为 xx is true
+        let column = this.F2W.get(field);
+        let sql = `${column} = $${startIdx}`; // msyql/sqlite 为 "?"
         return [sql, [value]];
     }
 
-    byId(value: string | number): SQLStatement {
-        // if (this.ROW_KEY == null) throw ('Row Key is not defined');
+    byId(value: RowKeyType): SQLStatement {
+        if (this.ROW_KEY == null) throw ('Row Key is not defined');
         return this.byField(this.ROW_KEY, value);
     }
 

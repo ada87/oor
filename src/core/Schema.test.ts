@@ -20,6 +20,7 @@ export const DB = new TestDB({}, { pageSize: 12 });;
 export const TABLE_NAME = 'user';
 export const TABLE_OPTIONS: TableOptions = {
 
+    // strictEntity: true,
     // globalCondition: { age: 1 }
 }
 
@@ -27,10 +28,10 @@ export const DATABASE_OPTIONS: DatabaseOptions = {}
 
 
 export const UserSchema = UType.Table({
-    id: UType.Integer({ title: 'ID' }),
+    id: UType.Integer({ title: 'ID', column: 'id' }),
     name: UType.StringRequired({ maxLength: 32, title: '姓名', }),
-    age: UType.Integer({ minimum: 0, maximum: 128, delMark: 64, title: '年龄' }),
-    sex: UType.Boolean({ title: '性别', default: false }),
+    age: UType.Integer({ minimum: 0, maximum: 128, delMark: 64, title: '年龄', }),
+    sex: UType.Boolean({ title: '性别', default: false, }),
     profile: UType.String({ ignore: true, title: '简介' }),
     address: UType.String({ maxLength: 128, title: '地址' }),
     salary: UType.Double({ ignore: true, title: '薪水' }),
@@ -105,7 +106,7 @@ test('Test : Schema', {
     // console.log(BUILDER.where({ id: 100 }))
 
 
-    //         where: (condition: WhereParam, startIdx?: number) => SQLStatement;
+    //         where: (where: WhereParam, startIdx?: number) => SQLStatement;
     //         fixWhere: {
     //             (statement?: SQLStatement): SQLStatement;
     //         }

@@ -271,6 +271,9 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
 
 const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
     let bool = boolValue(item.value)
+
+    // console.log(item, bool)
+    
     switch (item.fn) {
         case 'IsNull':
             pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} NULL`);
@@ -291,6 +294,7 @@ const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
             break;
     }
     pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} TRUE`)
+    // console.log(pos.SQL)
 
 
 }
@@ -299,6 +303,7 @@ const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
     let item = { ...whereItem, fn: whereItem.fn ? whereItem.fn : '=', type: whereItem.type ? whereItem.type : 'string' }
     if (!isSupport(item, err)) return;
     if (NullCondition(item, pos)) return;
+    // console.log(item.type)
     switch (item.type) {
         case 'double':
             whereNumber(item, pos, err, parseFloat);
@@ -321,8 +326,8 @@ const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
     }
 }
 
-const ConditionToWhere = (condition: WhereCondition, pos: QueryPos, err: string[]) => {
-    for (let item of condition.items) {
+const ConditionToWhere = (where: WhereCondition, pos: QueryPos, err: string[]) => {
+    for (let item of where.items) {
         if (_.has(item, 'link')) {
             let group = item as WhereCondition;
             let _pos: QueryPos = {
@@ -349,6 +354,7 @@ export const where = (STRICT: boolean, condition: WhereParam, startIdx = 1): SQL
     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
     let err: string[] = [];
     ConditionToWhere(root, pos, err);
+    // console.log(root)
     throwErr(STRICT, err, 'Some SQL Error Occur');
     if (pos.SQL.length == 0) {
         return ['', []]

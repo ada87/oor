@@ -4,7 +4,7 @@ import { Type } from '@sinclair/typebox';
 
 import type {
     SchemaOptions, TProperties, TPartial,
-    TObject, StringOptions, DateOptions, NumberOptions,
+    TObject, StringOptions, DateOptions, NumberOptions, IntegerOptions,
 } from '@sinclair/typebox';
 
 /**
@@ -39,7 +39,7 @@ export const SUFFIX = [
 
 export type MagicSuffix = (typeof SUFFIX)[number];
 
-export type DeleteMark = { field: string, value: string | number | boolean, };
+export type DeleteMark = { column: string, value: string | number };
 
 export type WhereDefine = {
     /**
@@ -119,7 +119,7 @@ export type QueryOrderBy = {
     _total?: number;
     /**
      * Extend Query 
-     * Use Maggic Suffix to build query condition
+     * Use Maggic Suffix to build query Schema
      * */
 };
 export type QuerySchema = QueryParam & QueryOrderBy;
@@ -137,10 +137,6 @@ export interface Column extends SchemaOptions {
     * please specify column name if table column name not math the model field name. 
     **/
     column?: string;
-    /**
-     * TODO The Funtion default call on this filed
-    */
-    // fn?: 'lower' | 'upper'
 
 
 }
@@ -154,7 +150,21 @@ export interface UStringOptions extends Column, StringOptions {
      *      2. Query  action will add conditon with != ${delMark}
      *      3. Note : A table can only hava ONE delMark.
     */
-    // delMark?: string;
+    delMark?: string;
+    /**
+     * 常见的字符串处理函数
+    */
+    fn?: 'UPPER' | 'LOWER' | 'INITCAP' | 'TRIM' | 'LTRIM' | 'RTRIM' | 'REVERSE'
+
+    /**
+     * SUBSTRING,
+     * REPLACE,
+     * REVERSE,
+     * 
+    */
+    // fnArgs?: Array<string | number>
+
+    // | 'LENGTH' | 'SUBSTRING' | 'REPLACE' | 'REVERSE' | 'TO_HEX' | 'TO_BASE64' | 'TO_JSON' | 'TO_JSONB' | 'TO_ASCII' | 'TO_CHAR' | 'TO_DATE' | 'TO_TIMESTAMP' | 'TO_TIMESTAMP' | 'TO_NUMBER
 }
 
 
@@ -165,9 +175,13 @@ export interface UNumericOptions extends Column, NumberOptions {
      *      2. Query  action will add conditon with != ${delMark}
      *      3. Note : A table can only hava ONE delMark.
     */
-    delMark?: number;
-    // format?: string
+    // delMark?: number;
+
+    fn?: 'ABS' | 'FLOOR' | 'CEIL' | 'ROUND' | 'SQRT'
+
+    // agg?: 'SUM' | 'AVG' | 'MAX' | 'MIN' | 'COUNT' | 'COUNT_DISTINCT'
 }
+
 
 
 
@@ -186,7 +200,7 @@ export interface UDateOptions extends Column, DateOptions {
     /**
      * 
     */
-    format?: string
+    // format?: string
 }
 
 export interface UStringOptions extends Column, StringOptions {
@@ -196,18 +210,18 @@ export interface UStringOptions extends Column, StringOptions {
      *      2. Query  action will add conditon with != ${delMark}
      *      3. Note : A table can only hava ONE delMark.
     */
-    // delMark?: string;
+    delMark?: string;
 }
 
 
-export interface UNumericOptions extends Column, NumberOptions {
+export interface UIntegerOptions extends Column, IntegerOptions {
     /**
      * Defind a mark: 
      *      1. Delete action will update this filed to mark 
      *      2. Query  action will add conditon with != ${delMark}
      *      3. Note : A table can only hava ONE delMark.
     */
-    // delMark?: number;
+    delMark?: number;
 }
 
 
@@ -240,7 +254,7 @@ export const UType = {
     /**
      * Store Type : integer / long
     */
-    Integer: (options?: UNumericOptions) => Type.Optional(Type.Integer(options)),
+    Integer: (options?: UIntegerOptions) => Type.Optional(Type.Integer(options)),
     /**
      * Store Type : varchar / text /  string
     */
@@ -273,7 +287,7 @@ export const UType = {
     /**
      * Store Type : integer / long (not null)
     */
-    IntegerRequired: (options?: UNumericOptions) => Type.Integer(options),
+    IntegerRequired: (options?: UIntegerOptions) => Type.Integer(options),
     /**
      * Store Type : varchar / text /  string (not null)
     */

@@ -119,4 +119,4 @@ export class PgView<C, S extends TObject> extends BaseView<C, S, PgQuery> {
 // });
 
 // const a = new PgView(null,null,UserSchema,null);
-// const user  = await a.getByCondition()
+// const user  = await a.getByWhere()

@@ -3,6 +3,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
 import type { Dayjs } from 'dayjs'
+import { Column } from './types';
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -33,6 +34,10 @@ export const setFormat = (timezone: string, formater: string) => {
 
 export const convertDate = (date: string | Date | number | Dayjs, timezone: string = DEFAULT_TIMEZONE): string => {
     return dayjs(date).tz(timezone).format(TZ_MAP.get(timezone))
+}
+
+export const newDate = (column: Column): Date => {
+    return new Date();
 }
 
 export const toDate = (txt: string | number): Date => {

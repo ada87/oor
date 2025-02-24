@@ -58,8 +58,6 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
         return result;
     }
 
-
-
     async queryPagination(query?: QuerySchema): Promise<{ total: number; list: Static<S>[]; }> {
         const { BUILDER, EXECUTOR } = this;
         const SELECT = BUILDER.select();
@@ -86,18 +84,19 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
         return result;
     }
 
-    async queryByCondition(condition?: WhereParam, query: QuerySchema | boolean = true): Promise<Static<S>[]> {
+    async queryByWhere(where?: WhereParam, query: QuerySchema | boolean = true): Promise<Static<S>[]> {
         const { BUILDER } = this;
         const SELECT = BUILDER.select();
-        const STATEMENT = BUILDER.where(condition);
+        const STATEMENT = BUILDER.where(where);
         const ORDER_BY_LIMIT = BUILDER.orderByLimit(query);
         const result = await this._query(SELECT, STATEMENT, ORDER_BY_LIMIT);
         return result;
     }
 
     async query(query?: QuerySchema): Promise<Static<S>[]> {
-        const CONDITION = this.BUILDER.convertQuery(query)
-        return await this.queryByCondition(CONDITION, query);
+        const WHERE = this.BUILDER.convertQuery(query)
+        return await this.queryByWhere(WHERE, query);
+
     }
 
     protected async _get(SELECT: string, STATEMENT: SQLStatement, ORDER_BY_LIMIT: string = 'LIMIT 1 OFFSET 0', fixed = true): Promise<Static<S>> {
@@ -123,7 +122,7 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
         return result;
     }
 
-    async getByCondition(condition: WhereParam, query?: QueryOrderBy): Promise<Static<S>> {
+    async getByWhere(condition: WhereParam, query?: QueryOrderBy): Promise<Static<S>> {
         const { BUILDER } = this;
         const SELECT = BUILDER.select(true);
         const STATEMENT = BUILDER.where(condition);
@@ -132,9 +131,8 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
         return result;
     }
 
-
     async getByQuery(query: QuerySchema): Promise<Static<S>> {
         const CONDITION = this.BUILDER.convertQuery(query);
-        return await this.getByCondition(CONDITION, query);
+        return await this.getByWhere(CONDITION, query);
     }
 }

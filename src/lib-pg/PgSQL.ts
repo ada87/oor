@@ -7,6 +7,8 @@ import type { SQLStatement, WhereParam } from '../utils/types';
 
 export class PgQuery extends BaseAction {
 
+    private FieldCache = new Map<string, string>();
+
     protected initReservedWord() {
         return RESERVED_WORDS;
     }
@@ -19,13 +21,10 @@ export class PgQuery extends BaseAction {
         if (condition == null) return ['', []];
         return where(this.STRICT_QUERY, condition, startIdx)
     }
+    
     fixWhere(statement?: SQLStatement): SQLStatement {
-        if (this.GLOBAL_CONDITION == null || this.GLOBAL_CONDITION.length == 0) {
-            return statement == null ? ['', []] : statement;
-        }
-        if (statement == null) {
-            return this.where(this.GLOBAL_CONDITION);
-        }
+        if (this.GLOBAL_CONDITION == null || this.GLOBAL_CONDITION.length == 0) return statement == null ? ['', []] : statement;
+        if (statement == null) return this.where(this.GLOBAL_CONDITION);
         const [WHERE, PARAM] = this.where(this.GLOBAL_CONDITION, statement ? statement[1].length + 1 : 1);
         return [`(${WHERE}) AND (${statement[0]})`, [...statement[1], ...PARAM]]
 

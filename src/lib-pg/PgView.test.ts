@@ -77,7 +77,6 @@ test('GET', {
     // console.log(where)
 
     const GET_BY_QUERY = await USER.getByQuery(query)
-    console.log(GET_BY_QUERY)
 
     // const result = await USER.query({ idMin: 11, idMax: 20 })
     // console.log(result)

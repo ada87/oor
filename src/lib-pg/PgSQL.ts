@@ -27,7 +27,6 @@ export class PgQuery extends BaseAction {
         if (statement == null) return this.where(this.GLOBAL_CONDITION);
         const [WHERE, PARAM] = this.where(this.GLOBAL_CONDITION, statement ? statement[1].length + 1 : 1);
         return [`(${WHERE}) AND (${statement[0]})`, [...statement[1], ...PARAM]]
-
     }
 
 
@@ -40,7 +39,6 @@ export class PgQuery extends BaseAction {
 
 export class PgAction extends PgQuery implements BaseAction {
     // init() {
-    //     // console.log('inti')
     //     return [null, null]  as any
     // } 
     // protected checkEntity(obj: any, isAdd?: boolean) {

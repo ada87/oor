@@ -3,6 +3,7 @@ import { Kind } from '@sinclair/typebox';
 import { getFieldType } from './SQLUtil';
 import { WhereItem, WhereCondition, QuerySchema, WhereDefine, SUFFIX, MagicSuffix, Column } from './types';
 import { throwErr } from './ValidateUtil';
+import { colorFieldName } from './color';
 
 
 const DEFAULT_QUERY_KEY = new Set<string>(['_start', '_count', '_order', '_by', '_keyword', '_cid', '_total']);
@@ -33,46 +34,51 @@ const fieldToDef = (key: string, COLUMN_MAP: Map<string, Column>): WhereDefine =
         return null;
     }
     const fieldType = getFieldType(SCHEMA);
-    let def: WhereDefine = {  column: SCHEMA.column || query_field, type: fieldType, fn: suffix };
+    let def: WhereDefine = { column: SCHEMA.column || query_field, type: fieldType, fn: suffix };
 
     return def;
 }
 
-const defineToItem = (def: WhereDefine, schema: Column, value: string | boolean | number | Date): WhereItem => {
-    // TODO : IGNORE SOME INVALIDATE SCHEMA
-    // return null;
-    return { ...def, value };
+// const defineToItem = (def: WhereDefine, schema: Column, value: string | boolean | number | Date): WhereItem => {
+//     // TODO : IGNORE SOME INVALIDATE SCHEMA
+//     // console.log(schema)
+//     // return null;
+//     return { ...def, value };
 
-}
+// }
 
 export const queryToCondition = (strict: boolean, query: QuerySchema, COLUMN_MAP: Map<string, Column>, FIELD_CACHE: Map<string, WhereDefine>): WhereCondition => {
     const err: string[] = [];
     const ROOT: WhereCondition = { link: 'AND', items: [] }
+
+
     _.keys(query).map(key => {
         let define: WhereDefine = null;
+        // console.log(key)
         if (FIELD_CACHE.has(key)) {
             define = FIELD_CACHE.get(key);
-            if (define == null) return; // ignore default and error
+            // if (define == null) return; // ignore default and error
         } else if (DEFAULT_QUERY_KEY.has(key)) {
-            FIELD_CACHE.set(key, null);
+            // FIELD_CACHE.set(key, null);
             return;
         };
         if (define == null) {
             define = fieldToDef(key, COLUMN_MAP);
+            FIELD_CACHE.set(key, define);
         }
-        FIELD_CACHE.set(key, define);
         if (define == null) {
-            err.push(key)
+            err.push(`${colorFieldName(key)} not existed`)
             return
         };
-        let queryItem = defineToItem(define, COLUMN_MAP.get(define.column), query[key])
-        if (queryItem == null) {
-            err.push(key + ' \' value has problem : ' + String(query[key]))
-            return;
-        }
-        ROOT.items.push(queryItem);
+        // let queryItem = defineToItem(define, COLUMN_MAP.get(define.column), query[key])
+        // if (queryItem == null) {
+        //     err.push(key + ' \' value has problem : ' + String(query[key]))
+        //     return;
+        // }
+        ROOT.items.push({ ...define, value: query[key] });
     });
-    
+    // console.error(err)
+
     // let keyword = _.trim(query._keyword_);
     // if (keyword) {
     //     let OR: WhereCondition = { link: 'OR', items: [] }
@@ -90,6 +96,7 @@ export const queryToCondition = (strict: boolean, query: QuerySchema, COLUMN_MAP
     //         }
     //     }
     // }
-    throwErr(strict, err, 'Some SQL Error Occur')
+
+    throwErr(strict, err, 'Some Fields not existed in schema' + (strict ? ' Will be ignore' : ''))
     return ROOT;
 }

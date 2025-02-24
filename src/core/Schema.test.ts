@@ -20,6 +20,7 @@ export const DB = new TestDB({}, { pageSize: 12 });;
 export const TABLE_NAME = 'user';
 export const TABLE_OPTIONS: TableOptions = {
 
+    strictQuery: true,
     // strictEntity: true,
     // globalCondition: { age: 1 }
 }

@@ -58,7 +58,6 @@ class PgExecutor extends PgQuery implements ActionExecutor<Pool, any, QueryResul
 
 
     async execute(conn: Pool, sql: string, params?: Array<any>) {
-        console.log(sql, params)
         const result = await conn.query(sql, params);
         return result
     }

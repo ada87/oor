@@ -48,7 +48,7 @@ export abstract class BaseQuery implements QueryBuilder {
 
     protected readonly GLOBAL_CONDITION: Array<WhereItem> = [];
 
-    private FIELD_CACHE = new Map<string, WhereDefine>();
+    private QUERY_CACHE = new Map<string, WhereDefine>();
 
     protected abstract initReservedWord(): Set<string>;
     protected abstract wrapField(field: string): string;
@@ -89,7 +89,7 @@ export abstract class BaseQuery implements QueryBuilder {
     }
 
     convertQuery(query: QueryParam): WhereCondition {
-        return queryToCondition(this.STRICT_QUERY, query, this.COLUMN_MAP, this.FIELD_CACHE);
+        return queryToCondition(this.STRICT_QUERY, query, this.COLUMN_MAP, this.QUERY_CACHE);
     }
 
 

@@ -15,7 +15,13 @@ test('action', {
 
 
     // const where = USER.BUILDER.convertQuery({ sex: true });
-    // const statement = USER.BUILDER.where(where);
+    // USER.BUILDER.convertQuery({ sexNot: true });
+    const where = USER.BUILDER.convertQuery({ sexLike: true,ageLessThan:10 });
+
+    // USER.BUILDER.convertQuery({ : true });
+    // USER.BUILDER.convertQuery({ sex: true });
+    const statement = USER.BUILDER.where(where);
+    console.log(statement)
 
     // USER.BUILDER.where(where);
     // USER.BUILDER.where(where);
@@ -44,7 +50,8 @@ test('action', {
 
 
 
-    const result2 = await USER.deleteById({ id: 10242 });
+    // const result2 = await USER.deleteById({ id: 10242 },RETURN.COUNT);
+    
     // console.log(result2)
 
 

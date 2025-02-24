@@ -81,6 +81,5 @@ export const PG = new PgPool(() => {
         throw (error)
     }
 
-    // console.log(config)
     return new Pool(config);
 })

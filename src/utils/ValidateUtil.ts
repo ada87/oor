@@ -25,7 +25,7 @@ export const validateSort = (sort: OrderBy, F2W?: Map<string, string>): OrderBy 
 export const throwErr = (strict: boolean, err: string[], message?: string) => {
     if (err.length == 0) return;
     if (!strict) {
-        console.error(message + '\n      ' + err.join('\n      '));
+        console.warn(message + '\n      ' + err.join('\n      '));
         return;
     }
     throw new Error(message ? message : err[0], { cause: err.join('\n') as any })

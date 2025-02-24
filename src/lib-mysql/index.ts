@@ -11,6 +11,6 @@ const run = async () => {
     const rows = result[0]
     const fileds = result[1]
     fileds.map((field: FieldPacket) => {
-        console.log(field.name)
+        // console.log(field.name)
     })
 }

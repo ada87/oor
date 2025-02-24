@@ -26,7 +26,11 @@ export enum RETURN {
  * Field Suffix
 */
 export const SUFFIX = [
-    'Min', 'MinThan', 'Max', 'MaxThan',                 // commom  > , >= , <  ,  <=
+    // 'Min', 'MinThan', 'Max', 'MaxThan',                 
+    'Min', 'Max', ,                                         //  >=  ,  <=
+    'More', 'MoreThan', 'Less', 'LessThan',                 //  > , >= , <  ,  <=
+    'Gt', 'Gte', 'Lt', 'Lte',                               //  > , >= , <  ,  <=
+
     'MinH', 'MinD', 'MinM', 'MaxH', 'MaxD', 'MaxM',     // Only Date Hour / Day / Month
     'Like', 'Likel', 'Liker',                           // Only String  like leftlike rightlike
     'Bt', 'BtD', 'BtY', 'BtM',                          // BETWEEN, support Number/Date ,'BtY', 'BtM', 'BtD' Only  Spport Date

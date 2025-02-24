@@ -2,6 +2,7 @@ import _ from '../core/dash';
 import dayjs from 'dayjs';
 import { NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../utils/SQLUtil';
 import { throwErr } from '../utils/ValidateUtil'
+import { colorFieldName, colorFieldType, colorCondition } from '../utils/color'
 
 import type { WhereItem, WhereParam, WhereCondition, MagicSuffix, Support, SQLStatement, } from '../utils/types';
 import type { Dayjs } from 'dayjs';
@@ -13,9 +14,17 @@ type QueryPos = { SQL: string[]; PARAM: any[], NUM: number; }
 export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
 
     'Min': { string: true, double: true, integer: true, date: true, boolean: true },
-    'MinThan': { string: true, double: true, integer: true, date: true, boolean: false },
     'Max': { string: true, double: true, integer: true, date: true, boolean: true },
-    'MaxThan': { string: true, double: true, integer: true, date: true, boolean: false },
+
+    'Lt': { string: true, double: true, integer: true, date: true, boolean: true },
+    'Lte': { string: true, double: true, integer: true, date: true, boolean: true },
+    'Gt': { string: true, double: true, integer: true, date: true, boolean: true },
+    'Gte': { string: true, double: true, integer: true, date: true, boolean: true },
+
+    'Less': { string: true, double: true, integer: true, date: true, boolean: true },
+    'LessThan': { string: true, double: true, integer: true, date: true, boolean: false },
+    'More': { string: true, double: true, integer: true, date: true, boolean: true },
+    'MoreThan': { string: true, double: true, integer: true, date: true, boolean: false },
 
     'MinH': { string: false, double: false, integer: false, date: true, boolean: false },
     'MinD': { string: false, double: false, integer: false, date: true, boolean: false },
@@ -56,7 +65,7 @@ export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
 const isSupport = (item: WhereItem, err: string[]): boolean => {
     let suffix = SUFFIX_MATRIX[item.fn] || SUFFIX_MATRIX['='];
     if (suffix[item.type || 'string']) return true;
-    err.push(`${item.column}/(${item.type}) not support method ${item.fn}`)
+    err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type)}) do not support ${colorCondition(item.fn)}`)
     return false;
 }
 
@@ -90,19 +99,25 @@ const compareSuffix = (suffix: MagicSuffix): MagicSuffix => {
         case '>=':
         case '=':
             return suffix;
+        case 'More':
+        case 'Gt':
+            return '>'
+        case 'Less':
+        case 'Lt':
+            return '<'
         case 'Min':
-            return '>';
-        case 'Max':
-            return '<';
+        case 'MoreThan':
+        case 'Gte':
         case 'MinD':
         case 'MinH':
         case 'MinM':
-        case 'MinThan':
             return '>=';
         case 'MaxD':
         case 'MaxH':
         case 'MaxM':
-        case 'MaxThan':
+        case 'Max':
+        case 'LessThan':
+        case 'Lte':
             return '<=';
         case 'Not':
         case '!=':
@@ -145,7 +160,7 @@ const whereText = (item: WhereItem, pos: QueryPos, err: string[]) => {
             pos.NUM++;
             return;
         default:
-            err.push(`${item.column}/ type : String not support method ${item.fn}`)
+            err.push(`${colorFieldName(item.column)}/ type : ${colorFieldType('String')} not support method ${colorCondition(item.fn)}`)
             return;
     }
 }
@@ -161,7 +176,7 @@ const whereNumber = (item: WhereItem, pos: QueryPos, err: string[], parseFn) => 
             pos.PARAM.push(val)
             pos.NUM++;
         } catch {
-            err.push(`${item.column}/ type : Number value is not a Number ${item.value}`)
+            err.push(`${colorFieldName(item.column)}/ type : ${colorFieldType(item.type || 'number')} value is not a Number ${colorCondition(item.value)}`)
         }
         return;
     }
@@ -184,7 +199,7 @@ const whereNumber = (item: WhereItem, pos: QueryPos, err: string[], parseFn) => 
         })
         return;
     }
-    err.push(`${item.column}/(Number) : not support method ${item.fn}`);
+    err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type || 'number')}) : not support method ${colorCondition(item.fn)}`);
 }
 
 
@@ -193,12 +208,12 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
     let val: Dayjs = null;
     if (item.fn != 'Bt') {
         if (item.value == '' || item.value == null) {
-            err.push(`${item.column}/(date) : Can not be null`)
+            err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type || 'date')})  : Can not be null`)
             return;
         }
         val = dayjs(item.value as any);
         if (!val.isValid()) {
-            err.push(`${item.column}/(date) : Must Be a date-string or number-stamp ${item.value}`)
+            err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type || 'date')})  : Must Be a date-string or number-stamp ${colorCondition(item.value)}`)
             return;
         }
         switch (item.fn) {
@@ -247,7 +262,7 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
         case 'Bt':
             const range = betweenDate(item.value + '')
             if (range == null) {
-                err.push(`${item.column}/(Date) :  Between Value invalidated ${item.value}`)
+                err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type || 'date')})   :  Between Value invalidated ${colorCondition(item.value)}`)
                 return;
             }
             range.map(oper => {
@@ -258,7 +273,7 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
             return;
     }
     if (start == null || end == null) {
-        err.push(`${item.column}/(Date) : not support method ${item.fn}`);
+        err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type || 'date')})   : not support method ${colorCondition(item.fn)}`);
         return;
     }
     pos.SQL.push(`${item.column} >= $${pos.NUM}`)
@@ -272,8 +287,7 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
 const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
     let bool = boolValue(item.value)
 
-    // console.log(item, bool)
-    
+
     switch (item.fn) {
         case 'IsNull':
             pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} NULL`);
@@ -294,7 +308,6 @@ const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
             break;
     }
     pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} TRUE`)
-    // console.log(pos.SQL)
 
 
 }
@@ -303,7 +316,6 @@ const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
     let item = { ...whereItem, fn: whereItem.fn ? whereItem.fn : '=', type: whereItem.type ? whereItem.type : 'string' }
     if (!isSupport(item, err)) return;
     if (NullCondition(item, pos)) return;
-    // console.log(item.type)
     switch (item.type) {
         case 'double':
             whereNumber(item, pos, err, parseFloat);
@@ -354,7 +366,6 @@ export const where = (STRICT: boolean, condition: WhereParam, startIdx = 1): SQL
     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
     let err: string[] = [];
     ConditionToWhere(root, pos, err);
-    // console.log(root)
     throwErr(STRICT, err, 'Some SQL Error Occur');
     if (pos.SQL.length == 0) {
         return ['', []]

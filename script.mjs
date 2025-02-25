@@ -1,5 +1,4 @@
 import { existsSync, readFileSync, writeFileSync, rmSync, copyFileSync, renameSync } from 'fs';
-import { fsWalker } from 'xda/utils/fs.js'
 import { exec } from 'child_process';
 import { resolve, sep } from 'path';
 import _ from 'lodash';
@@ -22,12 +21,6 @@ const RunBuild = async () => {
     if (existsSync(distDir)) rmSync(distDir, { recursive: true, force: true });
 
     await runCommand('tsc --project tsconfig-cjs.json');
-    await fsWalker(distDir, (file, info) => {
-        if (info.isFile() && file.endsWith('.js')) {
-            console.log(file);
-            renameSync(file, file.substring(0, file.length - 2) + 'cjs')
-        }
-    })
     await runCommand('tsc --project tsconfig-esm.json');
 
     for (let file of ['README.md', 'README_ZH.md']) {
@@ -37,6 +30,7 @@ const RunBuild = async () => {
     _.unset(json, 'devDependencies')
     _.unset(json, 'scripts');
     _.unset(json, 'files');
+    _.unset(json, 'pnpm')
     writeFileSync(distDir + sep + 'package.json', JSON.stringify(json))
 }
 RunBuild();

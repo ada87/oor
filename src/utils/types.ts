@@ -249,7 +249,6 @@ export interface UDateOptions extends Column, DateOptions {
     format?: string
 }
 
-// Type.Number
 export const UType = {
     Table: <T extends TProperties>(properties: T): TObject<T> => Type.Object(properties),
     /**
@@ -271,11 +270,25 @@ export const UType = {
     /**
      * Store Type : varchar / string
     */
-    DateString: (options?: UDateOptions) => Type.Optional(Type.String(options)),
+    DateString: (options?: UDateOptions) => Type.Optional(
+        Type.Union(
+            [
+                Type.String(options),
+                Type.Date({ ...options, }),
+            ]
+        )
+    ),
     /**
      * Store Type : long / timestamp
     */
-    DateLong: (options?: UDateOptions) => Type.Optional(Type.Number(options)),
+    DateLong: (options?: UDateOptions) => Type.Optional(
+        Type.Union(
+            [
+                Type.Integer({ ...options, }),
+                Type.Date({ ...options, }),
+            ]
+        )
+    ),
     /**
      * Store Type : boolean
     */
@@ -304,11 +317,21 @@ export const UType = {
     /**
      * Store Type : varchar / string (not null)
     */
-    DateStringRequired: (options?: UDateOptions) => Type.String(options),
+    DateStringRequired: (options?: UDateOptions) => Type.Union(
+        [
+            Type.String(options),
+            Type.Date({ ...options, }),
+        ]
+    ),
     /**
      * Store Type : long / timestamp (not null)
     */
-    DateLongRequired: (options?: UDateOptions) => Type.Number(options),
+    DateLongRequired: (options?: UDateOptions) => Type.Union(
+        [
+            Type.Integer({ ...options, }),
+            Type.Date({ ...options, }),
+        ]
+    ),
     /**
      * Store Type : boolean (not null)
     */

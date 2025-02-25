@@ -73,7 +73,6 @@ export abstract class BaseQuery implements QueryBuilder {
         this.C2F = CONFIG.C2F;
         this.F2W = CONFIG.F2W;
         this.F2S = CONFIG.F2S;
-        // this.DEL_MARK = CONFIG.delMark;
         this.GLOBAL_CONDITION = CONFIG.globalCondition;
 
     }
@@ -108,7 +107,6 @@ export abstract class BaseQuery implements QueryBuilder {
         if (Array.isArray(fields)) {
             const columns = fields.filter(field => this.F2S.has(field)).map(filed => this.F2S.get(filed));
             if (columns.length == 0) return `SELECT ${this.QUERY_FIELDS} FROM ${this.tableName} `;
-            // const queryFields = columns.map(column => convertField(this.RESERVED_WORD, this.wrapField, this.C2F.get(column), column)).join(', ');
             return `SELECT ${columns.join(', ')} FROM ${this.tableName} `;
         }
 
@@ -150,8 +148,6 @@ export abstract class BaseQuery implements QueryBuilder {
 
     byField(field: string, value: string | number | boolean, startIdx: number = 1): SQLStatement {
         if (!this.F2W.has(field)) throw new Error(`Field ${field} not found in Table ${this.tableName}`);
-        // const query = this.convertQuery({ [field]: value });
-        // const STATEMENT = this.where(query, startIdx);   // 用这个有些bool 可以转为 xx is true
         let column = this.F2W.get(field);
         let sql = `${column} = $${startIdx}`; // msyql/sqlite 为 "?"
         return [sql, [value]];

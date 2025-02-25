@@ -1,6 +1,6 @@
 {
   "name": "oor",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "author": "ada87",
   "keywords": [
     "nodejs",
@@ -22,11 +22,12 @@
     "url": "https://github.com/ada87/oor"
   },
   "license": "MIT",
-  "main": "pg/index.cjs",
-  "module": "pg/index.js",
+  "main": "/cjs/pg.js",
+  "module": "/esm/pg.js",
+  "types": "/types/pg.d.ts",
   "scripts": {
     "test": "node --env-file=.env -r ts-node/register node_modules/tsest/run",
-    "watch": "node --env-file=.env -r ts-node/register node_modules/tsest/run --fileName=PgTable.test.ts --watch",
+    "watch": "node --env-file=.env -r ts-node/register node_modules/tsest/run --fileName=Type.test.ts --watch",
     "build": "node -r ts-node/register script.mjs --build"
   },
   "devDependencies": {
@@ -43,16 +44,14 @@
     "ts-node": "^10.9.2",
     "tsest": "^0.0.8",
     "typescript": "^5.7.3",
-    "xda": "^0.0.3"
+    "lodash": "^4.17.21"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.34.27",
-    "dayjs": "^1.11.13",
-    "lodash": "^4.17.21"
+    "dayjs": "^1.11.13"
   },
   "peerDependencies": {
-    "@sinclair/typebox": "^0.34.21",
-    "dayjs": "^1.11.13"
+    "@sinclair/typebox": "^0.34.21"
   },
   "pnpm": {
     "onlyBuiltDependencies": []

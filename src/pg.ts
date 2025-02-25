@@ -7,8 +7,10 @@ import { PgView } from './lib-pg/PgView'
 // https://www.postgresql.org/docs/17/sql-select.html
 import type { PoolConfig } from 'pg';
 import type { TableOptions } from './core';
-import type { TObject } from '@sinclair/typebox';
+import type { TObject, } from '@sinclair/typebox';
+export type { Static } from '@sinclair/typebox';
 
+export { setSQLLogger, setSQLTimer } from './lib-pg/Global';
 export * from './utils/types';
 
 export class PgPool extends BaseDB<PoolConfig | (() => Pool | Promise<Pool>), Pool> {

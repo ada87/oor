@@ -1,13 +1,19 @@
 import { RETURN } from './../utils/types'
+import { GLOBAL } from './Global';
 
 import type { Pool, QueryResult } from 'pg';
 import type { QueryExecutor, ActionExecutor, } from '../core';
 
-
 class PgQuery implements QueryExecutor<Pool, object> {
 
-    async query(conn: Pool, sql: string, param?: Array<string | number | boolean | Date>): Promise<Array<object>> {
-        const result = await conn.query(sql, param);
+    async query(conn: Pool, sql: string, params?: Array<string | number | boolean | Date>): Promise<Array<object>> {
+        if (GLOBAL.logSQL) GLOBAL.logSQL(sql, params);;
+        let start = Date.now();
+        const result = await conn.query(sql, params);
+        if (GLOBAL.logTime) {
+            let now = Date.now();
+            GLOBAL.logTime(sql, params, now - start);
+        }
         return result.rows;
     }
 
@@ -16,7 +22,6 @@ class PgQuery implements QueryExecutor<Pool, object> {
         if (result == null || result.length == 0) return null;
         return result[0];
     }
-
 }
 
 class PgExecutor extends PgQuery implements ActionExecutor<Pool, any, QueryResult> {
@@ -58,7 +63,13 @@ class PgExecutor extends PgQuery implements ActionExecutor<Pool, any, QueryResul
 
 
     async execute(conn: Pool, sql: string, params?: Array<any>) {
+        if (GLOBAL.logSQL) GLOBAL.logSQL(sql, params);;
+        let start = Date.now();
         const result = await conn.query(sql, params);
+        if (GLOBAL.logTime) {
+            let now = Date.now();
+            GLOBAL.logTime(sql, params, now - start);
+        }
         return result
     }
 

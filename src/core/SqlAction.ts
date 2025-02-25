@@ -118,7 +118,7 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
             if (this.DATE_CREATE.has(field) || this.DATE_MODIFY.has(field)) return;
             let val = obj[field];
             if (val === null) return
-            query.push(field)
+            query.push(this.F2W.get(field))
             idx.push("$" + (i + 1));
             param.push(val)
         });

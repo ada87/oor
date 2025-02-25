@@ -2,6 +2,8 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
+
+import { Kind } from '@sinclair/typebox';
 import type { Dayjs } from 'dayjs'
 import { Column } from './types';
 
@@ -24,6 +26,11 @@ const TZ_MAP = new Map<string, string>([
     ['Etc/GMT+12', 'YYYY/MM/DD HH:mm:ss'],
     ['America/Mexico_City', 'MM/DD/YYYY HH:mm:ss'],
     ['Asia/Shanghai', 'YYYY-MM-DD HH:mm:ss'],
+    ['America/New_York', 'YYYY-MM-DD HH:mm:ss'],
+    ['Europe/London', 'YYYY-MM-DD HH:mm:ss'],
+    ['Asia/Tokyo', 'YYYY-MM-DD HH:mm:ss'],
+    ['Europe/Prague', 'YYYY-MM-DD HH:mm:ss'],
+    ['Europe/Budapest', 'YYYY-MM-DD HH:mm:ss'],
 ]);
 
 
@@ -36,8 +43,24 @@ export const convertDate = (date: string | Date | number | Dayjs, timezone: stri
     return dayjs(date).tz(timezone).format(TZ_MAP.get(timezone))
 }
 
-export const newDate = (column: Column): Date => {
-    return new Date();
+export const newDate = (column: Column): any => {
+    // @ts-ignore
+    let kind = column.anyOf ? column.anyOf[0][Kind] : column[Kind];
+
+    switch (kind) {
+        case 'String':
+            return dayjs().format(TZ_MAP.get(DEFAULT_TIMEZONE) || 'YYYY-MM-DD HH:mm:ss');
+        case 'Number':
+            return Date.now();
+        case 'Integer':
+            return Date.now();
+        case 'Date':
+            return new Date();
+        case 'Boolean':
+            return null;
+        default:
+            return new Date();
+    }
 }
 
 export const toDate = (txt: string | number): Date => {

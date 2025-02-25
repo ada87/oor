@@ -14,6 +14,7 @@ export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull']);
 
 export const getFieldType = (schema: any): FieldType => {
 
+
     switch (schema[Kind]) {
         case 'String':
             return 'string';
@@ -27,7 +28,7 @@ export const getFieldType = (schema: any): FieldType => {
             return 'date';
         case 'Union':
             if (_.isArray(schema.anyOf) && schema.anyOf.length) {
-                return getFieldType(schema.anyOf[0])
+                return getFieldType(schema.anyOf[schema.anyOf.length-1])
             }
         default:
             return 'string';

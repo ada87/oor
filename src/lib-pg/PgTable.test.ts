@@ -1,4 +1,5 @@
 import test from 'node:test';
+import _ from 'lodash';
 
 
 import { TABLE_NAME, TABLE_OPTIONS, UserSchema } from '../core/Schema.test';
@@ -16,12 +17,12 @@ test('action', {
 
     // const where = USER.BUILDER.convertQuery({ sex: true });
     // USER.BUILDER.convertQuery({ sexNot: true });
-    const where = USER.BUILDER.convertQuery({ sexLike: true,ageLessThan:10 });
+    // const where = USER.BUILDER.convertQuery({ sexLike: true,ageLessThan:10 });
 
     // USER.BUILDER.convertQuery({ : true });
     // USER.BUILDER.convertQuery({ sex: true });
-    const statement = USER.BUILDER.where(where);
-    console.log(statement)
+    // const statement = USER.BUILDER.where(where);
+    // console.log(statement)
 
     // USER.BUILDER.where(where);
     // USER.BUILDER.where(where);
@@ -40,7 +41,7 @@ test('action', {
 
     // console.log(result);
 
-    // const result1 = await USER.deleteByField('sex', true);
+    // const result1 = await USER.deleteByWhere(null as any,RETURN.INFO);
     // console.log(result1)
 
 
@@ -51,7 +52,7 @@ test('action', {
 
 
     // const result2 = await USER.deleteById({ id: 10242 },RETURN.COUNT);
-    
+
     // console.log(result2)
 
 
@@ -62,11 +63,22 @@ test('action', {
     // const userId = await USER.add({ name: '张丽', age: 18, }, RETURN.SUCCESS)
     // console.log(userId)
 
-    // const userInfo = await USER.add({ name: '张丽', age: 18, }, RETURN.SUCCESS)
+    // const userInfo = await USER.insert({ name: '张丽', age: 18, }, RETURN.INFO)
     // console.log(userInfo)
+
+    const userInfo = await USER.update({ id: 10297, age: _.random(100), }, RETURN.INFO);
+    // console.log(userInfo)
+
+    // 10297
 
     // const insertCount = await USER.add({ name: '张丽', age: 18, }, RETURN.COUNT)
     // console.log(insertCount)
 
+
+    // const info = await USER.insertBatch([
+    //     // { name: '张丽', age: 18, },
+    //     { name: '张五', age: _.random(1000), salary: _.random(1000), sex: true, profile: 'fdslkjfads', address: 'fdsafadse' }
+    // ], RETURN.COUNT)
+    // console.log(info)
 
 })

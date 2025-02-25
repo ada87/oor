@@ -63,7 +63,8 @@ export type WhereDefine = {
 /**
  * The Row Key Type
 */
-export type RowKeyType = string | number;;
+export type RowKeyType = string | number;
+export type ByFieldType = RowKeyType | boolean; // not double / date
 
 export type WhereItem = WhereDefine & {
     value: string | number | boolean | Date,

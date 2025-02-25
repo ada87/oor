@@ -1,6 +1,6 @@
 {
   "name": "oor",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "author": "ada87",
   "keywords": [
     "nodejs",
@@ -25,7 +25,7 @@
   "main": "pg/index.js",
   "scripts": {
     "test": "node --env-file=.env -r ts-node/register node_modules/tsest/run",
-    "watch": "node --env-file=.env -r ts-node/register node_modules/tsest/run --fileName=pgWhere.test.ts --watch",
+    "watch": "node --env-file=.env -r ts-node/register node_modules/tsest/run --fileName=PgTable.test.ts --watch",
     "build": "node -r ts-node/register script.mjs --build"
   },
   "devDependencies": {

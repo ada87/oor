@@ -1,12 +1,10 @@
 import _ from './dash';
 import { BaseQuery } from './SqlQuery';
 import { buildCheckEntity } from './utils'
-// import { getFieldType } from '../    utils/SQLUtil';
-// import { toDate } from '../utils/TimeUtil';
 import { RETURN } from '../utils/types';
-// import { buildCheckEntity } from '../utils/ValidateUtil';
+import { newDate } from '../utils/TimeUtil';
 
-import type { TableOptions, DatabaseOptions } from './types'
+import type { TableOptions, DatabaseOptions, InsertOptions, UpdateOptions } from './types'
 import type { SQLStatement, RowKeyType } from '../utils/types';
 import type { TObject } from '@sinclair/typebox';
 import type { ActionBuilder } from './index'
@@ -16,9 +14,25 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
 
     protected checkEntity: (obj: object, isAdd: boolean) => object;
 
+    private DATE_MODIFY: Set<string>;
+    private DATE_CREATE: Set<string>;
+
     constructor(tbName: string, tbSchema: TObject, tbOptions: TableOptions, dbOptions: DatabaseOptions) {
         super(tbName, tbSchema, tbOptions, dbOptions);
         this.checkEntity = buildCheckEntity(this.SCHEMA, this.COLUMN_MAP, this.C2F, this.STRICT_ENTITY);
+        this.DATE_CREATE = new Set();
+        this.DATE_MODIFY = new Set();
+        _.keys(this.SCHEMA.properties).forEach(field => {
+            let column = this.SCHEMA.properties[field];
+            if (column.type == 'Date') {
+                if (column.isCreate) {
+                    this.DATE_CREATE.add(field);
+                }
+                if (column.isModify) {
+                    this.DATE_MODIFY.add(field);
+                }
+            }
+        })
     }
 
     whereId(value: RowKeyType | Array<RowKeyType> | object | Array<RowKeyType>, startIdx: number = 1): SQLStatement {
@@ -53,25 +67,77 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
         return [`${this.F2W.get(this.ROW_KEY)} = $${startIdx}`, [rowKey]]
     }
 
+    private insertArray(list: Array<object>, options?: InsertOptions): SQLStatement {
+        let isAutoIncrement = false;
+        if (options && _.has(options, 'isAutoIncrement')) {
+            isAutoIncrement = options.isAutoIncrement;
+        } else if (this.ROW_KEY) {
+            const columnSchema = this.COLUMN_MAP.get(this.ROW_KEY);
+            if (columnSchema.type == 'integer') {
+                isAutoIncrement = true;
+            }
+        }
+        const FIELDS = _.keys(this.SCHEMA.properties).filter(key => {
+            if (isAutoIncrement) return key != this.ROW_KEY;
+            return true;
+        })
+        const COLUMNS = FIELDS.map(field => this.COLUMN_MAP.get(field));
+        const QUERY = FIELDS.map(field => this.F2W.get(field)).join(',');
+        let group: string[] = [];
+        let param: any[] = [];
+        let idx = 1;
+        for (let obj of list) {
+            let items: string[] = []
+            FIELDS.forEach((field, i) => {
+                let schema = COLUMNS[i];
+                items.push('$' + idx);
+                idx = idx + 1;
+                if (this.DATE_CREATE.has(field) || this.DATE_MODIFY.has(field)) {
+                    param.push(newDate(schema));
+                } else {
+                    let value = _.has(obj, field) ? obj[field] : null;
+                    if (value == null && schema.default != undefined) value = schema.default;
+                    param.push(value);
+                }
+            });
+            group.push('(' + items.join(',') + ')');
+        }
 
+        return [`INSERT INTO ${this.tableName} (${QUERY}) VALUES ${group.join(',')}`, param];
 
-    insert(obj: object, ignoreNull = false): SQLStatement {
+    }
+
+    insert(obj: object, options?: InsertOptions): SQLStatement {
+        if (_.isArray(obj)) return this.insertArray(obj, options);
         const fields = _.keys(obj);
         if (fields.length == 0) throw new Error('No field to insert');
         let query = [];
         let idx = [];
         let param = [];
         fields.map((field, i) => {
+            if (this.DATE_CREATE.has(field) || this.DATE_MODIFY.has(field)) return;
             let val = obj[field];
             if (val === null) return
             query.push(field)
             idx.push("$" + (i + 1));
             param.push(val)
+        });
+        _.keys(this.SCHEMA.properties).forEach(field => {
+            let column = this.SCHEMA.properties[field];
+            if (this.DATE_CREATE.has(field) || this.DATE_MODIFY.has(field)) {
+                query.push(this.F2W.get(field))
+                idx.push("$" + (param.length + 1));
+                param.push(newDate(column));
+            } else if (_.has(column, 'default') && !_.has(obj, field)) {
+                query.push(this.F2W.get(field));
+                idx.push("$" + (param.length + 1));
+                param.push(column.default);
+            }
         })
         return [`INSERT INTO ${this.tableName} (${query.join(',')}) VALUES (${idx.join(',')})`, param];
     };
 
-    update(obj: object, ignoreNull = false): SQLStatement {
+    update(obj: object, options?: UpdateOptions): SQLStatement {
         if (this.ROW_KEY == null) throw new Error('Could not load a row key in table : ' + this.tableName);
         const data = this.checkEntity(obj, false)
         if (!_.has(data, this.ROW_KEY)) throw new Error('Could not load a row key in entity ');
@@ -81,11 +147,17 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
         let param = [];
         let pos = 1;
         for (const field of fields) {
-            if (field == this.ROW_KEY) continue;
+            if (field == this.ROW_KEY || this.DATE_CREATE.has(field) || this.DATE_MODIFY.has(field)) continue;
             let val = data[field];
-            if (ignoreNull && (val === null || val === undefined)) continue;
+            if (options?.ignoreNull && (val === null || val === undefined)) continue;
             query.push(`${this.F2W.get(field)} = $${pos}`)
             param.push(val)
+            pos++
+        }
+        
+        for (let filed of this.DATE_MODIFY) {
+            query.push(`${this.F2W.get(filed)} = $${pos}`)
+            param.push(newDate(this.COLUMN_MAP.get(filed)))
             pos++
         }
         return [`UPDATE  ${this.tableName} SET ${query.join(',')}`, param];

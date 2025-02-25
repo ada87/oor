@@ -165,10 +165,7 @@ export const buildCheckEntity = (SCHEMA: TObject, COLUMN_MAP: Map<string, Column
     } : () => { }
 
     return (obj: object, isAdd = false) => {
-        // console.log('check start ')
         let clone: any = {};
-        // console.log("fdsa")
-
         const keys = new Set(_.keys(obj));
         if (strict) {
             for (let key of keys) {
@@ -177,8 +174,6 @@ export const buildCheckEntity = (SCHEMA: TObject, COLUMN_MAP: Map<string, Column
                 }
             }
         }
-        // console.log(keys)
-        // console.log(C2F,COLUMN_MAP)
         for (let key of keys) {
             const field = C2F.get(key);
             const schema = COLUMN_MAP.get(field);

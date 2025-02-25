@@ -2,7 +2,7 @@ import { test } from 'tsest'
 import { BaseDB } from './BaseDB'
 
 import type { TableOptions, DatabaseOptions } from './types';
-import type { QueryParam } from '../utils/types'
+// import type { QueryParam } from '../utils/types';
 // 性能：引号的使用不会直接影响查询性能。
 // 正确性：引号确保标识符被正确解析，特别是在标识符包含特殊字符或区分大小写时。
 // 建议：仅在必要时使用引号，如标识符包含特殊字符或与保留字冲突时。
@@ -10,6 +10,7 @@ import type { QueryParam } from '../utils/types'
 import { UType } from '../utils/types';
 import { PgView } from '../lib-pg/PgView';
 
+import { bgGreen, bgRed, colorFieldName, colorGreen, colorMagenta, colorRed, colorWhite, colorYellow } from '../utils/color';
 
 class TestDB extends BaseDB<any, any> {
     public getConn(): Promise<any> {
@@ -20,7 +21,7 @@ export const DB = new TestDB({}, { pageSize: 12 });;
 export const TABLE_NAME = 'user';
 export const TABLE_OPTIONS: TableOptions = {
 
-    strictQuery: true,
+    // strictQuery: true,
     // strictEntity: true,
     // globalCondition: { age: 1 }
 }
@@ -28,6 +29,8 @@ export const TABLE_OPTIONS: TableOptions = {
 export const DATABASE_OPTIONS: DatabaseOptions = {}
 
 
+export const OK = bgGreen(colorWhite(' O K '));
+export const ERROR = bgRed(colorWhite('Error'));
 export const UserSchema = UType.Table({
     id: UType.Integer({ title: 'ID', column: 'id' }),
     name: UType.StringRequired({ maxLength: 32, title: '姓名', }),
@@ -35,7 +38,7 @@ export const UserSchema = UType.Table({
     sex: UType.Boolean({ title: '性别', default: false, }),
     profile: UType.String({ ignore: true, title: '简介' }),
     address: UType.String({ maxLength: 128, title: '地址' }),
-    salary: UType.Double({ ignore: true, title: '薪水' }),
+    salary: UType.Double({ ignore: true, title: '薪水', default: 3000 }),
     registerDate: UType.Date({ column: 'register_date', isCreate: true, title: '注册日期', readOnly: true }),
     lastModify: UType.Date({ column: 'last_modify', isModify: true, title: '最后修改' }),
 });

@@ -4,3 +4,4 @@ public.sql
 build
 .env
 pnpm-lock.yaml
+.vscode

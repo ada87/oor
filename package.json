@@ -22,7 +22,8 @@
     "url": "https://github.com/ada87/oor"
   },
   "license": "MIT",
-  "main": "pg/index.js",
+  "main": "pg/index.cjs",
+  "module": "pg/index.js",
   "scripts": {
     "test": "node --env-file=.env -r ts-node/register node_modules/tsest/run",
     "watch": "node --env-file=.env -r ts-node/register node_modules/tsest/run --fileName=PgTable.test.ts --watch",
@@ -41,7 +42,8 @@
     "sqlite3": "^5.1.7",
     "ts-node": "^10.9.2",
     "tsest": "^0.0.8",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "xda": "^0.0.3"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.34.27",

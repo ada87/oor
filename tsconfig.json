@@ -1,27 +1,17 @@
 {
   "compilerOptions": {
-    "noImplicitAny": false,
-    "esModuleInterop": true,
-    "moduleResolution": "Node",    
     "module": "CommonJS",
-    "target": "ES6",
-    "outDir": "dist",
-    "declaration": true,
     "lib": [
       "ESNext",
-      "dom"
+      "DOM"
     ],
+    "noImplicitAny": false,
+    "removeComments": true,
+    "esModuleInterop": true,
+    "moduleResolution": "Node",
+    "target": "ESNext",
     "downlevelIteration": true,
-    "rootDir": "./src"
-  },
-  "exclude": [
-    "dist",
-    "node_modules",
-    "node_modules/.store/@types+sql.js@1.4.4/node_modules/@types/node",
-    "**/*.test.ts",
-    "src/test"
-  ],
-  "typeRoots": [
-    "node_modules/@types"
-  ]
+    "rootDir": "./src/",
+    "outDir": "./dist/",
+  }
 }

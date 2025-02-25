@@ -13,43 +13,43 @@ import type { WhereParam, WhereItem, WhereCondition, MagicSuffix, Support } from
 // https://www.elastic.co/guide/en/elasticsearch/painless/8.17/painless-api-reference.html
 export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
 
-    'Min': { string: false, number: true, int: true, date: true, boolean: true },
-    'MinThan': { string: false, number: true, int: true, date: true, boolean: false },
-    'Max': { string: false, number: true, int: true, date: true, boolean: true },
-    'MaxThan': { string: false, number: true, int: true, date: true, boolean: false },
+    'Min': { string: false, double: true, integer: true, date: true, boolean: true },
+    'MinThan': { string: false, double: true, integer: true, date: true, boolean: false },
+    'Max': { string: false, double: true, integer: true, date: true, boolean: true },
+    'MaxThan': { string: false, double: true, integer: true, date: true, boolean: false },
 
-    'MinH': { string: false, number: false, int: false, date: true, boolean: false },
-    'MinD': { string: false, number: false, int: false, date: true, boolean: false },
-    'MinM': { string: false, number: false, int: false, date: true, boolean: false },
-    'MaxH': { string: false, number: false, int: false, date: true, boolean: false },
-    'MaxD': { string: false, number: false, int: false, date: true, boolean: false },
-    'MaxM': { string: false, number: false, int: false, date: true, boolean: false },
+    'MinH': { string: false, double: false, integer: false, date: true, boolean: false },
+    'MinD': { string: false, double: false, integer: false, date: true, boolean: false },
+    'MinM': { string: false, double: false, integer: false, date: true, boolean: false },
+    'MaxH': { string: false, double: false, integer: false, date: true, boolean: false },
+    'MaxD': { string: false, double: false, integer: false, date: true, boolean: false },
+    'MaxM': { string: false, double: false, integer: false, date: true, boolean: false },
 
-    'Like': { string: true, number: false, int: false, date: false, boolean: false },
-    'Likel': { string: true, number: false, int: false, date: false, boolean: false },
-    'Liker': { string: true, number: false, int: false, date: false, boolean: false },
+    'Like': { string: true, double: false, integer: false, date: false, boolean: false },
+    'Likel': { string: true, double: false, integer: false, date: false, boolean: false },
+    'Liker': { string: true, double: false, integer: false, date: false, boolean: false },
 
-    'Bt': { string: false, number: true, int: true, date: true, boolean: false },
-    'BtD': { string: false, number: false, int: false, date: true, boolean: false },
-    'BtY': { string: false, number: false, int: false, date: true, boolean: false },
-    'BtM': { string: false, number: false, int: false, date: true, boolean: false },
+    'Bt': { string: false, double: true, integer: true, date: true, boolean: false },
+    'BtD': { string: false, double: false, integer: false, date: true, boolean: false },
+    'BtY': { string: false, double: false, integer: false, date: true, boolean: false },
+    'BtM': { string: false, double: false, integer: false, date: true, boolean: false },
 
-    'Not': { string: true, number: true, int: true, date: true, boolean: true },
+    'Not': { string: true, double: true, integer: true, date: true, boolean: true },
 
 
-    'In': { string: true, number: true, int: true, date: false, boolean: false },
-    'NotIn': { string: true, number: true, int: true, date: false, boolean: false },
+    'In': { string: true, double: true, integer: true, date: false, boolean: false },
+    'NotIn': { string: true, double: true, integer: true, date: false, boolean: false },
 
-    'IsNull': { string: true, number: true, int: true, date: true, boolean: true },
-    'NotNull': { string: true, number: true, int: true, date: true, boolean: true },
+    'IsNull': { string: true, double: true, integer: true, date: true, boolean: true },
+    'NotNull': { string: true, double: true, integer: true, date: true, boolean: true },
 
-    '>': { string: false, number: true, int: true, date: true, boolean: true },
-    '>=': { string: false, number: true, int: true, date: true, boolean: false },
-    '<': { string: false, number: true, int: true, date: true, boolean: true },
-    '<=': { string: false, number: true, int: true, date: true, boolean: false },
-    '=': { string: true, number: true, int: true, date: true, boolean: true },
-    '!=': { string: true, number: true, int: true, date: true, boolean: true },
-    '<>': { string: true, number: true, int: true, date: true, boolean: true },
+    '>': { string: false, double: true, integer: true, date: true, boolean: true },
+    '>=': { string: false, double: true, integer: true, date: true, boolean: false },
+    '<': { string: false, double: true, integer: true, date: true, boolean: true },
+    '<=': { string: false, double: true, integer: true, date: true, boolean: false },
+    '=': { string: true, double: true, integer: true, date: true, boolean: true },
+    '!=': { string: true, double: true, integer: true, date: true, boolean: true },
+    '<>': { string: true, double: true, integer: true, date: true, boolean: true },
 
 }
 
@@ -278,9 +278,11 @@ const ItemToWhere = (whereItem: WhereItem, query: QueryDslQueryContainer[], err:
     if (!isSupport(item, err)) return;
     if (NullCondition(whereItem, query, err)) return;
     switch (item.type) {
-        case 'number':
-        case 'int':
-            whereNumber(item, query, err, item.type == 'int' ? parseInt : parseFloat);
+        case 'double':
+            whereNumber(item, query, err, parseFloat);
+            return;
+        case 'integer':
+            whereNumber(item, query, err, parseInt);
             return;
         case 'string':
             whereText(item, query, err);

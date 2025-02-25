@@ -1,0 +1,13 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "module": "esnext",
+        "declaration": true,
+        // "declarationDir": "./dist/types/",
+        "outDir": "./dist",
+    },
+    "exclude": [
+        "./src/**/*.test.ts",
+        "./src/test",
+    ],
+}

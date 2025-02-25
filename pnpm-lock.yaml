@@ -57,6 +57,9 @@ importers:
       typescript:
         specifier: ^5.7.3
         version: 5.7.3
+      xda:
+        specifier: ^0.0.3
+        version: 0.0.3(dayjs@1.11.13)(lodash@4.17.21)
 
 packages:
 
@@ -865,6 +868,12 @@ packages:
 
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
+
+  xda@0.0.3:
+    resolution: {integrity: sha512-KmV6M+jTjcJofXpvv0+jlkfv8s+QIFwpNS3JZEmow5KaMQqZw5QlniJ1cgVyw8pLpBC3zjGiKWNMVjf91iI8JQ==}
+    peerDependencies:
+      dayjs: ^1.11.13
+      lodash: ^4.17.21
 
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
@@ -1783,6 +1792,11 @@ snapshots:
   wordwrapjs@5.1.0: {}
 
   wrappy@1.0.2: {}
+
+  xda@0.0.3(dayjs@1.11.13)(lodash@4.17.21):
+    dependencies:
+      dayjs: 1.11.13
+      lodash: 4.17.21
 
   xtend@4.0.2: {}
 

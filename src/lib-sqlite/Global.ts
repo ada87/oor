@@ -1,14 +1,14 @@
-// dbType  : 'pg' 
+// dbType  : 'sqlite' 
 // runType : query action
 
 type LogSQLParam = (sql: string, param: Array<any>) => void;
 type LogSQLTime = (sql: string, param: Array<any>, time: number) => void;
-import { colorGreen, bgGray, colorFieldName, styleItalic, } from '../utils/color';
+import { colorGreen, bgWhite, colorFieldName, styleItalic } from '../utils/color';
 
 export const GLOBAL = {
     logSQL: null,
     logTime: (sql: string, param: Array<any>, time: number) => {
-        console.log(colorFieldName(time + 'ms'), styleItalic(bgGray(colorGreen(sql))), param,)
+        console.log(colorFieldName(time + 'ms'), styleItalic(bgWhite(colorGreen(sql))), param,)
     }
 }
 
@@ -22,8 +22,8 @@ export const setSQLLogger = (fn: LogSQLParam) => {
     } else {
         GLOBAL.logSQL = fn;
     }
-
 }
+
 /**
  * SQL Timer will run after SQL EXECUTE
  * DEFAULT : console.log(time,sql,param)

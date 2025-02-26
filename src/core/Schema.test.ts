@@ -8,7 +8,7 @@ import type { TableOptions, DatabaseOptions } from './types';
 // 建议：仅在必要时使用引号，如标识符包含特殊字符或与保留字冲突时。
 
 import { UType } from '../utils/types';
-import { PgView } from '../lib-pg/PgView';
+import { PgView } from '../lib-pg/PgTable';
 
 import { bgGreen, bgRed, colorFieldName, colorGreen, colorMagenta, colorRed, colorWhite, colorYellow } from '../utils/color';
 
@@ -33,7 +33,7 @@ export const OK = bgGreen(colorWhite(' O K '));
 export const ERROR = bgRed(colorWhite('Error'));
 export const UserSchema = UType.Table({
     id: UType.Integer({ title: 'ID', column: 'id' }),
-    name: UType.StringRequired({ maxLength: 32, title: '姓名', }),
+    name: UType.StringNotNull({ maxLength: 32, title: '姓名', }),
     age: UType.Integer({ minimum: 0, maximum: 128, delMark: 64, title: '年龄', }),
     sex: UType.Boolean({ title: '性别', default: false, }),
     profile: UType.String({ ignore: true, title: '简介' }),

@@ -160,7 +160,7 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
             param.push(newDate(this.COLUMN_MAP.get(filed)))
             pos++
         }
-        return [`UPDATE  ${this.tableName} SET ${query.join(',')}`, param];
+        return [`UPDATE ${this.tableName} SET ${query.join(',')}`, param];
     }
 
     delete(): SQLStatement {

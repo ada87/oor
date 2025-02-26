@@ -1,71 +1,64 @@
-import _ from '../core/dash';
+import _ from 'lodash';
+import { Kind } from '@sinclair/typebox';
+import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../../base/Util';
 import dayjs from 'dayjs';
-import { NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../utils/SQLUtil';
-import { throwErr } from '../utils/ValidateUtil'
-import { colorFieldName, colorFieldType, colorCondition } from '../utils/color'
 
-import type { WhereItem, WhereParam, WhereCondition, MagicSuffix, Support, SQLStatement, } from '../utils/types';
+// import type { SqlWhere } from '../../base/sql';
 import type { Dayjs } from 'dayjs';
+import type { WhereParam, WhereItem, WhereCondition, MagicSuffix, Support, OColumn } from '../../base/types';
 
 
-type QueryPos = { SQL: string[]; PARAM: any[], NUM: number; }
 
-// https://www.postgresql.org/docs/15/queries-table-expressions.html
+type QueryPos = { SQL: string[]; PARAM: any[], }
+// DOCS
+// https://dev.mysql.com/doc/refman/8.0/en/data-types.html
+// https://dev.mysql.com/doc/refman/8.0/en/expressions.html
+// https://dev.mysql.com/doc/refman/8.0/en/functions.html
+// https://dev.mysql.com/doc/refman/8.0/en/where-optimization.html
 export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
 
-    'Min': { string: true, double: true, integer: true, date: true, boolean: true },
-    'Max': { string: true, double: true, integer: true, date: true, boolean: true },
+    'Min': { string: true, number: true, date: true, boolean: true },
+    'MinThan': { string: true, number: true, date: true, boolean: false },
+    'Max': { string: true, number: true, date: true, boolean: true },
+    'MaxThan': { string: true, number: true, date: true, boolean: false },
 
-    'Lt': { string: true, double: true, integer: true, date: true, boolean: true },
-    'Lte': { string: true, double: true, integer: true, date: true, boolean: true },
-    'Gt': { string: true, double: true, integer: true, date: true, boolean: true },
-    'Gte': { string: true, double: true, integer: true, date: true, boolean: true },
+    'MinH': { string: false, number: false, date: true, boolean: false },
+    'MinD': { string: false, number: false, date: true, boolean: false },
+    'MinM': { string: false, number: false, date: true, boolean: false },
+    'MaxH': { string: false, number: false, date: true, boolean: false },
+    'MaxD': { string: false, number: false, date: true, boolean: false },
+    'MaxM': { string: false, number: false, date: true, boolean: false },
 
-    'Less': { string: true, double: true, integer: true, date: true, boolean: true },
-    'LessThan': { string: true, double: true, integer: true, date: true, boolean: false },
-    'More': { string: true, double: true, integer: true, date: true, boolean: true },
-    'MoreThan': { string: true, double: true, integer: true, date: true, boolean: false },
+    'Like': { string: true, number: false, date: false, boolean: false },
+    'Likel': { string: true, number: false, date: false, boolean: false },
+    'Liker': { string: true, number: false, date: false, boolean: false },
 
-    'MinH': { string: false, double: false, integer: false, date: true, boolean: false },
-    'MinD': { string: false, double: false, integer: false, date: true, boolean: false },
-    'MinM': { string: false, double: false, integer: false, date: true, boolean: false },
-    'MaxH': { string: false, double: false, integer: false, date: true, boolean: false },
-    'MaxD': { string: false, double: false, integer: false, date: true, boolean: false },
-    'MaxM': { string: false, double: false, integer: false, date: true, boolean: false },
+    'Bt': { string: false, number: true, date: true, boolean: false },
+    'BtD': { string: false, number: false, date: true, boolean: false },
+    'BtY': { string: false, number: false, date: true, boolean: false },
+    'BtM': { string: false, number: false, date: true, boolean: false },
 
-    'Like': { string: true, double: false, integer: false, date: false, boolean: false },
-    'Likel': { string: true, double: false, integer: false, date: false, boolean: false },
-    'Liker': { string: true, double: false, integer: false, date: false, boolean: false },
+    'Not': { string: true, number: true, date: true, boolean: true },
 
-    'Bt': { string: false, double: true, integer: true, date: true, boolean: false },
-    'BtD': { string: false, double: false, integer: false, date: true, boolean: false },
-    'BtY': { string: false, double: false, integer: false, date: true, boolean: false },
-    'BtM': { string: false, double: false, integer: false, date: true, boolean: false },
+    'In': { string: true, number: true, date: false, boolean: false },
+    'NotIn': { string: true, number: true, date: false, boolean: false },
 
-    'Not': { string: true, double: true, integer: true, date: true, boolean: true },
+    'IsNull': { string: true, number: true, date: true, boolean: true },
+    'NotNull': { string: true, number: true, date: true, boolean: true },
 
-    'In': { string: true, double: true, integer: true, date: false, boolean: false },
-    'NotIn': { string: true, double: true, integer: true, date: false, boolean: false },
-
-    'IsNull': { string: true, double: true, integer: true, date: true, boolean: true },
-    'NotNull': { string: true, double: true, integer: true, date: true, boolean: true },
-
-
-    '>': { string: true, double: true, integer: true, date: true, boolean: true },
-    '>=': { string: true, double: true, integer: true, date: true, boolean: false },
-    '<': { string: true, double: true, integer: true, date: true, boolean: true },
-    '<=': { string: true, double: true, integer: true, date: true, boolean: false },
-    '=': { string: true, double: true, integer: true, date: true, boolean: true },
-    '!=': { string: true, double: true, integer: true, date: true, boolean: true },
-    '<>': { string: true, double: true, integer: true, date: true, boolean: true },
-
+    '>': { string: true, number: true, date: true, boolean: true },
+    '>=': { string: true, number: true, date: true, boolean: false },
+    '<': { string: true, number: true, date: true, boolean: true },
+    '<=': { string: true, number: true, date: true, boolean: false },
+    '=': { string: true, number: true, date: true, boolean: true },
+    '!=': { string: true, number: true, date: true, boolean: true },
+    '<>': { string: true, number: true, date: true, boolean: true },
 }
-
 
 const isSupport = (item: WhereItem, err: string[]): boolean => {
     let suffix = SUFFIX_MATRIX[item.fn] || SUFFIX_MATRIX['='];
     if (suffix[item.type || 'string']) return true;
-    err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type)}) do not support ${colorCondition(item.fn)}`)
+    err.push(`${item.column}/(${item.type}) not support method ${item.fn}`)
     return false;
 }
 
@@ -99,25 +92,19 @@ const compareSuffix = (suffix: MagicSuffix): MagicSuffix => {
         case '>=':
         case '=':
             return suffix;
-        case 'More':
-        case 'Gt':
-            return '>'
-        case 'Less':
-        case 'Lt':
-            return '<'
         case 'Min':
-        case 'MoreThan':
-        case 'Gte':
+            return '>';
+        case 'Max':
+            return '<';
         case 'MinD':
         case 'MinH':
         case 'MinM':
+        case 'MinThan':
             return '>=';
         case 'MaxD':
         case 'MaxH':
         case 'MaxM':
-        case 'Max':
-        case 'LessThan':
-        case 'Lte':
+        case 'MaxThan':
             return '<=';
         case 'Not':
         case '!=':
@@ -128,62 +115,56 @@ const compareSuffix = (suffix: MagicSuffix): MagicSuffix => {
 }
 
 
+const InFn = new Map<MagicSuffix, string>([['In', 'IN'], ['NotIn', 'NOT IN']]);
 
 const whereText = (item: WhereItem, pos: QueryPos, err: string[]) => {
     const compare = compareSuffix(item.fn);
     if (compare != null) {
-        pos.SQL.push(`${item.column} ${compare} $${pos.NUM}`);
+        pos.SQL.push(`${item.column} ${compare} ?`);
         pos.PARAM.push(item.value)
-        pos.NUM++;
         return;
     }
     if (InFn.has(item.fn)) {
-        pos.SQL.push(`${item.column} ${InFn.get(item.fn)} ANY($${pos.NUM}::text[])`);
+        pos.SQL.push(`${item.column} ${InFn.get(item.fn)} ( ? )`);
         pos.PARAM.push(inString(item.value + ''))
-        pos.NUM++;
+        // pos.NUM++;
         return
     }
     switch (item.fn) {
         case 'Like':
-            pos.SQL.push(`${item.column} LIKE $${pos.NUM}`);
+            pos.SQL.push(`${item.column} LIKE ?`);
             pos.PARAM.push('%' + item.value + '%')
-            pos.NUM++;
             return;
         case 'Likel':
-            pos.SQL.push(`${item.column} LIKE $${pos.NUM}`);
+            pos.SQL.push(`${item.column} LIKE ?`);
             pos.PARAM.push(item.value + '%')
-            pos.NUM++;
+
             return;
         case 'Liker':
-            pos.SQL.push(`${item.column} LIKE $${pos.NUM}`);
+            pos.SQL.push(`${item.column} LIKE ?`);
             pos.PARAM.push('%' + item.value)
-            pos.NUM++;
             return;
         default:
-            err.push(`${colorFieldName(item.column)}/ type : ${colorFieldType('String')} not support method ${colorCondition(item.fn)}`)
+            err.push(`${item.column}/ type : String not support method ${item.fn}`)
             return;
     }
 }
-
-const InFn = new Map<MagicSuffix, MagicSuffix>([['In', '='], ['NotIn', '!=']]);
 
 const whereNumber = (item: WhereItem, pos: QueryPos, err: string[], parseFn) => {
     const compare = compareSuffix(item.fn);
     if (compare != null) {
         try {
             let val = _.isNumber(item.value) ? item.value : parseFn(item.value as string);
-            pos.SQL.push(`${item.column} ${compare} $${pos.NUM}`);
+            pos.SQL.push(`${item.column} ${compare} ?`);
             pos.PARAM.push(val)
-            pos.NUM++;
         } catch {
-            err.push(`${colorFieldName(item.column)}/ type : ${colorFieldType(item.type || 'number')} value is not a Number ${colorCondition(item.value)}`)
+            err.push(`${item.column}/ type : Number value is not a Number ${item.value}`)
         }
         return;
     }
     if (InFn.has(item.fn)) {
-        pos.SQL.push(`${item.column} ${InFn.get(item.fn)} ANY($${pos.NUM}::int[])`);
+        pos.SQL.push(`${item.column} ${InFn.get(item.fn)} ( ? )`);
         pos.PARAM.push(inNumber(item.value + ''))
-        pos.NUM++;
         return
     }
     if (item.fn == 'Bt') {
@@ -193,13 +174,12 @@ const whereNumber = (item: WhereItem, pos: QueryPos, err: string[], parseFn) => 
             return;
         }
         range.map(oper => {
-            pos.SQL.push(`${item.column} ${oper[0]} $${pos.NUM}`)
+            pos.SQL.push(`${item.column} ${oper[0]} ?`)
             pos.PARAM.push(oper[1])
-            pos.NUM++;
         })
         return;
     }
-    err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type || 'number')}) : not support method ${colorCondition(item.fn)}`);
+    err.push(`${item.column}/(Number) : not support method ${item.fn}`);
 }
 
 
@@ -208,12 +188,12 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
     let val: Dayjs = null;
     if (item.fn != 'Bt') {
         if (item.value == '' || item.value == null) {
-            err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type || 'date')})  : Can not be null`)
+            err.push(`${item.column}/(date) : Can not be null`)
             return;
         }
         val = dayjs(item.value as any);
         if (!val.isValid()) {
-            err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type || 'date')})  : Must Be a date-string or number-stamp ${colorCondition(item.value)}`)
+            err.push(`${item.column}/(date) : Must Be a date-string or number-stamp ${item.value}`)
             return;
         }
         switch (item.fn) {
@@ -239,9 +219,8 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
     }
     const compare = compareSuffix(item.fn);
     if (compare != null) {
-        pos.SQL.push(`${item.column} ${compare} $${pos.NUM}`);
+        pos.SQL.push(`${item.column} ${compare} ?`);
         pos.PARAM.push(val.toDate())
-        pos.NUM++;
         return;
     }
     let start = null, end = null;
@@ -262,32 +241,27 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
         case 'Bt':
             const range = betweenDate(item.value + '')
             if (range == null) {
-                err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type || 'date')})   :  Between Value invalidated ${colorCondition(item.value)}`)
+                err.push(`${item.column}/(Date) :  Between Value invalidated ${item.value}`)
                 return;
             }
             range.map(oper => {
-                pos.SQL.push(`${item.column} ${oper[0]} $${pos.NUM}`)
+                pos.SQL.push(`${item.column} ${oper[0]} ?`)
                 pos.PARAM.push(oper[1])
-                pos.NUM++;
             })
             return;
     }
     if (start == null || end == null) {
-        err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type || 'date')})   : not support method ${colorCondition(item.fn)}`);
+        err.push(`${item.column}/(Date) : not support method ${item.fn}`);
         return;
     }
-    pos.SQL.push(`${item.column} >= $${pos.NUM}`)
+    pos.SQL.push(`${item.column} >= ?`)
     pos.PARAM.push(start)
-    pos.NUM++;
-    pos.SQL.push(`${item.column} <= $${pos.NUM}`)
+    pos.SQL.push(`${item.column} <= ?`)
     pos.PARAM.push(end)
-    pos.NUM++;
 }
 
 const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
     let bool = boolValue(item.value)
-
-
     switch (item.fn) {
         case 'IsNull':
             pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} NULL`);
@@ -307,7 +281,7 @@ const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
         default:
             break;
     }
-    pos.SQL.push(`${item.column} IS ${bool ? '' : 'NOT'} TRUE`)
+    pos.SQL.push(`${item.column} ${bool ? '!=' : '='} 0`)
 
 
 }
@@ -317,11 +291,9 @@ const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
     if (!isSupport(item, err)) return;
     if (NullCondition(item, pos)) return;
     switch (item.type) {
-        case 'double':
-            whereNumber(item, pos, err, parseFloat);
-            return
-        case 'integer':
-            whereNumber(item, pos, err, parseInt);
+        case 'number':
+        case 'int':
+            whereNumber(item, pos, err, item.type == 'int' ? parseInt : parseFloat);
             return;
         case 'string':
             whereText(item, pos, err);
@@ -338,18 +310,16 @@ const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
     }
 }
 
-const ConditionToWhere = (where: WhereCondition, pos: QueryPos, err: string[]) => {
-    for (let item of where.items) {
+const ConditionToWhere = (condition: WhereCondition, pos: QueryPos, err: string[]) => {
+    for (let item of condition.items) {
         if (_.has(item, 'link')) {
             let group = item as WhereCondition;
             let _pos: QueryPos = {
                 SQL: [],
                 PARAM: [],
-                NUM: pos.NUM
             }
             ConditionToWhere(group, _pos, err);
             if (_pos.SQL.length) {
-                if (_pos.NUM > pos.NUM) pos.NUM = _pos.NUM;
                 for (let param of _pos.PARAM) pos.PARAM.push(param);
                 // let link = group.link == 'NOT' ? 'AND NOT' : group.link;
                 pos.SQL.push('(' + _pos.SQL.join(' ' + group.link + ' ') + ')')
@@ -361,15 +331,53 @@ const ConditionToWhere = (where: WhereCondition, pos: QueryPos, err: string[]) =
 };
 
 
-export const where = (STRICT: boolean, condition: WhereParam, startIdx = 1): SQLStatement => {
-    const pos: QueryPos = { SQL: [], PARAM: [], NUM: startIdx };
+export const where: SqlWhere = (condition: WhereParam): [string, any[]] => {
+    const pos: QueryPos = { SQL: [], PARAM: [] };
     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
     let err: string[] = [];
     ConditionToWhere(root, pos, err);
-    throwErr(STRICT, err, 'Some SQL Error Occur');
+    throwErr(err, 'Some SQL Error Occur');
     if (pos.SQL.length == 0) {
         return ['', []]
     };
     return [pos.SQL.join(" " + root.link + " "), pos.PARAM]
 }
 
+
+
+export const fixWhere = (COLUMN_MAP: Map<string, OColumn>, extra: WhereItem[]): [string, string] => {
+    let ITEMS: WhereItem[] = [];
+    let ctf = new Map<string, string>();
+    const convert = (kind, value) => {
+        switch (kind) {
+            case 'Boolean':
+                return value;
+            case 'Number':
+                return parseFloat(value);
+            case 'Integer':
+                return parseInt(value);
+            default:
+                return value + '';
+        }
+    }
+    for (let [key, val] of COLUMN_MAP) {
+        if (_.has(val, 'delMark')) {
+            ITEMS.push({ column: (val.column || key), fn: '<>', value: convert(val[Kind as any], val.delMark) })
+        }
+        ctf.set((val.column || key), key);
+    }
+    extra.map(item => {
+        // inner usage field
+        // @ts-ignore
+        let schema = COLUMN_MAP.get(item.field) || COLUMN_MAP.get(ctf.get(item.field));
+        if (schema == null) return;
+        ITEMS.push({ ...item, value: convert(schema[Kind as any], item.value) });
+    })
+    if (ITEMS.length == 0) return ['', ' WHERE '];
+    let [SQL, PARAM] = where(ITEMS);
+    if (SQL.length == 0) return ['', ' WHERE '];
+    PARAM.map((item, i) => {
+        SQL = SQL.replaceAll(`$${i + 1}`, _.isNumber(item) ? (item + '') : `'${item}'`)
+    });
+    return [' WHERE ' + SQL, ' AND ']
+}

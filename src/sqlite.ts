@@ -1,25 +1,20 @@
 /**
  * Requires NODE >= 22.5.0
  * https://nodejs.org/api/sqlite.html
- * */ 
+ * */
 
-import {
-    StatementSync,
-    DatabaseSync,
-    // SQLITE_CHANGESET_OMIT,
-} from 'node:sqlite'
-import type {
-    SupportedValueType,
-    DatabaseSyncOptions,
-    StatementResultingChanges,
-    Session, CreateSessionOptions, ApplyChangesetOptions, FunctionOptions
-
-} from 'node:sqlite';
-
+import { DatabaseSync, } from 'node:sqlite'
 import { BaseDB } from './core'
 import { DatabaseOptions } from './core'
 
-type SqliteOptions = string | DatabaseOptions & { location: string; } | (() => DatabaseSync);
+import type { DatabaseSyncOptions, } from 'node:sqlite';
+
+export { initFromFile, initFromSQL } from './lib-sqlite/initDB'
+export type { Static, TSchema } from '@sinclair/typebox';   // export useful types from typebox
+export { setSQLLogger, setSQLTimer } from './lib-pg/Global';
+export * from './utils/types';
+
+export type SqliteOptions = string | DatabaseOptions & { location: string; } | (() => DatabaseSync);
 
 
 export class Sqlite extends BaseDB<SqliteOptions, DatabaseSync> {
@@ -46,14 +41,7 @@ export class Sqlite extends BaseDB<SqliteOptions, DatabaseSync> {
     }
 
 }
-
-const SQLITE = new Sqlite({ location: 'test.db' });
-
-const test = async () => {
-    const db = await SQLITE.getConn();
-    db.exec(`CREATE TABLE data(key INTEGER PRIMARY KEY, value TEXT)`);
-    const insert = db.prepare('INSERT INTO data (key, value) VALUES (?, ?)');
-    insert.run(1, 'hello');
-    insert.run(2, 'world');
-    const query = db.prepare('SELECT * FROM data ORDER BY key');
-}
+export const SQLITE = new Sqlite(() => {
+    if (process.env.SQLITE_PATH) return new DatabaseSync(process.env.SQLITE_PATH);
+    throw new Error(`SQLITE_PATH not set`);
+});

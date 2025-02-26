@@ -1,19 +1,18 @@
 // npm i pg @types/pg
 import { Pool } from 'pg'
 import { BaseDB } from './core/BaseDB';
-import { PgTable } from './lib-pg/PgTable';
-import { PgView } from './lib-pg/PgView'
+import { PgView, PgTable, } from './lib-pg/PgTable';
 
 // https://www.postgresql.org/docs/17/sql-select.html
 import type { PoolConfig } from 'pg';
 import type { TableOptions } from './core';
-import type { TObject, } from '@sinclair/typebox';
-export type { Static } from '@sinclair/typebox';
+import type { TObject, } from '@sinclair/typebox';          // export useful types from typebox
+export type { Static, TSchema } from '@sinclair/typebox';
 
 export { setSQLLogger, setSQLTimer } from './lib-pg/Global';
 export * from './utils/types';
 
-export class PgPool extends BaseDB<PoolConfig | (() => Pool | Promise<Pool>), Pool> {
+export class PostgreSQL extends BaseDB<PoolConfig | (() => Pool | Promise<Pool>), Pool> {
     private pool: Pool = null;
 
     override async getConn(): Promise<Pool> {
@@ -52,7 +51,7 @@ export class PgPool extends BaseDB<PoolConfig | (() => Pool | Promise<Pool>), Po
  * - PG_PASS
  * - PG_DB   (REQUIRED)
 */
-export const PG = new PgPool(() => {
+export const PG = new PostgreSQL(() => {
     if (process.env.PG_URL) return new Pool({ connectionString: process.env.PG_URL });
 
     let config: PoolConfig = {};

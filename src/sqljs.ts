@@ -1,1 +1,0 @@
-// npm i sql.js @types/sql.js

@@ -10,8 +10,6 @@ test('Type', {
     const bool = UType.Boolean();
 
 
-
-
 })
 
 

@@ -1,7 +1,14 @@
 {
   "name": "oor",
-  "version": "1.5.1",
+  "version": "1.5.3",
   "author": "ada87",
+  "description": " An extreme simple ORM Lib for NodeJs.",
+  "license": "MIT",
+  "homepage": "https://oor.xdnote.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ada87/oor"
+  },
   "keywords": [
     "nodejs",
     "postgres",
@@ -15,16 +22,6 @@
   "files": [
     "./dist/**.*"
   ],
-  "description": " An extreme simple ORM Lib for NodeJs.",
-  "homepage": "https://oor.xdnote.com",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ada87/oor"
-  },
-  "license": "MIT",
-  "main": "/cjs/pg.js",
-  "module": "/esm/pg.js",
-  "types": "/types/pg.d.ts",
   "scripts": {
     "test": "node --env-file=.env -r ts-node/register node_modules/tsest/run",
     "watch": "node --env-file=.env -r ts-node/register node_modules/tsest/run --fileName=Type.test.ts --watch",
@@ -34,7 +31,6 @@
     "@elastic/elasticsearch": "^8.17.0",
     "@types/node": "^22.13.4",
     "@types/pg": "^8.11.11",
-    "@types/sql.js": "^1.4.9",
     "idb": "^8.0.2",
     "mysql2": "^3.12.0",
     "pg": "^8.13.3",
@@ -46,12 +42,39 @@
     "typescript": "^5.7.3",
     "lodash": "^4.17.21"
   },
+  "peerDependenciesMeta": {
+    "pg": {
+      "optional": true
+    },
+    "mysql2": {
+      "optional": true
+    },
+    "sqlite3": {
+      "optional": true
+    },
+    "postgres": {
+      "optional": true
+    },
+    "@elastic/elasticsearch": {
+      "optional": true
+    },
+    "idb": {
+      "optional": true
+    }
+  },
   "dependencies": {
     "@sinclair/typebox": "^0.34.27",
     "dayjs": "^1.11.13"
   },
   "peerDependencies": {
-    "@sinclair/typebox": "^0.34.21"
+    "@sinclair/typebox": "^0.34.21",
+    "@elastic/elasticsearch": "^8.17.0",
+    "idb": "^8.0.2",
+    "mysql2": "^3.12.0",
+    "pg": "^8.13.3",
+    "pg-native": "^3.2.2",
+    "postgres": "^3.4.5",
+    "sqlite3": "^5.1.7"
   },
   "pnpm": {
     "onlyBuiltDependencies": []

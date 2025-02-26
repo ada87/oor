@@ -42,7 +42,7 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
     }
 
 
-    async _query(SELECT: string, STATEMENT: SQLStatement, ORDER_BY_LIMIT: string, fixed = true): Promise<Array<Static<S>>> {
+    protected async _query(SELECT: string, STATEMENT: SQLStatement, ORDER_BY_LIMIT: string, fixed = true): Promise<Array<Static<S>>> {
         const { EXECUTOR } = this;
         const [SQL, PARAM] = this.queryStatement(SELECT, STATEMENT, ORDER_BY_LIMIT, fixed);;
         const conn = await this.getConn();

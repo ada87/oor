@@ -1,7 +1,7 @@
-import { existsSync, readFileSync, writeFileSync, rmSync, copyFileSync, renameSync } from 'fs';
-import { exec } from 'child_process';
-import { resolve, sep } from 'path';
 import _ from 'lodash';
+import { existsSync, readdirSync, readFileSync, writeFileSync, rmSync, copyFileSync, } from 'fs';
+import { exec } from 'child_process';
+import { resolve, join, sep } from 'path';
 const __dirname = process.cwd();
 const distDir = resolve(__dirname, './dist')
 
@@ -15,6 +15,34 @@ const runCommand = (command) => {
             resolve(stdout);
         });
     });
+}
+
+
+const buildExport = () => {
+    const exports = {}
+    const walk = (currentDir, relativePath = "/") => {
+        const files = readdirSync(currentDir, { withFileTypes: true });
+        files.forEach((file) => {
+            if (file.isDirectory()) {
+                walk(join(currentDir, file.name), relativePath + file.name + '/');
+            } else if (file.isFile() && file.name.endsWith('.d.ts')) {
+                const fileName = file.name.substring(0, file.name.length - 5);
+                const path = (relativePath + fileName);
+                exports['.' + path] = {
+                    import: {
+                        types: './esm' + path + '.d.ts',
+                        default: './esm' + path + '.js'
+                    },
+                    require: {
+                        types: './cjs' + path + '.d.ts',
+                        default: './cjs' + path + '.js'
+                    },
+                }
+            }
+        });
+    }
+    walk(resolve(distDir, './esm'));
+    return exports;
 }
 
 const RunBuild = async () => {
@@ -31,6 +59,10 @@ const RunBuild = async () => {
     _.unset(json, 'scripts');
     _.unset(json, 'files');
     _.unset(json, 'pnpm')
-    writeFileSync(distDir + sep + 'package.json', JSON.stringify(json))
+    json.exports = buildExport();
+    writeFileSync(distDir + sep + 'package.json', JSON.stringify(json, null, 2), 'utf-8')
+
+    console.log("✅ Build OK");
 }
+
 RunBuild();

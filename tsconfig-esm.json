@@ -1,13 +1,11 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
-        "module": "esnext",
-        "declaration": true,
-        "declarationDir": "./dist/types/",
+        "module": "ESNext",
         "outDir": "./dist/esm",
     },
     "exclude": [
-        "./src/**/*.test.ts",
-        "./src/test",
-    ],
+        "./src/**/*.test.ts"
+    ]
 }
+

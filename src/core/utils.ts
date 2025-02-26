@@ -7,8 +7,8 @@ import { Value } from '@sinclair/typebox/value';
 
 
 import type { DatabaseOptions, TableOptions } from './types'
-import type { TObject } from '@sinclair/typebox';
-import type { Column, DeleteMark, WhereItem } from '../utils/types';
+import type { TObject, TSchema } from '@sinclair/typebox';
+import type { DeleteMark, WhereItem } from '../utils/types';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -16,7 +16,7 @@ const DEFAULT_PAGE_SIZE = 10;
 
 type ParseResult = Omit<TableOptions, 'globalCondition'> & {
     tableName: string,
-    COLUMN_MAP: Map<string, Column>,
+    COLUMN_MAP: Map<string, TSchema>,
     F2W: Map<string, string>,
     F2S: Map<string, string>,
     C2F: Map<string, string>,
@@ -53,7 +53,7 @@ export const parseOptions = (RESERVED_WORDS: Set<string>, tbName: string, tbSche
         pageSize: tbOptions?.pageSize || dbOptions?.pageSize || DEFAULT_PAGE_SIZE,
         strictQuery: tbOptions?.strictQuery || dbOptions?.strictQuery || false,
         strictEntity: tbOptions?.strictEntity || dbOptions?.strictEntity || false,
-        COLUMN_MAP: new Map<string, Column>(),
+        COLUMN_MAP: new Map<string, TSchema>(),
         C2F: new Map<string, string>(),
         F2W: new Map<string, string>(),
         F2S: new Map<string, string>(),
@@ -154,7 +154,7 @@ export const parseOptions = (RESERVED_WORDS: Set<string>, tbName: string, tbSche
 
 
 type CheckEntityFn = (obj: object, isAdd: boolean) => object
-export const buildCheckEntity = (SCHEMA: TObject, COLUMN_MAP: Map<string, Column>, C2F: Map<string, string>, strict: boolean): CheckEntityFn => {
+export const buildCheckEntity = (SCHEMA: TObject, COLUMN_MAP: Map<string, TSchema>, C2F: Map<string, string>, strict: boolean): CheckEntityFn => {
 
     const validateFn = strict ? (clone: object) => {
         const result = Value.Errors(SCHEMA, clone);

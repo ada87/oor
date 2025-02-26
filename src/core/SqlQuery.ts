@@ -4,8 +4,8 @@ import { validateSort } from '../utils/ValidateUtil'
 import { parseOptions, } from './utils';
 
 import type { TableOptions, DatabaseOptions, QueryBuilder } from './types';
-import type { TObject } from '@sinclair/typebox';
-import type { WhereParam, OrderBy, Column, SQLStatement, QuerySchema, WhereCondition, WhereDefine, WhereItem, QueryParam, RowKeyType, DeleteMark } from '../utils/types';
+import type { TObject,TSchema } from '@sinclair/typebox';
+import type { WhereParam, OrderBy , SQLStatement, QuerySchema, WhereCondition, WhereDefine, WhereItem, QueryParam, RowKeyType, DeleteMark } from '../utils/types';
 
 
 export abstract class BaseQuery implements QueryBuilder {
@@ -22,7 +22,7 @@ export abstract class BaseQuery implements QueryBuilder {
     protected readonly QUERY_FIELDS: string;
     protected readonly DETAIL_FIELDS: string;
 
-    protected readonly COLUMN_MAP: Map<string, Column>;
+    protected readonly COLUMN_MAP: Map<string, TSchema>;
     protected readonly DEL_MARK: DeleteMark = null;
 
     /**

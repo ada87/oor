@@ -129,9 +129,10 @@ export type QueryOrderBy = {
 };
 export type QuerySchema = QueryParam & QueryOrderBy;
 
+export const DATE_TYPE = Symbol('DATE_TYPE');
+export const BOOLEAN_TYPE = Symbol('BOOLEAN_TYPE');
 
-
-export interface Column extends SchemaOptions {
+export interface ColumnOptions extends SchemaOptions {
     /**
      * 1. if ignore = true , query SELECT will not include this field
      * 2. `table.getById()` will return this field. Actually `table.getById()` aways use SELECT * !
@@ -148,7 +149,7 @@ export interface Column extends SchemaOptions {
 
 
 
-export interface UStringOptions extends Column, StringOptions {
+export interface UStringOptions extends ColumnOptions, StringOptions {
     /**
      * Defind a mark: 
      *      1. Delete action will update this filed to mark 
@@ -173,7 +174,7 @@ export interface UStringOptions extends Column, StringOptions {
 }
 
 
-export interface UNumericOptions extends Column, NumberOptions {
+export interface UNumericOptions extends ColumnOptions, NumberOptions {
     /**
      * Defind a mark: 
      *      1. Delete action will update this filed to mark 
@@ -190,7 +191,7 @@ export interface UNumericOptions extends Column, NumberOptions {
 
 
 
-export interface UDateOptions extends Column, DateOptions {
+export interface UDateOptions extends ColumnOptions, DateOptions {
     /**
      * 1. Create Time can not be modify
      * 2. It will be auto fill with Current Time while INSERT
@@ -208,7 +209,7 @@ export interface UDateOptions extends Column, DateOptions {
     // format?: string
 }
 
-export interface UStringOptions extends Column, StringOptions {
+export interface UStringOptions extends ColumnOptions, StringOptions {
     /**
      * Defind a mark: 
      *      1. Delete action will update this filed to mark 
@@ -219,7 +220,7 @@ export interface UStringOptions extends Column, StringOptions {
 }
 
 
-export interface UIntegerOptions extends Column, IntegerOptions {
+export interface UIntegerOptions extends ColumnOptions, IntegerOptions {
     /**
      * Defind a mark: 
      *      1. Delete action will update this filed to mark 
@@ -231,7 +232,7 @@ export interface UIntegerOptions extends Column, IntegerOptions {
 
 
 
-export interface UDateOptions extends Column, DateOptions {
+export interface UDateOptions extends ColumnOptions, DateOptions {
     /**
      * 1. Create Time can not be modify
      * 2. It will be auto fill with Current Time while INSERT
@@ -270,75 +271,51 @@ export const UType = {
     /**
      * Store Type : varchar / string
     */
-    DateString: (options?: UDateOptions) => Type.Optional(
-        Type.Union(
-            [
-                Type.String(options),
-                Type.Date({ ...options, }),
-            ]
-        )
-    ),
+    DateString: (options?: UDateOptions) => Type.Optional(Type.String({ ...options, [DATE_TYPE]: 'STRING' })),
     /**
      * Store Type : long / timestamp
     */
-    DateLong: (options?: UDateOptions) => Type.Optional(
-        Type.Union(
-            [
-                Type.Integer({ ...options, }),
-                Type.Date({ ...options, }),
-            ]
-        )
-    ),
+    DateLong: (options?: UDateOptions) => Type.Optional(Type.Integer({ ...options, [DATE_TYPE]: 'LONG' })),
     /**
      * Store Type : boolean
     */
-    Boolean: (options?: Column) => Type.Optional(Type.Boolean(options)),
+    Boolean: (options?: ColumnOptions) => Type.Optional(Type.Boolean(options)),
     /**
      * Store Type : bit / int (0 = false / 1 = true)
     */
-    BooleanInteger: (options?: Column) => Type.Optional(Type.Integer(options)),
+    BooleanSmallInt: (options?: ColumnOptions) => Type.Optional(Type.Integer(options)),
 
     /**
      * Store Type : float / double (not null)
     */
-    DoubleRequired: (options?: UNumericOptions) => Type.Number(options),
+    DoubleNotNull: (options?: UNumericOptions) => Type.Number(options),
     /**
      * Store Type : integer / long (not null)
     */
-    IntegerRequired: (options?: UIntegerOptions) => Type.Integer(options),
+    IntegerNotNull: (options?: UIntegerOptions) => Type.Integer(options),
     /**
      * Store Type : varchar / text /  string (not null)
     */
-    StringRequired: (options?: UStringOptions) => Type.String(options),
+    StringNotNull: (options?: UStringOptions) => Type.String(options),
     /**
      * Store Type : date (not null)
     */
-    DateRequired: (options?: UDateOptions) => Type.Date(options),
+    DateNotNull: (options?: UDateOptions) => Type.Date(options),
     /**
      * Store Type : varchar / string (not null)
     */
-    DateStringRequired: (options?: UDateOptions) => Type.Union(
-        [
-            Type.String(options),
-            Type.Date({ ...options, }),
-        ]
-    ),
+    DateStringNotNull: (options?: UDateOptions) => Type.String({ ...options, [DATE_TYPE]: 'STRING' }),
     /**
      * Store Type : long / timestamp (not null)
     */
-    DateLongRequired: (options?: UDateOptions) => Type.Union(
-        [
-            Type.Integer({ ...options, }),
-            Type.Date({ ...options, }),
-        ]
-    ),
+    DateLongNotNull: (options?: UDateOptions) => Type.Integer({ ...options, [DATE_TYPE]: 'LONG' }),
     /**
      * Store Type : boolean (not null)
     */
-    BooleanRequired: (options?: Column) => Type.Boolean(options),
+    BooleanNotNull: (options?: ColumnOptions) => Type.Boolean(options),
     /**
      * Store Type : bit / int (0 = false / 1 = true) (not null)
     */
-    BooleanIntegerRequired: (options?: Column) => Type.Optional(Type.Integer(options)),
+    BooleanSmallIntNotNull: (options?: ColumnOptions) => Type.Integer(options),
 
 }

@@ -34,7 +34,7 @@ export class PgQuery extends BaseAction {
 
 
 }
-// COLUMN_MAP: Map<string, Column>, extra: WhereItem[]
+// COLUMN_MAP: Map<string, TSchema>, extra: WhereItem[]
 // abstract class 
 
 export class PgAction extends PgQuery implements BaseAction {

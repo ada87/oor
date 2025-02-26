@@ -1,19 +1,20 @@
 import _ from '../core/dash';
 import dayjs from 'dayjs';
+import { DATE_TYPE, BOOLEAN_TYPE } from './types'
 // import { Type } from '@sinclair/typebox';
 // import { Value } from '@sinclair/typebox/value';
 
 import { Kind } from '@sinclair/typebox';
 
-import type { MagicSuffix, UDateOptions, UNumericOptions, UStringOptions, Column, FieldType } from './types';
-import type { TProperties, TPartial, TObject } from '@sinclair/typebox';
+import type { MagicSuffix, FieldType } from './types';
 
 
 
 export const NONE_PARAM = new Set<MagicSuffix>(['IsNull', 'NotNull']);
 
 export const getFieldType = (schema: any): FieldType => {
-
+    if (schema[DATE_TYPE]) return 'date';
+    if (schema[BOOLEAN_TYPE]) return 'boolean'
 
     switch (schema[Kind]) {
         case 'String':
@@ -26,23 +27,10 @@ export const getFieldType = (schema: any): FieldType => {
             return 'boolean';
         case 'Date':
             return 'date';
-        case 'Union':
-            if (_.isArray(schema.anyOf) && schema.anyOf.length) {
-                return getFieldType(schema.anyOf[schema.anyOf.length-1])
-            }
         default:
             return 'string';
     }
 }
-
-
-// var STRICT_QUERY = false;
-// var STRICT_ENTITY = false;
-// export var ShowSql = null;
-// export var PAGE_SIZE = 10;
-
-
-
 
 
 const getStart = (str: string): [MagicSuffix, string] => {

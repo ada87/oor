@@ -3,9 +3,9 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
 
-import { Kind } from '@sinclair/typebox';
+import { Kind, TSchema } from '@sinclair/typebox';
 import type { Dayjs } from 'dayjs'
-import { Column } from './types';
+// import { Column } from './types';
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -43,11 +43,8 @@ export const convertDate = (date: string | Date | number | Dayjs, timezone: stri
     return dayjs(date).tz(timezone).format(TZ_MAP.get(timezone))
 }
 
-export const newDate = (column: Column): any => {
-    // @ts-ignore
-    let kind = column.anyOf ? column.anyOf[0][Kind] : column[Kind];
-
-    switch (kind) {
+export const newDate = (column: TSchema): any => {
+    switch (column[Kind]) {
         case 'String':
             return dayjs().format(TZ_MAP.get(DEFAULT_TIMEZONE) || 'YYYY-MM-DD HH:mm:ss');
         case 'Number':
@@ -65,4 +62,13 @@ export const newDate = (column: Column): any => {
 
 export const toDate = (txt: string | number): Date => {
     return dayjs(txt).toDate();
+}
+
+export const toBoolean = (column: TSchema, val: boolean) => {
+
+    if (column[Kind] == 'Integer') {
+
+    }
+
+
 }

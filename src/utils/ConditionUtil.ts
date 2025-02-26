@@ -1,7 +1,7 @@
 import _ from '../core/dash';
-import { Kind } from '@sinclair/typebox';
+import { TSchema } from '@sinclair/typebox';
 import { getFieldType } from './SQLUtil';
-import { WhereItem, WhereCondition, QuerySchema, WhereDefine, SUFFIX, MagicSuffix, Column } from './types';
+import { WhereItem, WhereCondition, QuerySchema, WhereDefine, SUFFIX, MagicSuffix } from './types';
 import { throwErr } from './ValidateUtil';
 import { colorFieldName } from './color';
 
@@ -12,7 +12,7 @@ const DEFAULT_QUERY_KEY = new Set<string>(['_start', '_count', '_order', '_by', 
 /**
  * Cache Query Field To Where Filed
 */
-const fieldToDef = (key: string, COLUMN_MAP: Map<string, Column>): WhereDefine => {
+const fieldToDef = (key: string, COLUMN_MAP: Map<string, TSchema>): WhereDefine => {
     let SCHEMA = COLUMN_MAP.get(key);
     let query_field = key, suffix: MagicSuffix = null;
     if (SCHEMA == null) {
@@ -39,7 +39,7 @@ const fieldToDef = (key: string, COLUMN_MAP: Map<string, Column>): WhereDefine =
     return def;
 }
 
-// const defineToItem = (def: WhereDefine, schema: Column, value: string | boolean | number | Date): WhereItem => {
+// const defineToItem = (def: WhereDefine, schema: TSchema, value: string | boolean | number | Date): WhereItem => {
 //     // TODO : IGNORE SOME INVALIDATE SCHEMA
 //     // console.log(schema)
 //     // return null;
@@ -47,7 +47,7 @@ const fieldToDef = (key: string, COLUMN_MAP: Map<string, Column>): WhereDefine =
 
 // }
 
-export const queryToCondition = (strict: boolean, query: QuerySchema, COLUMN_MAP: Map<string, Column>, FIELD_CACHE: Map<string, WhereDefine>): WhereCondition => {
+export const queryToCondition = (strict: boolean, query: QuerySchema, COLUMN_MAP: Map<string, TSchema>, FIELD_CACHE: Map<string, WhereDefine>): WhereCondition => {
     const err: string[] = [];
     const ROOT: WhereCondition = { link: 'AND', items: [] }
 

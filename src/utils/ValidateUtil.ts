@@ -1,7 +1,7 @@
 import _ from '../core/dash';
 
 // import type { View, QueryBuilder } from '../core'
-import type { Column, OrderBy } from "./types";
+import type { OrderBy } from "./types";
 // import type { TObject } from '@sinclair/typebox';
 
 

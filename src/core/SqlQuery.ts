@@ -4,8 +4,8 @@ import { validateSort } from '../utils/ValidateUtil'
 import { parseOptions, } from './utils';
 
 import type { TableOptions, DatabaseOptions, QueryBuilder } from './types';
-import type { TObject,TSchema } from '@sinclair/typebox';
-import type { WhereParam, OrderBy , SQLStatement, QuerySchema, WhereCondition, WhereDefine, WhereItem, QueryParam, RowKeyType, DeleteMark } from '../utils/types';
+import type { TObject, TSchema } from '@sinclair/typebox';
+import type { WhereParam, OrderBy, SQLStatement, QuerySchema, WhereCondition, WhereDefine, WhereItem, QueryParam, RowKeyType, DeleteMark } from '../utils/types';
 
 
 export abstract class BaseQuery implements QueryBuilder {
@@ -146,19 +146,13 @@ export abstract class BaseQuery implements QueryBuilder {
         return `${this.orderBy(query)} ${this.limit(query)}`
     }
 
-    byField(field: string, value: string | number | boolean, startIdx: number = 1): SQLStatement {
-        if (!this.F2W.has(field)) throw new Error(`Field ${field} not found in Table ${this.tableName}`);
-        let column = this.F2W.get(field);
-        let sql = `${column} = $${startIdx}`; // msyql/sqlite 为 "?"
-        return [sql, [value]];
-    }
 
     byId(value: RowKeyType): SQLStatement {
         if (this.ROW_KEY == null) throw ('Row Key is not defined');
         return this.byField(this.ROW_KEY, value);
     }
 
-
+    public abstract byField(field: string, value: string | number | boolean, startIdx?: number): SQLStatement;
     public abstract where(condition: WhereParam, startIdx?: number): SQLStatement;
     public abstract fixWhere(statement?: SQLStatement): SQLStatement;
 

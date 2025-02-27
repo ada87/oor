@@ -15,5 +15,9 @@
     "downlevelIteration": true,
     "rootDir": "./src/",
     "outDir": "./dist/",
-  }
+  },
+  "exclude": [
+    "./src/**/*.test.ts",
+    "./dist"
+]
 }

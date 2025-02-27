@@ -1,6 +1,6 @@
 import { RETURN } from '../utils/types'
 import { GLOBAL } from './Global';
-import type { DatabaseSync, StatementSync, StatementResultingChanges } from 'node:sqlite'
+import type { DatabaseSync, StatementResultingChanges } from 'node:sqlite'
 // import type { Pool, QueryResult } from 'pg';
 
 import type { QueryExecutor, ActionExecutor, } from '../core';
@@ -23,8 +23,10 @@ class SqilteQuery implements QueryExecutor<DatabaseSync, object> {
     async get(conn: DatabaseSync, sql: string, params?: Array<string | number>): Promise<object> {
         if (GLOBAL.logSQL) GLOBAL.logSQL(sql, params);;
         let start = Date.now();
-        const query = conn.prepare(sql);
-        const result = query.get(...params)
+        const stmt = conn.prepare(sql);
+        const result = stmt.get(...params);
+        // const stmt = conn.prepare('SELECT id FROM user where id = 991119');
+        // const result = stmt.get();
         if (GLOBAL.logTime) {
             let now = Date.now();
             GLOBAL.logTime(sql, params, now - start);
@@ -36,7 +38,7 @@ class SqilteQuery implements QueryExecutor<DatabaseSync, object> {
 type Result = any;
 type RESULT = StatementResultingChanges
 
-const stmt: StatementSync = null;
+// const stmt: StatementSync = null;
 // stmt.sourceSQL
 
 // stmt.get()

@@ -12,6 +12,14 @@ export class PgQuery extends BaseAction {
         return RESERVED_WORDS;
     }
 
+    
+    byField(field: string, value: string | number | boolean, startIdx: number = 1): SQLStatement {
+        if (!this.F2W.has(field)) throw new Error(`Field ${field} not found in Table ${this.tableName}`);
+        let column = this.F2W.get(field);
+        let sql = `${column} = $${startIdx}`; 
+        return [sql, [value]];
+    }
+
     wrapField(filed: string): string {
         return '"' + filed + '"';
     }

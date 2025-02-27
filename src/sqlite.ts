@@ -3,15 +3,18 @@
  * https://nodejs.org/api/sqlite.html
  * */
 
-import { DatabaseSync, } from 'node:sqlite'
+import { DatabaseSync } from 'node:sqlite'
 import { BaseDB } from './core'
-import { DatabaseOptions } from './core'
+import { DatabaseOptions, TableOptions, } from './core'
 
 import type { DatabaseSyncOptions, } from 'node:sqlite';
-
-export { initFromFile, initFromSQL } from './lib-sqlite/initDB'
-export type { Static, TSchema } from '@sinclair/typebox';   // export useful types from typebox
+import type { TObject } from '@sinclair/typebox'
+import { SqliteTable, SqliteView } from './lib-sqlite/SqliteTable'
 export { setSQLLogger, setSQLTimer } from './lib-pg/Global';
+export { initFromFile, initFromSQL } from './lib-sqlite/initDB'
+
+
+export type { Static, TSchema } from '@sinclair/typebox';   // export useful types from typebox
 export * from './utils/types';
 
 export type SqliteOptions = string | DatabaseOptions & { location: string; } | (() => DatabaseSync);
@@ -33,11 +36,13 @@ export class Sqlite extends BaseDB<SqliteOptions, DatabaseSync> {
         return this.client;
     }
 
-    View() {
 
+    Table<S extends TObject>(tbName: string, tbSchema: S, tbOptions?: TableOptions): SqliteTable<DatabaseSync, S> {
+        return new SqliteTable(this, tbName, tbSchema, tbOptions);
     }
-    Table() {
 
+    View<S extends TObject>(tableName: string, tbSchema: S, tbOptions?: TableOptions): SqliteView<DatabaseSync, S> {
+        return new SqliteView(this, tableName, tbSchema, tbOptions);
     }
 
 }

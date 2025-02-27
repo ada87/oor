@@ -361,6 +361,9 @@ const ConditionToWhere = (where: WhereCondition, pos: QueryPos, err: string[]) =
 };
 
 
+
+
+
 export const where = (STRICT: boolean, condition: WhereParam, startIdx = 1): SQLStatement => {
     const pos: QueryPos = { SQL: [], PARAM: [], NUM: startIdx };
     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;

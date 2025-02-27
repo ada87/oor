@@ -13,7 +13,7 @@ export class SqliteQuery extends BaseAction {
     }
 
     wrapField(filed: string): string {
-        return '`' + filed + '`';
+        return '"' + filed + '"';
     }
 
     where(condition: WhereParam): SQLStatement {
@@ -21,11 +21,19 @@ export class SqliteQuery extends BaseAction {
         return where(this.STRICT_QUERY, condition)
     }
 
+
+    byField(field: string, value: string | number | boolean): SQLStatement {
+        if (!this.F2W.has(field)) throw new Error(`Field ${field} not found in Table ${this.tableName}`);
+        let column = this.F2W.get(field);
+        let sql = `${column} = ?`;
+        return [sql, [value]];
+    }
+
     fixWhere(statement?: SQLStatement): SQLStatement {
         if (this.GLOBAL_CONDITION == null || this.GLOBAL_CONDITION.length == 0) return statement == null ? ['', []] : statement;
         if (statement == null) return this.where(this.GLOBAL_CONDITION);
         const [WHERE, PARAM] = this.where(this.GLOBAL_CONDITION);
-        return [`(${WHERE}) AND (${statement[0]})`, [...statement[1], ...PARAM]]
+        return [`(${statement[0]}) AND (${WHERE}) `, [...statement[1], ...PARAM]]
     }
 
 }

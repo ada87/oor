@@ -1,7 +1,7 @@
 import type { TObject } from '@sinclair/typebox';
 import type {
-    SQLStatement, WhereCondition, WhereItem, WhereParam,
-    QuerySchema, OrderBy, Limit, OrderByLimit, QueryParam,
+    SQLStatement, WhereCondition, WhereParam,
+    QuerySchema, OrderBy, OrderByLimit, QueryParam,
     RETURN, RowKeyType, ByFieldType
 } from '../utils/types'
 
@@ -55,13 +55,13 @@ export type UpdateOptions = QueryOptions & InsertOptions;
 
 export type DatabaseOptions = {
     /**
-     * Global default PageSize in query default 20
-    */
-    pageSize?: number
-    /**
      * Global Row key , will detect "id" / "uuid" / "guid" and rowkey
     */
     rowKey?: string
+    /**
+     * Global default PageSize in query default 20
+    */
+    pageSize?: number
     /**
      * Some error ocur in The WHERE clause.
      *      eg. column not exists,  number use string funcion, and more error .
@@ -76,6 +76,10 @@ export type DatabaseOptions = {
      * flase : will ignore error value
     */
     strictEntity?: boolean
+    /**
+     * protect Query from NOT LIMIT
+    */
+    maxCount?: number
 }
 
 export type TableOptions = DatabaseOptions & {

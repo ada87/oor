@@ -1,64 +1,70 @@
-import _ from 'lodash';
-import { Kind } from '@sinclair/typebox';
-import { throwErr, NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../../base/Util';
+import _ from '../core/dash';
 import dayjs from 'dayjs';
+import { NONE_PARAM, betweenDate, betweenNumber, boolValue, inNumber, inString } from '../utils/SQLUtil';
+import { throwErr } from '../utils/ValidateUtil'
+import { colorFieldName, colorFieldType, colorCondition } from '../utils/color'
 
-// import type { SqlWhere } from '../../base/sql';
+import type { WhereItem, WhereParam, WhereCondition, MagicSuffix, Support, SQLStatement, } from '../utils/types';
 import type { Dayjs } from 'dayjs';
-import type { WhereParam, WhereItem, WhereCondition, MagicSuffix, Support, OColumn } from '../../base/types';
 
 
 
 type QueryPos = { SQL: string[]; PARAM: any[], }
 // DOCS
-// https://dev.mysql.com/doc/refman/8.0/en/data-types.html
-// https://dev.mysql.com/doc/refman/8.0/en/expressions.html
-// https://dev.mysql.com/doc/refman/8.0/en/functions.html
-// https://dev.mysql.com/doc/refman/8.0/en/where-optimization.html
 export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
 
-    'Min': { string: true, number: true, date: true, boolean: true },
-    'MinThan': { string: true, number: true, date: true, boolean: false },
-    'Max': { string: true, number: true, date: true, boolean: true },
-    'MaxThan': { string: true, number: true, date: true, boolean: false },
+    'Min': { string: true, double: true, integer: true, date: true, boolean: true },
+    'Max': { string: true, double: true, integer: true, date: true, boolean: true },
 
-    'MinH': { string: false, number: false, date: true, boolean: false },
-    'MinD': { string: false, number: false, date: true, boolean: false },
-    'MinM': { string: false, number: false, date: true, boolean: false },
-    'MaxH': { string: false, number: false, date: true, boolean: false },
-    'MaxD': { string: false, number: false, date: true, boolean: false },
-    'MaxM': { string: false, number: false, date: true, boolean: false },
+    'Lt': { string: true, double: true, integer: true, date: true, boolean: true },
+    'Lte': { string: true, double: true, integer: true, date: true, boolean: true },
+    'Gt': { string: true, double: true, integer: true, date: true, boolean: true },
+    'Gte': { string: true, double: true, integer: true, date: true, boolean: true },
 
-    'Like': { string: true, number: false, date: false, boolean: false },
-    'Likel': { string: true, number: false, date: false, boolean: false },
-    'Liker': { string: true, number: false, date: false, boolean: false },
+    'Less': { string: true, double: true, integer: true, date: true, boolean: true },
+    'LessThan': { string: true, double: true, integer: true, date: true, boolean: false },
+    'More': { string: true, double: true, integer: true, date: true, boolean: true },
+    'MoreThan': { string: true, double: true, integer: true, date: true, boolean: false },
 
-    'Bt': { string: false, number: true, date: true, boolean: false },
-    'BtD': { string: false, number: false, date: true, boolean: false },
-    'BtY': { string: false, number: false, date: true, boolean: false },
-    'BtM': { string: false, number: false, date: true, boolean: false },
+    'MinH': { string: false, double: false, integer: false, date: true, boolean: false },
+    'MinD': { string: false, double: false, integer: false, date: true, boolean: false },
+    'MinM': { string: false, double: false, integer: false, date: true, boolean: false },
+    'MaxH': { string: false, double: false, integer: false, date: true, boolean: false },
+    'MaxD': { string: false, double: false, integer: false, date: true, boolean: false },
+    'MaxM': { string: false, double: false, integer: false, date: true, boolean: false },
 
-    'Not': { string: true, number: true, date: true, boolean: true },
+    'Like': { string: true, double: false, integer: false, date: false, boolean: false },
+    'Likel': { string: true, double: false, integer: false, date: false, boolean: false },
+    'Liker': { string: true, double: false, integer: false, date: false, boolean: false },
 
-    'In': { string: true, number: true, date: false, boolean: false },
-    'NotIn': { string: true, number: true, date: false, boolean: false },
+    'Bt': { string: false, double: true, integer: true, date: true, boolean: false },
+    'BtD': { string: false, double: false, integer: false, date: true, boolean: false },
+    'BtY': { string: false, double: false, integer: false, date: true, boolean: false },
+    'BtM': { string: false, double: false, integer: false, date: true, boolean: false },
 
-    'IsNull': { string: true, number: true, date: true, boolean: true },
-    'NotNull': { string: true, number: true, date: true, boolean: true },
+    'Not': { string: true, double: true, integer: true, date: true, boolean: true },
 
-    '>': { string: true, number: true, date: true, boolean: true },
-    '>=': { string: true, number: true, date: true, boolean: false },
-    '<': { string: true, number: true, date: true, boolean: true },
-    '<=': { string: true, number: true, date: true, boolean: false },
-    '=': { string: true, number: true, date: true, boolean: true },
-    '!=': { string: true, number: true, date: true, boolean: true },
-    '<>': { string: true, number: true, date: true, boolean: true },
+    'In': { string: true, double: true, integer: true, date: false, boolean: false },
+    'NotIn': { string: true, double: true, integer: true, date: false, boolean: false },
+
+    'IsNull': { string: true, double: true, integer: true, date: true, boolean: true },
+    'NotNull': { string: true, double: true, integer: true, date: true, boolean: true },
+
+
+    '>': { string: true, double: true, integer: true, date: true, boolean: true },
+    '>=': { string: true, double: true, integer: true, date: true, boolean: false },
+    '<': { string: true, double: true, integer: true, date: true, boolean: true },
+    '<=': { string: true, double: true, integer: true, date: true, boolean: false },
+    '=': { string: true, double: true, integer: true, date: true, boolean: true },
+    '!=': { string: true, double: true, integer: true, date: true, boolean: true },
+    '<>': { string: true, double: true, integer: true, date: true, boolean: true },
+
 }
 
 const isSupport = (item: WhereItem, err: string[]): boolean => {
     let suffix = SUFFIX_MATRIX[item.fn] || SUFFIX_MATRIX['='];
     if (suffix[item.type || 'string']) return true;
-    err.push(`${item.column}/(${item.type}) not support method ${item.fn}`)
+    err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type)}) do not support ${colorCondition(item.fn)}`)
     return false;
 }
 
@@ -92,19 +98,25 @@ const compareSuffix = (suffix: MagicSuffix): MagicSuffix => {
         case '>=':
         case '=':
             return suffix;
+        case 'More':
+        case 'Gt':
+            return '>'
+        case 'Less':
+        case 'Lt':
+            return '<'
         case 'Min':
-            return '>';
-        case 'Max':
-            return '<';
+        case 'MoreThan':
+        case 'Gte':
         case 'MinD':
         case 'MinH':
         case 'MinM':
-        case 'MinThan':
             return '>=';
         case 'MaxD':
         case 'MaxH':
         case 'MaxM':
-        case 'MaxThan':
+        case 'Max':
+        case 'LessThan':
+        case 'Lte':
             return '<=';
         case 'Not':
         case '!=':
@@ -145,7 +157,7 @@ const whereText = (item: WhereItem, pos: QueryPos, err: string[]) => {
             pos.PARAM.push('%' + item.value)
             return;
         default:
-            err.push(`${item.column}/ type : String not support method ${item.fn}`)
+            err.push(`${colorFieldName(item.column)}/ type : ${colorFieldType('String')} not support method ${colorCondition(item.fn)}`)
             return;
     }
 }
@@ -179,7 +191,7 @@ const whereNumber = (item: WhereItem, pos: QueryPos, err: string[], parseFn) => 
         })
         return;
     }
-    err.push(`${item.column}/(Number) : not support method ${item.fn}`);
+    err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type || 'number')}) : not support method ${colorCondition(item.fn)}`);
 }
 
 
@@ -188,12 +200,12 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
     let val: Dayjs = null;
     if (item.fn != 'Bt') {
         if (item.value == '' || item.value == null) {
-            err.push(`${item.column}/(date) : Can not be null`)
+            err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type || 'date')})  : Can not be null`)
             return;
         }
         val = dayjs(item.value as any);
         if (!val.isValid()) {
-            err.push(`${item.column}/(date) : Must Be a date-string or number-stamp ${item.value}`)
+            err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type || 'date')})  : Must Be a date-string or number-stamp ${colorCondition(item.value)}`)
             return;
         }
         switch (item.fn) {
@@ -241,7 +253,7 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
         case 'Bt':
             const range = betweenDate(item.value + '')
             if (range == null) {
-                err.push(`${item.column}/(Date) :  Between Value invalidated ${item.value}`)
+                err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type || 'date')})   :  Between Value invalidated ${colorCondition(item.value)}`)
                 return;
             }
             range.map(oper => {
@@ -251,7 +263,7 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
             return;
     }
     if (start == null || end == null) {
-        err.push(`${item.column}/(Date) : not support method ${item.fn}`);
+        err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type || 'date')})   : not support method ${colorCondition(item.fn)}`);
         return;
     }
     pos.SQL.push(`${item.column} >= ?`)
@@ -291,9 +303,11 @@ const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
     if (!isSupport(item, err)) return;
     if (NullCondition(item, pos)) return;
     switch (item.type) {
-        case 'number':
-        case 'int':
-            whereNumber(item, pos, err, item.type == 'int' ? parseInt : parseFloat);
+        case 'double':
+            whereNumber(item, pos, err, parseFloat);
+            return
+        case 'integer':
+            whereNumber(item, pos, err, parseInt);
             return;
         case 'string':
             whereText(item, pos, err);
@@ -310,8 +324,8 @@ const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
     }
 }
 
-const ConditionToWhere = (condition: WhereCondition, pos: QueryPos, err: string[]) => {
-    for (let item of condition.items) {
+const ConditionToWhere = (where: WhereCondition, pos: QueryPos, err: string[]) => {
+    for (let item of where.items) {
         if (_.has(item, 'link')) {
             let group = item as WhereCondition;
             let _pos: QueryPos = {
@@ -331,12 +345,12 @@ const ConditionToWhere = (condition: WhereCondition, pos: QueryPos, err: string[
 };
 
 
-export const where: SqlWhere = (condition: WhereParam): [string, any[]] => {
-    const pos: QueryPos = { SQL: [], PARAM: [] };
+export const where = (STRICT: boolean, condition: WhereParam): SQLStatement => {
+    const pos: QueryPos = { SQL: [], PARAM: [], };
     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
     let err: string[] = [];
     ConditionToWhere(root, pos, err);
-    throwErr(err, 'Some SQL Error Occur');
+    throwErr(STRICT, err, 'Some SQL Error Occur');
     if (pos.SQL.length == 0) {
         return ['', []]
     };
@@ -345,39 +359,39 @@ export const where: SqlWhere = (condition: WhereParam): [string, any[]] => {
 
 
 
-export const fixWhere = (COLUMN_MAP: Map<string, OColumn>, extra: WhereItem[]): [string, string] => {
-    let ITEMS: WhereItem[] = [];
-    let ctf = new Map<string, string>();
-    const convert = (kind, value) => {
-        switch (kind) {
-            case 'Boolean':
-                return value;
-            case 'Number':
-                return parseFloat(value);
-            case 'Integer':
-                return parseInt(value);
-            default:
-                return value + '';
-        }
-    }
-    for (let [key, val] of COLUMN_MAP) {
-        if (_.has(val, 'delMark')) {
-            ITEMS.push({ column: (val.column || key), fn: '<>', value: convert(val[Kind as any], val.delMark) })
-        }
-        ctf.set((val.column || key), key);
-    }
-    extra.map(item => {
-        // inner usage field
-        // @ts-ignore
-        let schema = COLUMN_MAP.get(item.field) || COLUMN_MAP.get(ctf.get(item.field));
-        if (schema == null) return;
-        ITEMS.push({ ...item, value: convert(schema[Kind as any], item.value) });
-    })
-    if (ITEMS.length == 0) return ['', ' WHERE '];
-    let [SQL, PARAM] = where(ITEMS);
-    if (SQL.length == 0) return ['', ' WHERE '];
-    PARAM.map((item, i) => {
-        SQL = SQL.replaceAll(`$${i + 1}`, _.isNumber(item) ? (item + '') : `'${item}'`)
-    });
-    return [' WHERE ' + SQL, ' AND ']
-}
+// export const fixWhere = (COLUMN_MAP: Map<string, Column>, extra: WhereItem[]): [string, string] => {
+//     let ITEMS: WhereItem[] = [];
+//     let ctf = new Map<string, string>();
+//     const convert = (kind, value) => {
+//         switch (kind) {
+//             case 'Boolean':
+//                 return value;
+//             case 'Number':
+//                 return parseFloat(value);
+//             case 'Integer':
+//                 return parseInt(value);
+//             default:
+//                 return value + '';
+//         }
+//     }
+//     for (let [key, val] of COLUMN_MAP) {
+//         if (_.has(val, 'delMark')) {
+//             ITEMS.push({ column: (val.column || key), fn: '<>', value: convert(val[Kind as any], val.delMark) })
+//         }
+//         ctf.set((val.column || key), key);
+//     }
+//     extra.map(item => {
+//         // inner usage field
+//         // @ts-ignore
+//         let schema = COLUMN_MAP.get(item.field) || COLUMN_MAP.get(ctf.get(item.field));
+//         if (schema == null) return;
+//         ITEMS.push({ ...item, value: convert(schema[Kind as any], item.value) });
+//     })
+//     if (ITEMS.length == 0) return ['', ' WHERE '];
+//     let [SQL, PARAM] = where(ITEMS);
+//     if (SQL.length == 0) return ['', ' WHERE '];
+//     PARAM.map((item, i) => {
+//         SQL = SQL.replaceAll(`$${i + 1}`, _.isNumber(item) ? (item + '') : `'${item}'`)
+//     });
+//     return [' WHERE ' + SQL, ' AND ']
+// }

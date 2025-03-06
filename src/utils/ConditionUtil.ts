@@ -1,7 +1,7 @@
 import _ from '../core/dash';
 import { TSchema } from '@sinclair/typebox';
 import { getFieldType } from './SQLUtil';
-import { WhereItem, WhereCondition, QuerySchema, WhereDefine, SUFFIX, MagicSuffix } from './types';
+import { WhereCondition, QuerySchema, WhereDefine, SUFFIX, MagicSuffix } from './types';
 import { throwErr } from './ValidateUtil';
 import { colorFieldName } from './color';
 

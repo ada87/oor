@@ -9,30 +9,27 @@ importers:
   .:
     dependencies:
       '@sinclair/typebox':
-        specifier: ^0.34.27
-        version: 0.34.27
+        specifier: ^0.34.28
+        version: 0.34.28
       dayjs:
         specifier: ^1.11.13
         version: 1.11.13
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
     devDependencies:
       '@elastic/elasticsearch':
-        specifier: ^8.17.0
-        version: 8.17.0
+        specifier: ^8.17.1
+        version: 8.17.1
       '@types/node':
-        specifier: ^22.13.4
-        version: 22.13.4
+        specifier: ^22.13.8
+        version: 22.13.8
       '@types/pg':
         specifier: ^8.11.11
         version: 8.11.11
-      '@types/sql.js':
-        specifier: ^1.4.9
-        version: 1.4.9
       idb:
         specifier: ^8.0.2
         version: 8.0.2
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       mysql2:
         specifier: ^3.12.0
         version: 3.12.0
@@ -50,16 +47,13 @@ importers:
         version: 5.1.7
       ts-node:
         specifier: ^10.9.2
-        version: 10.9.2(@types/node@22.13.4)(typescript@5.7.3)
+        version: 10.9.2(@types/node@22.13.8)(typescript@5.8.2)
       tsest:
         specifier: ^0.0.8
         version: 0.0.8
       typescript:
-        specifier: ^5.7.3
-        version: 5.7.3
-      xda:
-        specifier: ^0.0.3
-        version: 0.0.3(dayjs@1.11.13)(lodash@4.17.21)
+        specifier: ^5.8.2
+        version: 5.8.2
 
 packages:
 
@@ -67,8 +61,8 @@ packages:
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
 
-  '@elastic/elasticsearch@8.17.0':
-    resolution: {integrity: sha512-FZ+gQUrPsMpQ2RRIXwTmCoUeFCEausMhp4eQOyxT9j1cwGXHJrhelR6jffM1SC95kQUkB7+TcTq7oQ+bG2BQ9g==}
+  '@elastic/elasticsearch@8.17.1':
+    resolution: {integrity: sha512-EaDP4/jfNu0nhnHZjxk9bL9ofKWKX9QUdEJ8QsGa+/KMPBEwD+HMyYXH4FSRlg7YONI0UbdO/mMZobvcEnMFBA==}
     engines: {node: '>=18'}
 
   '@elastic/transport@8.9.4':
@@ -100,8 +94,8 @@ packages:
     resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
     engines: {node: '>=8.0.0'}
 
-  '@sinclair/typebox@0.34.27':
-    resolution: {integrity: sha512-C7mxE1VC3WC2McOufZXEU48IfRVI+BcKxk4NOyNn3+JMUNdJHEWGS5CqjuDX+ij2NCCz8/nse1mT7yn8Fv2GHg==}
+  '@sinclair/typebox@0.34.28':
+    resolution: {integrity: sha512-e2B9vmvaa5ym5hWgCHw5CstP54au6AOLXrhZErLsOyyRzuWJtXl/8TszKtc5x8rw/b+oY7HKS9m9iRI53RK0WQ==}
 
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
@@ -128,20 +122,14 @@ packages:
   '@types/command-line-usage@5.0.4':
     resolution: {integrity: sha512-BwR5KP3Es/CSht0xqBcUXS3qCAUVXwpRKsV2+arxeb65atasuXG9LykC9Ab10Cw3s2raH92ZqOeILaQbsB2ACg==}
 
-  '@types/emscripten@1.40.0':
-    resolution: {integrity: sha512-MD2JJ25S4tnjnhjWyalMS6K6p0h+zQV6+Ylm+aGbiS8tSn/aHLSGNzBgduj6FB4zH0ax2GRMGYi/8G1uOxhXWA==}
+  '@types/node@20.17.22':
+    resolution: {integrity: sha512-9RV2zST+0s3EhfrMZIhrz2bhuhBwxgkbHEwP2gtGWPjBzVQjifMzJ9exw7aDZhR1wbpj8zBrfp3bo8oJcGiUUw==}
 
-  '@types/node@20.17.19':
-    resolution: {integrity: sha512-LEwC7o1ifqg/6r2gn9Dns0f1rhK+fPFDoMiceTJ6kWmVk6bgXBI/9IOWfVan4WiAavK9pIVWdX0/e3J+eEUh5A==}
-
-  '@types/node@22.13.4':
-    resolution: {integrity: sha512-ywP2X0DYtX3y08eFVx5fNIw7/uIv8hYUKgXoK8oayJlLnKcRfEYCxWMVE1XagUdVtCJlZT1AU4LXEABW+L1Peg==}
+  '@types/node@22.13.8':
+    resolution: {integrity: sha512-G3EfaZS+iOGYWLLRCEAXdWK9my08oHNZ+FHluRiggIYJPOXzhOiDgpVCUHaUvyIC5/fj7C/p637jdzC666AOKQ==}
 
   '@types/pg@8.11.11':
     resolution: {integrity: sha512-kGT1qKM8wJQ5qlawUrEkXgvMSXoV213KfMGXcwfDwUIfUHXqXYXOfS1nE1LINRJVVVx5wCm70XnFlMHaIcQAfw==}
-
-  '@types/sql.js@1.4.9':
-    resolution: {integrity: sha512-ep8b36RKHlgWPqjNG9ToUrPiwkhwh0AEzy883mO5Xnd+cL6VBH1EvSjBAAuxLUFF2Vn/moE3Me6v9E1Lo+48GQ==}
 
   abbrev@1.1.1:
     resolution: {integrity: sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==}
@@ -819,8 +807,8 @@ packages:
   tunnel-agent@0.6.0:
     resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
 
-  typescript@5.7.3:
-    resolution: {integrity: sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==}
+  typescript@5.8.2:
+    resolution: {integrity: sha512-aJn6wq13/afZp/jT9QZmwEjDqqvSGp1VT5GVg+f/t6/oVyrgXM6BY1h9BRh/O5p3PlUPAe+WuiEZOmb/49RqoQ==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -869,12 +857,6 @@ packages:
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
-  xda@0.0.3:
-    resolution: {integrity: sha512-KmV6M+jTjcJofXpvv0+jlkfv8s+QIFwpNS3JZEmow5KaMQqZw5QlniJ1cgVyw8pLpBC3zjGiKWNMVjf91iI8JQ==}
-    peerDependencies:
-      dayjs: ^1.11.13
-      lodash: ^4.17.21
-
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
@@ -892,7 +874,7 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
-  '@elastic/elasticsearch@8.17.0':
+  '@elastic/elasticsearch@8.17.1':
     dependencies:
       '@elastic/transport': 8.9.4
       apache-arrow: 18.1.0
@@ -938,7 +920,7 @@ snapshots:
 
   '@opentelemetry/api@1.9.0': {}
 
-  '@sinclair/typebox@0.34.27': {}
+  '@sinclair/typebox@0.34.28': {}
 
   '@swc/helpers@0.5.15':
     dependencies:
@@ -959,26 +941,19 @@ snapshots:
 
   '@types/command-line-usage@5.0.4': {}
 
-  '@types/emscripten@1.40.0': {}
-
-  '@types/node@20.17.19':
+  '@types/node@20.17.22':
     dependencies:
       undici-types: 6.19.8
 
-  '@types/node@22.13.4':
+  '@types/node@22.13.8':
     dependencies:
       undici-types: 6.20.0
 
   '@types/pg@8.11.11':
     dependencies:
-      '@types/node': 22.13.4
+      '@types/node': 22.13.8
       pg-protocol: 1.7.1
       pg-types: 4.0.2
-
-  '@types/sql.js@1.4.9':
-    dependencies:
-      '@types/emscripten': 1.40.0
-      '@types/node': 22.13.4
 
   abbrev@1.1.1:
     optional: true
@@ -1019,7 +994,7 @@ snapshots:
       '@swc/helpers': 0.5.15
       '@types/command-line-args': 5.2.3
       '@types/command-line-usage': 5.0.4
-      '@types/node': 20.17.19
+      '@types/node': 20.17.22
       command-line-args: 5.2.1
       command-line-usage: 7.0.3
       flatbuffers: 24.12.23
@@ -1727,21 +1702,21 @@ snapshots:
       mkdirp: 1.0.4
       yallist: 4.0.0
 
-  ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3):
+  ts-node@10.9.2(@types/node@22.13.8)(typescript@5.8.2):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.11
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 22.13.4
+      '@types/node': 22.13.8
       acorn: 8.14.0
       acorn-walk: 8.3.4
       arg: 4.1.3
       create-require: 1.1.1
       diff: 4.0.2
       make-error: 1.3.6
-      typescript: 5.7.3
+      typescript: 5.8.2
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
 
@@ -1753,7 +1728,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  typescript@5.7.3: {}
+  typescript@5.8.2: {}
 
   typical@4.0.0: {}
 
@@ -1792,11 +1767,6 @@ snapshots:
   wordwrapjs@5.1.0: {}
 
   wrappy@1.0.2: {}
-
-  xda@0.0.3(dayjs@1.11.13)(lodash@4.17.21):
-    dependencies:
-      dayjs: 1.11.13
-      lodash: 4.17.21
 
   xtend@4.0.2: {}
 

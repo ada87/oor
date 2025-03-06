@@ -251,6 +251,7 @@ export interface UDateOptions extends ColumnOptions, DateOptions {
 }
 
 export const UType = {
+
     Table: <T extends TProperties>(properties: T): TObject<T> => Type.Object(properties),
     /**
      * Store Type : float / double
@@ -267,11 +268,11 @@ export const UType = {
     /**
      * Store Type : date
     */
-    Date: (options?: UDateOptions) => Type.Optional(Type.Date(options)),
+    Date: (options?: UDateOptions) => Type.Optional(Type.String({ ...options, [DATE_TYPE]: 'STRING' })),
     /**
      * Store Type : varchar / string
     */
-    DateString: (options?: UDateOptions) => Type.Optional(Type.String({ ...options, [DATE_TYPE]: 'STRING' })),
+    // DateString: (options?: UDateOptions) => Type.Optional(Type.String({ ...options, [DATE_TYPE]: 'STRING' })),
     /**
      * Store Type : long / timestamp
     */
@@ -300,11 +301,11 @@ export const UType = {
     /**
      * Store Type : date (not null)
     */
-    DateNotNull: (options?: UDateOptions) => Type.Date(options),
+    DateNotNull: (options?: UDateOptions) => Type.String({ ...options, [DATE_TYPE]: 'STRING' }),
     /**
      * Store Type : varchar / string (not null)
     */
-    DateStringNotNull: (options?: UDateOptions) => Type.String({ ...options, [DATE_TYPE]: 'STRING' }),
+    // DateStringNotNull: (options?: UDateOptions) => Type.String({ ...options, [DATE_TYPE]: 'STRING' }),
     /**
      * Store Type : long / timestamp (not null)
     */

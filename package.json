@@ -23,14 +23,15 @@
   ],
   "scripts": {
     "test": "node --env-file=.env -r ts-node/register node_modules/tsest/run",
-    "watch": "node --env-file=.env -r ts-node/register node_modules/tsest/run --fileName=sqlite.test.ts --watch",
+    "watch": "node --env-file=.env -r ts-node/register node_modules/tsest/run --test-file-name=types.test.ts --watch --strict",
     "build": "node -r ts-node/register script.mjs --build"
   },
   "devDependencies": {
-    "@elastic/elasticsearch": "^8.17.0",
-    "@types/node": "^22.13.4",
+    "@elastic/elasticsearch": "^8.17.1",
+    "@types/node": "^22.13.8",
     "@types/pg": "^8.11.11",
     "idb": "^8.0.2",
+    "lodash": "^4.17.21",
     "mysql2": "^3.12.0",
     "pg": "^8.13.3",
     "pg-native": "^3.2.2",
@@ -38,8 +39,7 @@
     "sqlite3": "^5.1.7",
     "ts-node": "^10.9.2",
     "tsest": "^0.0.8",
-    "typescript": "^5.7.3",
-    "lodash": "^4.17.21"
+    "typescript": "^5.8.2"
   },
   "peerDependenciesMeta": {
     "pg": {
@@ -62,12 +62,12 @@
     }
   },
   "dependencies": {
-    "@sinclair/typebox": "^0.34.27",
+    "@sinclair/typebox": "^0.34.28",
     "dayjs": "^1.11.13"
   },
   "peerDependencies": {
-    "@sinclair/typebox": "^0.34.21",
     "@elastic/elasticsearch": "^8.17.0",
+    "@sinclair/typebox": "^0.34.21",
     "idb": "^8.0.2",
     "mysql2": "^3.12.0",
     "pg": "^8.13.3",

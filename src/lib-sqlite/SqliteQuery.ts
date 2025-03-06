@@ -33,7 +33,7 @@ export class SqliteQuery extends BaseAction {
         if (this.GLOBAL_CONDITION == null || this.GLOBAL_CONDITION.length == 0) return statement == null ? ['', []] : statement;
         if (statement == null) return this.where(this.GLOBAL_CONDITION);
         const [WHERE, PARAM] = this.where(this.GLOBAL_CONDITION);
-        return [`(${statement[0]}) AND (${WHERE}) `, [...statement[1], ...PARAM]]
+        return [`(${WHERE}) AND (${statement[0]})`, [...PARAM, ...statement[1]]]
     }
 
 }

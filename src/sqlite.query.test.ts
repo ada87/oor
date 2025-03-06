@@ -19,7 +19,10 @@ test('sqlite query', async () => {
     // result = await USER.getByField('name', '白芳');
     // console.log(result)
 
-    result = await USER.getByQuery({ age: 55, salaryMoreThan: 10000 });
+    // result = await USER.getByQuery({ age: 55, salaryMoreThan: 10000 });
+    // console.log(result)
+
+    result = await USER.queryPagination({ ageLte: 55, salaryMoreThan: 1000 });
     console.log(result)
 
     // const dbPath = './oor.db';

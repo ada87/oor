@@ -6,7 +6,7 @@ type ExecResult = Pick<RunResult, 'lastID' | 'changes'>;
 // db.run('')
 // }
 
-export const _exec = (db: Database, sql: string, param?: (string | number)[]) => new Promise<ExecResult>((r, j) => db.prepare(sql, function (err) {
+export const _exec = (db: Database, sql: string, param?: Array<(string | number)>) => new Promise<ExecResult>((r, j) => db.prepare(sql, function (err) {
     if (err != null) return j(err);
 
     if (param == null || param.length == 0) return this.run(function (err) {
@@ -31,7 +31,7 @@ export const _exec = (db: Database, sql: string, param?: (string | number)[]) =>
 
 }));
 
-export const _get = <T>(db: Database, sql: string, param?: (string | number)[]) => new Promise<T>((r, j) => {
+export const _get = <T>(db: Database, sql: string, param?: Array<(string | number)>) => new Promise<T>((r, j) => {
     const callback = (err: Error | null, obj: T) => {
         if (err) return j(err);
         r(obj);
@@ -44,8 +44,8 @@ export const _get = <T>(db: Database, sql: string, param?: (string | number)[]) 
 });
 
 
-export const _query = <T>(db: Database, sql: string, param?: (string | number)[]) => new Promise<T[]>((r, j) => {
-    const callback = (err: Error | null, rows: T[]) => {
+export const _query = <T>(db: Database, sql: string, param?: Array<(string | number)>) => new Promise<Array<T>>((r, j) => {
+    const callback = (err: Error | null, rows: Array<T>) => {
         if (err) {
             j(err);
             return;

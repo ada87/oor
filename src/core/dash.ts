@@ -5,7 +5,7 @@ export const keys = (obj: object): Array<string> => {
     return Object.keys(obj);
 };
 
-export const unset = (obj: any, path: string | string[]) => {
+export const unset = (obj: any, path: string | Array<string>) => {
     if (obj == null) return true;
     if (typeof path === 'string') {
         path = path.split('.');
@@ -52,7 +52,7 @@ export const isFunction = (obj: any): obj is Function => {
     return typeof obj === 'function';
 };
 
-export const has = (obj: any, path: string | string[]): boolean => {
+export const has = (obj: any, path: string | Array<string>): boolean => {
     if (obj == null) return false;
     if (typeof path === 'string') {
         path = path.split('.');
@@ -76,7 +76,7 @@ export const toLower = (str: any): string => {
     return str.toLowerCase();
 };
 
-export const findIndex = (arr: any, fn: (value: any, index: number, obj: any[]) => boolean): number => {
+export const findIndex = (arr: Array<any>, fn: (value: any, index: number, obj: Array<any>) => boolean): number => {
     if (!Array.isArray(arr)) return -1;
     if (typeof fn !== 'function') return -1;
     return arr.findIndex(fn);

@@ -1,4 +1,3 @@
-import { RETURN } from '../utils/types'
 import { GLOBAL } from './Global';
 
 // import type { Pool, QueryResult } from 'pg';

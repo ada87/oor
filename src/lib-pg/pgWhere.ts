@@ -8,7 +8,7 @@ import type { WhereItem, WhereParam, WhereCondition, MagicSuffix, Support, SQLSt
 import type { Dayjs } from 'dayjs';
 
 
-type QueryPos = { SQL: string[]; PARAM: any[], NUM: number; }
+type QueryPos = { SQL: Array<string>; PARAM: Array<any>; NUM: number; }
 
 // https://www.postgresql.org/docs/15/queries-table-expressions.html
 export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
@@ -62,7 +62,7 @@ export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
 }
 
 
-const isSupport = (item: WhereItem, err: string[]): boolean => {
+const isSupport = (item: WhereItem, err: Array<string>): boolean => {
     let suffix = SUFFIX_MATRIX[item.fn] || SUFFIX_MATRIX['='];
     if (suffix[item.type || 'string']) return true;
     err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type)}) do not support ${colorCondition(item.fn)}`)
@@ -204,7 +204,7 @@ const whereNumber = (item: WhereItem, pos: QueryPos, err: string[], parseFn) => 
 
 
 
-const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
+const whereDate = (item: WhereItem, pos: QueryPos, err: Array<string>) => {
     let val: Dayjs = null;
     if (item.fn != 'Bt') {
         if (item.value == '' || item.value == null) {
@@ -284,7 +284,7 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
     pos.NUM++;
 }
 
-const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
+const whereBoolean = (item: WhereItem, pos: QueryPos, err: Array<string>) => {
     let bool = boolValue(item.value)
 
 
@@ -312,7 +312,7 @@ const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
 
 }
 
-const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
+const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: Array<string>) => {
     let item = { ...whereItem, fn: whereItem.fn ? whereItem.fn : '=', type: whereItem.type ? whereItem.type : 'string' }
     if (!isSupport(item, err)) return;
     if (NullCondition(item, pos)) return;
@@ -338,7 +338,7 @@ const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
     }
 }
 
-const ConditionToWhere = (where: WhereCondition, pos: QueryPos, err: string[]) => {
+const ConditionToWhere = (where: WhereCondition, pos: QueryPos, err: Array<string>) => {
     for (let item of where.items) {
         if (_.has(item, 'link')) {
             let group = item as WhereCondition;

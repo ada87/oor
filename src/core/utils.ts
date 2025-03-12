@@ -88,6 +88,7 @@ export const parseOptions = (RESERVED_WORDS: Set<string>, tbName: string, tbSche
             CONFIG.C2F.set(field, field);
             CONFIG.C2F.set(columnSelected, field);
             CONFIG.F2W.set(columnSelected, columnWraped);
+            CONFIG.F2W.set(column, columnWraped);
             CONFIG.F2S.set(columnSelected, columnSelected)
             CONFIG.COLUMN_MAP.set(columnSelected, properties);
             CONFIG.COLUMN_MAP.set(column, properties);
@@ -109,8 +110,7 @@ export const parseOptions = (RESERVED_WORDS: Set<string>, tbName: string, tbSche
     if (QueryFields.length > 0) CONFIG.queryFields = QueryFields.join(', ');
     if (DetailFields.length > 0) CONFIG.detialFields = DetailFields.join(', ');
 
-
-    if (tbOptions.rowKey) {
+    if (tbOptions?.rowKey) {
         if (CONFIG.C2F.has(tbOptions.rowKey)) {
             CONFIG.rowKey = CONFIG.C2F.get(tbOptions.rowKey);
         }
@@ -130,13 +130,13 @@ export const parseOptions = (RESERVED_WORDS: Set<string>, tbName: string, tbSche
             CONFIG.orderBy = { order: CONFIG.rowKey, by: 'desc' };
         }
     }
-    if (tbOptions.globalCondition == null) {
+    if (tbOptions?.globalCondition == null) {
         CONFIG.globalCondition = [];
     } else {
-        if (_.isArray(tbOptions.globalCondition)) {
+        if (_.isArray(tbOptions?.globalCondition)) {
             CONFIG.globalCondition = [...tbOptions.globalCondition]
         } else {
-            CONFIG.globalCondition = queryToCondition(CONFIG.strictQuery, tbOptions.globalCondition, CONFIG.COLUMN_MAP, new Map()).items as any;
+            CONFIG.globalCondition = queryToCondition(CONFIG.strictQuery, tbOptions?.globalCondition, CONFIG.COLUMN_MAP, new Map()).items as any;
         }
     }
     if (CONFIG.delMark) {

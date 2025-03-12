@@ -6,9 +6,14 @@ import _ from 'lodash'
 import { SQLITE } from './sqlite'
 
 import { UserSchema, } from './core/Schema.test';
+import { RESERVED_WORDS } from './lib-pg/RESERVED_WORDS';
 
-const USER = SQLITE.View('user', UserSchema, { rowKey: 'id' });
+const USER = SQLITE.Table('user', UserSchema, { rowKey: 'id' });
 
 test('sqlite action', async () => {
     var result;
+
+    result = await USER.insert({ name: 'aa' })
+    console.log(result)
+
 })

@@ -44,7 +44,8 @@ const buildExport = () => {
     walk(resolve(distDir, './esm'));
     return exports;
 }
-
+// tsc --project tsconfig-cjs.json --outDir ../fda/node_modules/oor
+// tsc --project tsconfig-esm.json --outDir ../fda/node_modules/oor
 const RunBuild = async () => {
     if (existsSync(distDir)) rmSync(distDir, { recursive: true, force: true });
 

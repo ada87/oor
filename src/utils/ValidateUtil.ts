@@ -22,7 +22,7 @@ export const validateSort = (sort: OrderBy, F2W?: Map<string, string>): OrderBy 
 }
 
 
-export const throwErr = (strict: boolean, err: string[], message?: string) => {
+export const throwErr = (strict: boolean, err: Array<string>, message?: string) => {
     if (err.length == 0) return;
     if (!strict) {
         console.warn(message + '\n      ' + err.join('\n      '));

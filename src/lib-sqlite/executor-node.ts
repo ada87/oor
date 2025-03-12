@@ -1,4 +1,4 @@
-import { RETURN } from '../utils/types'
+import { ReturnType } from '../utils/types'
 import { GLOBAL } from './Global';
 import type { DatabaseSync, StatementResultingChanges } from 'node:sqlite'
 // import type { Pool, QueryResult } from 'pg';
@@ -47,7 +47,7 @@ type RESULT = StatementResultingChanges
 
 
 class SqliteExecutor extends SqilteQuery implements ActionExecutor<DatabaseSync, any, Result> {
-    convert(result: Result, returning: RETURN = RETURN.COUNT) {
+    convert(result: Result, returning: ReturnType = 'COUNT') {
         switch (returning) {
             // case RETURN.ORIGIN:
             //     return result;
@@ -67,16 +67,16 @@ class SqliteExecutor extends SqilteQuery implements ActionExecutor<DatabaseSync,
         }
     }
 
-    convertBatch(result: Result, returning: RETURN = RETURN.COUNT) {
+    convertBatch(result: Result, returning: ReturnType = 'COUNT') {
         switch (returning) {
-            case RETURN.ORIGIN:
+            case 'ORIGIN':
                 return result;
-            case RETURN.COUNT:
+            case 'COUNT':
                 return result.rowCount;
-            case RETURN.SUCCESS:
+            case 'SUCCESS':
                 return result.rowCount > 0;
-            case RETURN.KEY:
-            case RETURN.INFO:
+            case 'KEY':
+            case 'INFO':
                 return result.rows as any;
             default:
                 return result.rowCount;

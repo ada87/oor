@@ -14,13 +14,16 @@ import type {
 export type FieldType = 'string' | 'double' | 'integer' | 'boolean' | 'date';
 export type Support = Record<FieldType, boolean>;
 
-export enum RETURN {
-    SUCCESS,
-    COUNT,
-    INFO,
-    KEY,
-    ORIGIN,
-}
+
+const RETURN = {
+    SUCCESS: 'SUCCESS',
+    COUNT: 'COUNT',
+    INFO: 'INFO',
+    KEY: 'KEY',
+    ORIGIN: 'ORIGIN',
+} as const;
+
+export type ReturnType = (typeof RETURN)[keyof typeof RETURN];
 
 /**
  * Field Suffix

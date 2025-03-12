@@ -2,15 +2,28 @@
 import { Pool } from 'pg'
 import { BaseDB } from './core/BaseDB';
 import { PgView, PgTable, } from './lib-pg/PgTable';
+// export { PgView as View,  }
+
 
 // https://www.postgresql.org/docs/17/sql-select.html
 import type { PoolConfig } from 'pg';
-import type { TableOptions } from './core';
+import type { TableOptions, DatabaseOptions, Database } from './core';
 import type { TObject, } from '@sinclair/typebox';          // export useful types from typebox
 export type { Static, TSchema } from '@sinclair/typebox';
 
 export { setSQLLogger, setSQLTimer } from './lib-pg/Global';
 export * from './utils/types';
+
+
+type CustomView<S extends TObject, T extends PgView<Pool, S> = PgView<Pool, S>> = {
+    new(db: Database<Pool>, tableName: string, schema: S, tbOptions?: TableOptions, dbOptions?: DatabaseOptions): T
+};
+
+type CustomTable<S extends TObject, T extends PgTable<Pool, S> = PgTable<Pool, S>> = {
+    new(db: Database<Pool>, tableName: string, schema: S, tbOptions?: TableOptions, dbOptions?: DatabaseOptions): T
+};
+export class Table<S extends TObject> extends PgTable<Pool, S> { }
+export class View<S extends TObject> extends PgView<Pool, S> { }
 
 export class PostgreSQL extends BaseDB<PoolConfig | (() => Pool | Promise<Pool>), Pool> {
     private pool: Pool = null;
@@ -30,12 +43,18 @@ export class PostgreSQL extends BaseDB<PoolConfig | (() => Pool | Promise<Pool>)
 
 
 
-    Table<S extends TObject>(tbName: string, tbSchema: S, tbOptions?: TableOptions): PgTable<Pool, S> {
-        return new PgTable(this, tbName, tbSchema, tbOptions);
+    Table<S extends TObject, C extends PgTable<Pool, S> = PgTable<Pool, S>>(tbName: string, tbSchema: S, tbOptions?: TableOptions, P?: CustomTable<S, C>): C {
+        if (P) {
+            return new P(this, tbName, tbSchema, tbOptions);
+        }
+        return new PgTable(this, tbName, tbSchema, tbOptions) as C;
     }
 
-    View<S extends TObject>(tableName: string, tbSchema: S, tbOptions?: TableOptions): PgView<Pool, S> {
-        return new PgView(this, tableName, tbSchema, tbOptions);
+    View<S extends TObject, C extends PgView<Pool, S> = PgView<Pool, S>>(tableName: string, tbSchema: S, tbOptions?: TableOptions, P?: CustomView<S, C>): C {
+        if (P) {
+            return new P(this, tableName, tbSchema, tbOptions);
+        }
+        return new PgView(this, tableName, tbSchema, tbOptions) as C;
     }
 }
 

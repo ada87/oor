@@ -57,7 +57,7 @@ export abstract class BaseQuery implements QueryBuilder {
         this.SCHEMA = tbSchema
         this.RESERVED_WORD = this.initReservedWord();
 
-        const CONFIG = parseOptions(this.RESERVED_WORD, tbName, tbSchema, tbOptions, dbOptions, this.wrapField);
+        const CONFIG = parseOptions(this.RESERVED_WORD, tbName, tbSchema, tbOptions || {}, dbOptions || {}, this.wrapField);
         this.tableName = CONFIG.tableName;
         if (CONFIG.rowKey) this.ROW_KEY = CONFIG.rowKey;
         this.PAGE_SIZE = CONFIG.pageSize;
@@ -84,7 +84,7 @@ export abstract class BaseQuery implements QueryBuilder {
     */
     protected _wrapColumn(column: string, select: boolean = false): string {
         if (select) return this.F2S.get(column) || column;
-        return this.F2W.get(column);
+        return this.F2W.get(column) || column;
     }
 
     convertQuery(query: QueryParam): WhereCondition {
@@ -140,8 +140,11 @@ export abstract class BaseQuery implements QueryBuilder {
         return `LIMIT ${_count} OFFSET ${_start}`
     }
 
-    orderByLimit(query?: QuerySchema | boolean): string {
-        if (query == undefined || query == null || query === false) return '';
+    orderByLimit(query?: QuerySchema | boolean, limit: boolean = false): string {
+        if (query == undefined || query == null || query === false) {
+            if (limit) return `${this.orderBy(true)} ${this.limit(this.PAGE_SIZE, 0)}`
+            return ''
+        }
         if (query === true) return this.orderBy(true);
         return `${this.orderBy(query)} ${this.limit(query)}`
     }

@@ -1,7 +1,7 @@
 import _ from './dash';
 import { BaseQuery } from './SqlQuery';
 import { buildCheckEntity } from './utils'
-import { RETURN } from '../utils/types';
+import { ReturnType } from '../utils/types';
 import { newDate } from '../utils/TimeUtil';
 
 import type { TableOptions, DatabaseOptions, InsertOptions, UpdateOptions } from './types'
@@ -170,15 +170,15 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
 
 
 
-    returning(returning: RETURN) {
+    returning(returning: ReturnType) {
 
         switch (returning) {
-            case RETURN.SUCCESS:
-            case RETURN.COUNT:
+            case 'SUCCESS':
+            case 'COUNT':
                 return ''
-            case RETURN.INFO:
+            case 'INFO':
                 return 'RETURNING ' + this.DETAIL_FIELDS;
-            case RETURN.KEY:
+            case 'KEY':
                 if (this.ROW_KEY == null) throw (`This table has no primary key`);
                 return 'RETURNING ' + this.wrapField(this.ROW_KEY);
             default:

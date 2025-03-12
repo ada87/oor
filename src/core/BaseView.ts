@@ -51,20 +51,20 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
     }
 
 
-    async all(): Promise<Static<S>[]> {
+    async all(): Promise<Array<Static<S>>> {
         const { BUILDER } = this;
         const SELECT = BUILDER.select(false);
         const result = await this._query(SELECT, null, '');;
         return result;
     }
 
-    async queryPagination(query?: QuerySchema): Promise<{ total: number; list: Static<S>[]; }> {
+    async queryPagination(query?: QuerySchema): Promise<{ total: number; list: Array<Static<S>>; }> {
         const { BUILDER, EXECUTOR } = this;
         const SELECT = BUILDER.select();
         const COUNT = BUILDER.count();
         const CONDITION = BUILDER.convertQuery(query)
         const STATEMENT = BUILDER.where(CONDITION);
-        const ORDER_BY_LIMIT = BUILDER.orderByLimit(query);
+        const ORDER_BY_LIMIT = BUILDER.orderByLimit(query, true);
         const [QUERY_SQL, QUERY_PARAM] = this.queryStatement(SELECT, STATEMENT, ORDER_BY_LIMIT);
         const [COUNT_SQL, COUNT_PARAM] = this.queryStatement(COUNT, STATEMENT, '');
         const conn = await this.getConn();
@@ -75,7 +75,7 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
         return { list, total: (countResp?.total) ? parseInt(countResp.total) : 0 }
     }
 
-    async queryByField(field: string, value: string | number | boolean): Promise<Static<S>[]> {
+    async queryByField(field: string, value: string | number | boolean): Promise<Array<Static<S>>> {
         const { BUILDER } = this;
         const SELECT = BUILDER.select();
         const STATEMENT = BUILDER.byField(field, value);
@@ -84,16 +84,16 @@ export abstract class BaseView<C, S extends TObject, B extends QueryBuilder> ext
         return result;
     }
 
-    async queryByWhere(where?: WhereParam, query: QuerySchema | boolean = true): Promise<Static<S>[]> {
+    async queryByWhere(where?: WhereParam, query: QuerySchema | boolean = true): Promise<Array<Static<S>>> {
         const { BUILDER } = this;
         const SELECT = BUILDER.select();
         const STATEMENT = BUILDER.where(where);
-        const ORDER_BY_LIMIT = BUILDER.orderByLimit(query);
+        const ORDER_BY_LIMIT = BUILDER.orderByLimit(query, true);
         const result = await this._query(SELECT, STATEMENT, ORDER_BY_LIMIT);
         return result;
     }
 
-    async query(query?: QuerySchema): Promise<Static<S>[]> {
+    async query(query?: QuerySchema): Promise<Array<Static<S>>> {
         const WHERE = this.BUILDER.convertQuery(query)
         return await this.queryByWhere(WHERE, query);
 

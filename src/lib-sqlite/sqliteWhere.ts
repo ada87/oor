@@ -9,7 +9,7 @@ import type { Dayjs } from 'dayjs';
 
 
 
-type QueryPos = { SQL: string[]; PARAM: any[], }
+type QueryPos = { SQL: Array<string>; PARAM: Array<any> };
 // DOCS
 export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
 
@@ -61,7 +61,7 @@ export const SUFFIX_MATRIX: Record<MagicSuffix, Support> = {
 
 }
 
-const isSupport = (item: WhereItem, err: string[]): boolean => {
+const isSupport = (item: WhereItem, err: Array<string>): boolean => {
     let suffix = SUFFIX_MATRIX[item.fn] || SUFFIX_MATRIX['='];
     if (suffix[item.type || 'string']) return true;
     err.push(`${colorFieldName(item.column)}/(${colorFieldType(item.type)}) do not support ${colorCondition(item.fn)}`)
@@ -129,7 +129,7 @@ const compareSuffix = (suffix: MagicSuffix): MagicSuffix => {
 
 const InFn = new Map<MagicSuffix, string>([['In', 'IN'], ['NotIn', 'NOT IN']]);
 
-const whereText = (item: WhereItem, pos: QueryPos, err: string[]) => {
+const whereText = (item: WhereItem, pos: QueryPos, err: Array<string>) => {
     const compare = compareSuffix(item.fn);
     if (compare != null) {
         pos.SQL.push(`${item.column} ${compare} ?`);
@@ -162,7 +162,7 @@ const whereText = (item: WhereItem, pos: QueryPos, err: string[]) => {
     }
 }
 
-const whereNumber = (item: WhereItem, pos: QueryPos, err: string[], parseFn) => {
+const whereNumber = (item: WhereItem, pos: QueryPos, err: Array<string>, parseFn: (value: string) => number) => {
     const compare = compareSuffix(item.fn);
     if (compare != null) {
         try {
@@ -196,7 +196,7 @@ const whereNumber = (item: WhereItem, pos: QueryPos, err: string[], parseFn) => 
 
 
 
-const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
+const whereDate = (item: WhereItem, pos: QueryPos, err: Array<string>) => {
     let val: Dayjs = null;
     if (item.fn != 'Bt') {
         if (item.value == '' || item.value == null) {
@@ -272,7 +272,7 @@ const whereDate = (item: WhereItem, pos: QueryPos, err: string[]) => {
     pos.PARAM.push(end)
 }
 
-const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
+const whereBoolean = (item: WhereItem, pos: QueryPos, err: Array<string>) => {
     let bool = boolValue(item.value)
     switch (item.fn) {
         case 'IsNull':
@@ -298,7 +298,7 @@ const whereBoolean = (item: WhereItem, pos: QueryPos, err: string[]) => {
 
 }
 
-const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
+const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: Array<string>) => {
     let item = { ...whereItem, fn: whereItem.fn ? whereItem.fn : '=', type: whereItem.type ? whereItem.type : 'string' }
     if (!isSupport(item, err)) return;
     if (NullCondition(item, pos)) return;
@@ -324,7 +324,7 @@ const ItemToWhere = (whereItem: WhereItem, pos: QueryPos, err: string[]) => {
     }
 }
 
-const ConditionToWhere = (where: WhereCondition, pos: QueryPos, err: string[]) => {
+const ConditionToWhere = (where: WhereCondition, pos: QueryPos, err: Array<string>) => {
     for (let item of where.items) {
         if (_.has(item, 'link')) {
             let group = item as WhereCondition;
@@ -348,7 +348,7 @@ const ConditionToWhere = (where: WhereCondition, pos: QueryPos, err: string[]) =
 export const where = (STRICT: boolean, condition: WhereParam): SQLStatement => {
     const pos: QueryPos = { SQL: [], PARAM: [], };
     let root: WhereCondition = _.isArray(condition) ? { link: 'AND', items: condition } : condition;
-    let err: string[] = [];
+    let err: Array<string> = [];
     ConditionToWhere(root, pos, err);
     throwErr(STRICT, err, 'Some SQL Error Occur');
     if (pos.SQL.length == 0) {

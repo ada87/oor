@@ -9,18 +9,18 @@ import { UserSchema, } from './core/Schema.test';
 
 const USER = SQLITE.View('user', UserSchema, { rowKey: 'id' });
 
-test('sqlite query', async () => {
+test('sqlite getter', async () => {
     var result;
 
-    // result = await USER.getById(1)
-    // console.log(result);
+    result = await USER.getById(1)
+    console.log(result);
 
 
-    // result = await USER.getByField('name', '白芳');
-    // console.log(result)
+    result = await USER.getByField('name', '白芳');
+    console.log(result)
 
-    // result = await USER.getByQuery({ age: 55, salaryMoreThan: 10000 });
-    // console.log(result)
+    result = await USER.getByQuery({ age: 55, salaryMoreThan: 10000 });
+    console.log(result)
 
     result = await USER.queryPagination({ ageLte: 55, salaryMoreThan: 1000 });
     console.log(result)
@@ -48,3 +48,18 @@ test('sqlite query', async () => {
     // console.log('fdsa')
     // const db = new DatabaseSync('test.db');
 })
+
+
+test('sqlite query', async () => {
+    var result;
+
+    result = await USER.query();
+    console.log(result)
+
+    result = await USER.queryPagination();
+    console.log(result)
+
+    result = await USER.queryPagination({ ageLte: 55, salaryMoreThan: 1000 });
+    console.log(result)
+})
+

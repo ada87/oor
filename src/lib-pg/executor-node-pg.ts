@@ -1,4 +1,4 @@
-import { RETURN } from '../utils/types'
+import { RowKeyType, ReturnType } from '../utils/types'
 import { GLOBAL } from './Global';
 
 import type { Pool, QueryResult } from 'pg';
@@ -25,17 +25,16 @@ class PgQuery implements QueryExecutor<Pool, object> {
 }
 
 class PgExecutor extends PgQuery implements ActionExecutor<Pool, any, QueryResult> {
-    convert(result: QueryResult<any>, returning: RETURN = RETURN.COUNT) {
+    convert(result: QueryResult<any>, returning: ReturnType = 'COUNT') {
         switch (returning) {
-            case RETURN.ORIGIN:
+            case 'ORIGIN':
                 return result;
-            case RETURN.COUNT:
+            case 'COUNT':
                 return result.rowCount;
-            case RETURN.SUCCESS:
+            case 'SUCCESS':
                 return result.rowCount > 0;
-            case RETURN.KEY:
-
-            case RETURN.INFO:
+            case 'KEY':
+            case 'INFO':
                 if (result.rows.length > 0) {
                     return result.rows[0];
                 }
@@ -45,16 +44,16 @@ class PgExecutor extends PgQuery implements ActionExecutor<Pool, any, QueryResul
         }
     }
 
-    convertBatch(result: QueryResult<any>, returning: RETURN = RETURN.COUNT) {
+    convertBatch(result: QueryResult<any>, returning: ReturnType = 'COUNT') {
         switch (returning) {
-            case RETURN.ORIGIN:
+            case 'ORIGIN':
                 return result;
-            case RETURN.COUNT:
+            case 'COUNT':
                 return result.rowCount;
-            case RETURN.SUCCESS:
+            case 'SUCCESS':
                 return result.rowCount > 0;
-            case RETURN.KEY:
-            case RETURN.INFO:
+            case 'KEY':
+            case 'INFO':
                 return result.rows as any;
             default:
                 return result.rowCount;

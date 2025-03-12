@@ -2,7 +2,7 @@ import type { TObject } from '@sinclair/typebox';
 import type {
     SQLStatement, WhereCondition, WhereParam,
     QuerySchema, OrderBy, OrderByLimit, QueryParam,
-    RETURN, RowKeyType, ByFieldType
+    RowKeyType, ByFieldType, ReturnType
 } from '../utils/types'
 
 
@@ -144,7 +144,7 @@ export interface QueryBuilder {
         (query: QuerySchema): string;
     }
 
-    orderByLimit: (query?: QuerySchema | boolean) => string;
+    orderByLimit: (query?: QuerySchema | boolean, pagination?: boolean) => string;
 
     where: (condition: WhereParam, startIdx?: number) => SQLStatement;
 
@@ -162,7 +162,7 @@ export interface ActionBuilder extends QueryBuilder {
     update: (data: object, options?: UpdateOptions) => SQLStatement;
     delete: (options?: QueryOptions) => SQLStatement;
 
-    returning: (returnType: RETURN) => string
+    returning: (returnType: RowKeyType) => string
 }
 
 
@@ -190,18 +190,18 @@ export interface ActionExecutor<C, O, R = any> extends QueryExecutor<C, O> {
     execute: (conn: C, SQL: string, PARAMS?: Array<any>) => Promise<R>
 
     convert: {
-        (result: R, returnType?: RETURN): number;
-        (result: R, returnType: RETURN.COUNT): number;
-        (result: R, returnType: RETURN.SUCCESS): boolean;
-        (result: R, returnType: RETURN.KEY): Partial<O>;
-        (result: R, returnType: RETURN.INFO): O;
-        (result: R, returnType: RETURN.ORIGIN): R;
+        (result: R, returnType?: ReturnType): number;
+        (result: R, returnType: 'COUNT'): number;
+        (result: R, returnType: 'SUCCESS'): boolean;
+        (result: R, returnType: 'KEY'): Partial<O>;
+        (result: R, returnType: 'INFO'): O;
+        (result: R, returnType: 'ORIGIN'): R;
     }
     convertBatch: {
-        <T extends RETURN>(result: R, returnType?: T): T extends RETURN.COUNT ? number :
-            T extends RETURN.SUCCESS ? boolean :
-            T extends RETURN.KEY ? Array<Partial<O>> :
-            T extends RETURN.INFO ? Array<O> :
+        <T extends RowKeyType>(result: R, returnType?: ReturnType): T extends 'COUNT' ? number :
+            T extends 'SUCCESS' ? boolean :
+            T extends 'KEY' ? Array<Partial<O>> :
+            T extends 'INFO' ? Array<O> :
             R;
     }
 
@@ -235,101 +235,101 @@ export interface Table<O extends object, R = any> extends View<O> {
     // truncate: () => Promise<boolean>;
     insert: {
         (data: O): Promise<O>,
-        (data: O, returnType: RETURN.SUCCESS, options?: InsertOptions): Promise<boolean>,
-        (data: O, returnType: RETURN.COUNT, options?: InsertOptions): Promise<number>,
-        (data: O, returnType: RETURN.INFO, options?: InsertOptions): Promise<O>,
-        (data: O, returnType: RETURN.KEY, options?: InsertOptions): Promise<RowKeyType>,
-        (data: O, returnType: RETURN.ORIGIN, options?: InsertOptions): Promise<any>,
+        (data: O, returnType: 'SUCCESS', options?: InsertOptions): Promise<boolean>,
+        (data: O, returnType: 'COUNT', options?: InsertOptions): Promise<number>,
+        (data: O, returnType: 'INFO', options?: InsertOptions): Promise<O>,
+        (data: O, returnType: 'KEY', options?: InsertOptions): Promise<RowKeyType>,
+        (data: O, returnType: 'ORIGIN', options?: InsertOptions): Promise<any>,
     }
 
     insertBatch: {
         (data: Array<O>): Promise<number>,
-        (data: Array<O>, returnType: RETURN.SUCCESS, options?: InsertOptions): Promise<boolean>,
-        (data: Array<O>, returnType: RETURN.COUNT, options?: InsertOptions): Promise<number>,
-        (data: Array<O>, returnType: RETURN.INFO, options?: InsertOptions): Promise<Array<O>>,
-        (data: Array<O>, returnType: RETURN.KEY, options?: InsertOptions): Promise<Array<Partial<O>>>,
-        (data: Array<O>, returnType: RETURN.ORIGIN, options?: InsertOptions): Promise<any>,
+        (data: Array<O>, returnType: 'SUCCESS', options?: InsertOptions): Promise<boolean>,
+        (data: Array<O>, returnType: 'COUNT', options?: InsertOptions): Promise<number>,
+        (data: Array<O>, returnType: 'INFO', options?: InsertOptions): Promise<Array<O>>,
+        (data: Array<O>, returnType: 'KEY', options?: InsertOptions): Promise<Array<Partial<O>>>,
+        (data: Array<O>, returnType: 'ORIGIN', options?: InsertOptions): Promise<any>,
     },
 
     update: {
         (data: O): Promise<boolean>,
-        (data: O, returnType: RETURN.SUCCESS, options?: UpdateOptions): Promise<boolean>,
-        (data: O, returnType: RETURN.COUNT, options?: UpdateOptions): Promise<number>,
-        (data: O, returnType: RETURN.INFO, options?: UpdateOptions): Promise<O>,
-        (data: O, returnType: RETURN.KEY, options?: UpdateOptions): Promise<RowKeyType>,
-        (data: O, returnType: RETURN.ORIGIN, options?: UpdateOptions): Promise<R>,
+        (data: O, returnType: 'SUCCESS', options?: UpdateOptions): Promise<boolean>,
+        (data: O, returnType: 'COUNT', options?: UpdateOptions): Promise<number>,
+        (data: O, returnType: 'INFO', options?: UpdateOptions): Promise<O>,
+        (data: O, returnType: 'KEY', options?: UpdateOptions): Promise<RowKeyType>,
+        (data: O, returnType: 'ORIGIN', options?: UpdateOptions): Promise<R>,
     }
 
 
     // updateByField: {
     //     (data:Partial<O>, field: string, value: string | number | boolean): Promise<number>,
-    //     (data:Partial<O>, field: string, value: string | number | boolean, returnType?: RETURN.COUNT): Promise<number>,
-    //     (data:Partial<O>, field: string, value: string | number | boolean, returnType: RETURN.SUCCESS): Promise<boolean>,
-    //     (data:Partial<O>, field: string, value: string | number | boolean, returnType: RETURN.OBJECT_ID): Promise<Array<number | string>>,
-    //     (data:Partial<O>, field: string, value: string | number | boolean, returnType: RETURN.INFO): Promise<Array<O>>,
+    //     (data:Partial<O>, field: string, value: string | number | boolean, returnType?: 'COUNT'): Promise<number>,
+    //     (data:Partial<O>, field: string, value: string | number | boolean, returnType: 'SUCCESS'): Promise<boolean>,
+    //     (data:Partial<O>, field: string, value: string | number | boolean, returnType: 'OBJECT_ID'): Promise<Array<number | string>>,
+    //     (data:Partial<O>, field: string, value: string | number | boolean, returnType: 'INFO'): Promise<Array<O>>,
     // },
 
     // updateByQuery: {
     //     (data:Partial<O>, query: QueryParam): Promise<number>,
-    //     (data:Partial<O>, query: QueryParam, returnType?: RETURN.COUNT): Promise<number>,
-    //     (data:Partial<O>, query: QueryParam, returnType: RETURN.SUCCESS): Promise<boolean>,
-    //     (data:Partial<O>, query: QueryParam, returnType: RETURN.OBJECT_ID): Promise<Array<number | string>>,
-    //     (data:Partial<O>, query: QueryParam, returnType: RETURN.INFO): Promise<Array<O>>,
+    //     (data:Partial<O>, query: QueryParam, returnType?: 'COUNT'): Promise<number>,
+    //     (data:Partial<O>, query: QueryParam, returnType: 'SUCCESS'): Promise<boolean>,
+    //     (data:Partial<O>, query: QueryParam, returnType: 'OBJECT_ID'): Promise<Array<number | string>>,
+    //     (data:Partial<O>, query: QueryParam, returnType: 'INFO'): Promise<Array<O>>,
     // },
 
     // updateByWhere: {
     //     (data:Partial<O>, condition: WhereParam): Promise<number>,
-    //     (data:Partial<O>, condition: WhereParam, returnType?: RETURN.COUNT): Promise<number>,
-    //     (data:Partial<O>, condition: WhereParam, returnType: RETURN.SUCCESS): Promise<boolean>,
-    //     (data:Partial<O>, condition: WhereParam, returnType: RETURN.OBJECT_ID): Promise<Array<number | string>>,
-    //     (data:Partial<O>, condition: WhereParam, returnType: RETURN.INFO): Promise<Array<O>>,
+    //     (data:Partial<O>, condition: WhereParam, returnType?: 'COUNT'): Promise<number>,
+    //     (data:Partial<O>, condition: WhereParam, returnType: 'SUCCESS'): Promise<boolean>,
+    //     (data:Partial<O>, condition: WhereParam, returnType: 'OBJECT_ID'): Promise<Array<number | string>>,
+    //     (data:Partial<O>, condition: WhereParam, returnType: 'INFO'): Promise<Array<O>>,
     // },
 
 
 
     deleteById: {
         (id: RowKeyType | Partial<O>): Promise<boolean>,
-        (id: RowKeyType | Partial<O>, returnType: RETURN.SUCCESS, options?: QueryOptions): Promise<boolean>,
-        (id: RowKeyType | Partial<O>, returnType: RETURN.COUNT, options?: QueryOptions): Promise<number>,
-        (id: RowKeyType | Partial<O>, returnType: RETURN.INFO, options?: QueryOptions): Promise<O>,
-        (id: RowKeyType | Partial<O>, returnType: RETURN.KEY, options?: QueryOptions): Promise<Partial<O>>,
-        (id: RowKeyType | Partial<O>, returnType: RETURN.ORIGIN, options?: QueryOptions): Promise<R>,
+        (id: RowKeyType | Partial<O>, returnType: 'SUCCESS', options?: QueryOptions): Promise<boolean>,
+        (id: RowKeyType | Partial<O>, returnType: 'COUNT', options?: QueryOptions): Promise<number>,
+        (id: RowKeyType | Partial<O>, returnType: 'INFO', options?: QueryOptions): Promise<O>,
+        (id: RowKeyType | Partial<O>, returnType: 'KEY', options?: QueryOptions): Promise<Partial<O>>,
+        (id: RowKeyType | Partial<O>, returnType: 'ORIGIN', options?: QueryOptions): Promise<R>,
     }
 
     deleteByIds: {
         (id: Array<RowKeyType> | Array<Partial<O>>): Promise<number>,
-        (id: Array<RowKeyType> | Array<Partial<O>>, returnType: RETURN.SUCCESS, options?: QueryOptions): Promise<boolean>,
-        (id: Array<RowKeyType> | Array<Partial<O>>, returnType: RETURN.COUNT, options?: QueryOptions): Promise<number>,
-        (id: Array<RowKeyType> | Array<Partial<O>>, returnType: RETURN.INFO, options?: QueryOptions): Promise<Array<O>>,
-        (id: Array<RowKeyType> | Array<Partial<O>>, returnType: RETURN.KEY, options?: QueryOptions): Promise<Array<Partial<O>>>,
-        (id: Array<RowKeyType> | Array<Partial<O>>, returnType: RETURN.ORIGIN, options?: QueryOptions): Promise<R>,
+        (id: Array<RowKeyType> | Array<Partial<O>>, returnType: 'SUCCESS', options?: QueryOptions): Promise<boolean>,
+        (id: Array<RowKeyType> | Array<Partial<O>>, returnType: 'COUNT', options?: QueryOptions): Promise<number>,
+        (id: Array<RowKeyType> | Array<Partial<O>>, returnType: 'INFO', options?: QueryOptions): Promise<Array<O>>,
+        (id: Array<RowKeyType> | Array<Partial<O>>, returnType: 'KEY', options?: QueryOptions): Promise<Array<Partial<O>>>,
+        (id: Array<RowKeyType> | Array<Partial<O>>, returnType: 'ORIGIN', options?: QueryOptions): Promise<R>,
     }
 
     deleteByField: {
         (field: string, value: ByFieldType): Promise<number>,
-        (field: string, value: ByFieldType, returnType: RETURN.SUCCESS, options?: QueryOptions): Promise<boolean>,
-        (field: string, value: ByFieldType, returnType: RETURN.COUNT, options?: QueryOptions): Promise<number>,
-        (field: string, value: ByFieldType, returnType: RETURN.INFO, options?: QueryOptions): Promise<Array<O>>,
-        (field: string, value: ByFieldType, returnType: RETURN.KEY, options?: QueryOptions): Promise<Array<Partial<O>>>,
-        (field: string, value: ByFieldType, returnType: RETURN.ORIGIN, options?: QueryOptions): Promise<R>,
+        (field: string, value: ByFieldType, returnType: 'SUCCESS', options?: QueryOptions): Promise<boolean>,
+        (field: string, value: ByFieldType, returnType: 'COUNT', options?: QueryOptions): Promise<number>,
+        (field: string, value: ByFieldType, returnType: 'INFO', options?: QueryOptions): Promise<Array<O>>,
+        (field: string, value: ByFieldType, returnType: 'KEY', options?: QueryOptions): Promise<Array<Partial<O>>>,
+        (field: string, value: ByFieldType, returnType: 'ORIGIN', options?: QueryOptions): Promise<R>,
     },
 
     deleteByQuery: {
         (query: QueryParam): Promise<number>,
-        (query: QueryParam, returnType: RETURN.SUCCESS, options?: QueryOptions): Promise<boolean>,
-        (query: QueryParam, returnType: RETURN.COUNT, options?: QueryOptions): Promise<number>,
-        (query: QueryParam, returnType: RETURN.INFO, options?: QueryOptions): Promise<Array<O>>,
-        (query: QueryParam, returnType: RETURN.KEY, options?: QueryOptions): Promise<Array<Partial<O>>>,
-        (query: QueryParam, returnType: RETURN.ORIGIN, options?: QueryOptions): Promise<R>,
+        (query: QueryParam, returnType: 'SUCCESS', options?: QueryOptions): Promise<boolean>,
+        (query: QueryParam, returnType: 'COUNT', options?: QueryOptions): Promise<number>,
+        (query: QueryParam, returnType: 'INFO', options?: QueryOptions): Promise<Array<O>>,
+        (query: QueryParam, returnType: 'KEY', options?: QueryOptions): Promise<Array<Partial<O>>>,
+        (query: QueryParam, returnType: 'ORIGIN', options?: QueryOptions): Promise<R>,
     },
 
     deleteByWhere: {
         (where: WhereParam): Promise<number>,
-        (where: WhereParam, returnType: RETURN.SUCCESS, options?: QueryOptions): Promise<boolean>,
-        (where: WhereParam, returnType: RETURN.COUNT, options?: QueryOptions): Promise<number>,
-        (where: WhereParam, returnType: RETURN.INFO, options?: QueryOptions): Promise<Array<O>>,
-        (where: WhereParam, returnType: RETURN.KEY, options?: QueryOptions): Promise<Array<Partial<O>>>,
-        (where: WhereParam, returnType: RETURN.ORIGIN, options?: QueryOptions): Promise<R>,
+        (where: WhereParam, returnType: 'SUCCESS', options?: QueryOptions): Promise<boolean>,
+        (where: WhereParam, returnType: 'COUNT', options?: QueryOptions): Promise<number>,
+        (where: WhereParam, returnType: 'INFO', options?: QueryOptions): Promise<Array<O>>,
+        (where: WhereParam, returnType: 'KEY', options?: QueryOptions): Promise<Array<Partial<O>>>,
+        (where: WhereParam, returnType: 'ORIGIN', options?: QueryOptions): Promise<R>,
     },
 
 

@@ -1,6 +1,3 @@
-// dbType  : 'pg' 
-// runType : query action
-
 type LogSQLParam = (sql: string, param: Array<any>) => void;
 type LogSQLTime = (sql: string, param: Array<any>, time: number) => void;
 import { colorGreen, bgGray, colorFieldName, styleItalic, } from '../utils/color';

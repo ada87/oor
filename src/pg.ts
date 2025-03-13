@@ -1,11 +1,11 @@
 // npm i pg @types/pg
+// https://github.com/brianc/node-postgres
+// https://www.postgresql.org/docs/17/sql-select.html
 import { Pool } from 'pg'
 import { BaseDB } from './core/BaseDB';
 import { PgView, PgTable, } from './lib-pg/PgTable';
-// export { PgView as View,  }
 
 
-// https://www.postgresql.org/docs/17/sql-select.html
 import type { PoolConfig } from 'pg';
 import type { TableOptions, DatabaseOptions, Database } from './core';
 import type { TObject, } from '@sinclair/typebox';          // export useful types from typebox

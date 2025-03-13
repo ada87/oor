@@ -3,12 +3,9 @@ import { BaseView, BaseTable } from '../core'
 import { PgQuery } from './PgSQL';
 import { PG_QUERY, PG_EXECUTOR } from './executor-node-pg'
 
-import type { QueryResult } from 'pg';
+import type { ClientBase, QueryResult } from 'pg';
 import type { Database, TableOptions, QueryExecutor, ActionExecutor } from '../core'
 import type { TObject } from '@sinclair/typebox';
-
-
-import type { ClientBase, Pool } from 'pg';
 
 
 export class PgView<C, S extends TObject> extends BaseView<C, S, PgQuery> {

@@ -5,6 +5,6 @@ const PG = [
     "true", "unique", "user", "using", "variadic", "when"];
 
 
-const FIELDS_MAP = new Map<string, string>();
+// const FIELDS_MAP = new Map<string, string>();
 export const RESERVED_WORDS = new Set<string>(PG);
-export { FIELDS_MAP }
+// export { FIELDS_MAP }

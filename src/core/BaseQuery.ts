@@ -1,7 +1,7 @@
 import _ from './dash';
 import { queryToCondition } from '../utils/ConditionUtil';
 import { validateSort } from '../utils/ValidateUtil'
-import { parseOptions, } from './utils';
+import { parseOptions, } from './_providers';
 
 import type { TableOptions, DatabaseOptions, QueryBuilder } from './types';
 import type { TObject, TSchema } from '@sinclair/typebox';

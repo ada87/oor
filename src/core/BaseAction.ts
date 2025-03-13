@@ -1,6 +1,6 @@
 import _ from './dash';
-import { BaseQuery } from './SqlQuery';
-import { buildCheckEntity } from './utils'
+import { BaseQuery } from './BaseQuery';
+import { buildCheckEntity } from './_providers'
 import { ReturnType } from '../utils/types';
 import { newDate } from '../utils/TimeUtil';
 

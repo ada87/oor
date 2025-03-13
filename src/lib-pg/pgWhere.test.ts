@@ -1,4 +1,4 @@
-import { test, byCheckFunctionBatch, throwsBatch, isTrueBatch } from 'tsest'
+import { test, byCheckFunctionBatch, throwsBatch, okBatch, assert } from 'tsest'
 import _ from 'lodash';
 import { PG_VIEW, OK, ERROR } from '../core/Schema.test';
 import { QuerySchema } from '../utils/types';
@@ -104,7 +104,7 @@ const notSupport = (testCase) => {
     if (STRICT) {
         throwsBatch(queryChain, testCase, BUILDER);
     } else {
-        isTrueBatch(isEmpty, testCase)
+        okBatch(isEmpty, testCase)
     }
 }
 
@@ -114,7 +114,7 @@ test('convert string', {
 }, () => {
     // console.log(STRICT)
 
-    isTrueBatch(queryChain, [
+    okBatch(queryChain, [
         [{ name: 'aa' }, "name ="], [{ nameNot: 'aa' }, "name !"],
         [{ nameMin: 'aa' }, "name >="], [{ nameMax: 'aa' }, "name <="],
         [{ nameLess: 'aa' }, "name <"], [{ nameLessThan: 'aa' }, "name <"], [{ nameMore: 'aa' }, "name >"], [{ nameMoreThan: 'aa' }, "name >"],
@@ -138,7 +138,7 @@ test('convert int', {
     // only: true,
 }, () => {
 
-    isTrueBatch(queryChain, [
+    okBatch(queryChain, [
         [{ age: 1 }, 'age ='], [{ 'age=': 1 }, 'age ='], [{ 'age!=': 1 }, 'age !='], [{ 'age<>': 1 }, 'age !='],
         [{ ageMin: 1 }, 'age >='], [{ ageMax: 1 }, 'age <='],
         [{ ageMore: 1 }, 'age >'], [{ ageMoreThan: 1 }, 'age >'], [{ ageLess: 1 }, 'age <'], [{ ageLessThan: 1 }, 'age <'],
@@ -161,7 +161,7 @@ test('convert int', {
 test('convert double', {
 
 }, () => {
-    isTrueBatch(queryChain, [
+    okBatch(queryChain, [
         [{ salary: 1.1032 }, 'salary ='], [{ 'salary=': 1.1032 }, 'salary ='], [{ 'salary!=': 1.1032 }, 'salary !='], [{ 'salary<>': 1.1032 }, 'salary !='],
         [{ salaryMin: 1.1032 }, 'salary >='], [{ salaryMax: 1.1032 }, 'salary <='],
         [{ salaryMore: 1.1032 }, 'salary >'], [{ salaryMoreThan: 1.1032 }, 'salary >'], [{ salaryLess: 1.1032 }, 'salary <'], [{ salaryLessThan: 1.1032 }, 'salary <'],
@@ -176,7 +176,7 @@ test('convert double', {
         [{ salaryBt: '1.1032,2' }], [{ salaryBtD: '1.1032,2' }], [{ salaryBtY: '1.1032,2' }], [{ salaryBtM: '1.1032,2' }],
         [{ salaryMinH: 1.1032 }], [{ salaryMinD: 1.1032 }], [{ salaryMinM: 1.1032 }],
         [{ salaryMaxH: 1.1032 }], [{ salaryMaxD: 1.1032 }], [{ salaryMaxM: 1.1032 }],
-    ])  
+    ])
 })
 
 // test('convert date', {

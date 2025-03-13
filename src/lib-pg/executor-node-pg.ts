@@ -1,7 +1,7 @@
-import { RowKeyType, ReturnType } from '../utils/types'
 import { GLOBAL } from './Global';
 
 import type { Pool, QueryResult } from 'pg';
+import type { ReturnType } from '../utils/types';
 import type { QueryExecutor, ActionExecutor, } from '../core';
 
 class PgQuery implements QueryExecutor<Pool, object> {
@@ -60,7 +60,6 @@ class PgExecutor extends PgQuery implements ActionExecutor<Pool, any, QueryResul
         }
     }
 
-
     async execute(conn: Pool, sql: string, params?: Array<any>) {
         if (GLOBAL.logSQL) GLOBAL.logSQL(sql, params);;
         let start = Date.now();
@@ -71,12 +70,7 @@ class PgExecutor extends PgQuery implements ActionExecutor<Pool, any, QueryResul
         }
         return result
     }
-
-
-
 }
-
-
 
 export const PG_QUERY = new PgQuery();
 export const PG_EXECUTOR = new PgExecutor();

@@ -35,6 +35,7 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
         })
     }
 
+
     whereId(value: RowKeyType | Array<RowKeyType> | object | Array<RowKeyType>, startIdx: number = 1): SQLStatement {
         if (this.ROW_KEY == null) throw ('Row Key is not defined');
         let type = typeof value;
@@ -52,8 +53,8 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
                 }
             }
             if (ids.length == 0) throw new Error('No row key in entity');
-            if (ids.length == 1) return [`${this.F2W.get(this.ROW_KEY)} = $${startIdx}`, [ids[0]]];
-            return [`${this.F2W.get(this.ROW_KEY)} = ANY($${startIdx})`, [ids]];
+            if (ids.length == 1) return [`${this.F2W.get(this.ROW_KEY)} = ${this.placeholder(startIdx)}`, [ids[0]]];
+            return [`${this.F2W.get(this.ROW_KEY)} = ANY(${this.placeholder(startIdx)})`, [ids]];
 
         }
 
@@ -64,7 +65,7 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
             rowKey = value[this.ROW_KEY];
         }
 
-        return [`${this.F2W.get(this.ROW_KEY)} = $${startIdx}`, [rowKey]]
+        return [`${this.F2W.get(this.ROW_KEY)} = ${this.placeholder(startIdx)}`, [rowKey]]
     }
 
     private insertArray(list: Array<object>, options?: InsertOptions): SQLStatement {
@@ -90,7 +91,7 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
             let items: string[] = []
             FIELDS.forEach((field, i) => {
                 let schema = COLUMNS[i];
-                items.push('$' + idx);
+                items.push(this.placeholder(idx));
                 idx = idx + 1;
                 if (this.DATE_CREATE.has(field) || this.DATE_MODIFY.has(field)) {
                     param.push(newDate(schema));
@@ -119,19 +120,19 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
             let val = obj[field];
             if (val === null) return
             query.push(this.F2W.get(field))
-            idx.push("$" + (i + 1));
-            param.push(val)
+            idx.push(this.placeholder(i + 1));
+            param.push(this.convertValue(val, this.COLUMN_MAP.get(field)))
         });
         _.keys(this.SCHEMA.properties).forEach(field => {
             let column = this.SCHEMA.properties[field];
             if (this.DATE_CREATE.has(field) || this.DATE_MODIFY.has(field)) {
                 query.push(this.F2W.get(field))
-                idx.push("$" + (param.length + 1));
+                idx.push(this.placeholder(param.length + 1));
                 param.push(newDate(column));
             } else if (_.has(column, 'default') && !_.has(obj, field)) {
                 query.push(this.F2W.get(field));
-                idx.push("$" + (param.length + 1));
-                param.push(column.default);
+                idx.push(this.placeholder(param.length + 1));
+                param.push(this.convertValue(column.default, column));
             }
         })
         return [`INSERT INTO ${this.tableName} (${query.join(',')}) VALUES (${idx.join(',')})`, param];
@@ -150,13 +151,13 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
             if (field == this.ROW_KEY || this.DATE_CREATE.has(field) || this.DATE_MODIFY.has(field)) continue;
             let val = data[field];
             if (options?.ignoreNull && (val === null || val === undefined)) continue;
-            query.push(`${this.F2W.get(field)} = $${pos}`)
+            query.push(`${this.F2W.get(field)} = ${this.placeholder(pos)}`)
             param.push(val)
             pos++
         }
-        
+
         for (let filed of this.DATE_MODIFY) {
-            query.push(`${this.F2W.get(filed)} = $${pos}`)
+            query.push(`${this.F2W.get(filed)} = ${this.placeholder(pos)}`)
             param.push(newDate(this.COLUMN_MAP.get(filed)))
             pos++
         }
@@ -164,7 +165,7 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
     }
 
     delete(): SQLStatement {
-        if (this.DEL_MARK) return [`UPDATE ${this.tableName} SET ${this.DEL_MARK.column} = $1`, [this.DEL_MARK.value]]
+        if (this.DEL_MARK) return [`UPDATE ${this.tableName} SET ${this.DEL_MARK.column} = ${this.placeholder(1)}`, [this.DEL_MARK.value]]
         return [`DELETE FROM ${this.tableName}`, []]
     }
 

@@ -5,6 +5,8 @@ import type { DatabaseSync, StatementResultingChanges } from 'node:sqlite'
 
 import type { QueryExecutor, ActionExecutor, } from '../core';
 
+type Result = any;
+
 // null | number | bigint | string | Uint8Array;
 class SqilteQuery implements QueryExecutor<DatabaseSync, object> {
 
@@ -35,8 +37,8 @@ class SqilteQuery implements QueryExecutor<DatabaseSync, object> {
     }
 }
 
-type Result = any;
-type RESULT = StatementResultingChanges
+
+// type RESULT = StatementResultingChanges
 
 // const stmt: StatementSync = null;
 // stmt.sourceSQL
@@ -91,6 +93,7 @@ class SqliteExecutor extends SqilteQuery implements ActionExecutor<DatabaseSync,
         let result = null;
         if (sql.indexOf('RETURNING') > 0) {
             result = stmt.all(...params);
+            console.log(result)
         } else {
             result = stmt.run(...params);
         }

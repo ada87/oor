@@ -2,7 +2,9 @@ import { where } from './sqliteWhere';
 import { BaseAction } from '../core';
 import { RESERVED_WORDS } from './RESERVED_WORDS';;
 
-import type { SQLStatement, WhereParam } from '../utils/types';
+import type { ColumnOptions, SQLStatement, WhereParam } from '../utils/types';
+
+import { Kind } from '@sinclair/typebox'
 
 
 export class SqliteQuery extends BaseAction {
@@ -10,6 +12,12 @@ export class SqliteQuery extends BaseAction {
 
     protected initReservedWord() {
         return RESERVED_WORDS;
+    }
+    protected convertValue(value: any, defined: any) {
+        if (defined[Kind] == 'Boolean') {
+            return value ? 1 : 0
+        }
+        return value;
     }
 
     wrapField(filed: string): string {
@@ -33,7 +41,13 @@ export class SqliteQuery extends BaseAction {
         if (this.GLOBAL_CONDITION == null || this.GLOBAL_CONDITION.length == 0) return statement == null ? ['', []] : statement;
         if (statement == null) return this.where(this.GLOBAL_CONDITION);
         const [WHERE, PARAM] = this.where(this.GLOBAL_CONDITION);
-        return [`(${WHERE}) AND (${statement[0]})`, [...PARAM, ...statement[1]]]
+        if (WHERE.length) {
+            if (statement[0].length) {
+                return [`(${WHERE}) AND (${statement[0]})`, [...PARAM, ...statement[1]]]
+            }
+            return [WHERE, PARAM];
+        }
+        return statement == null ? ['', []] : statement;
     }
 
 }

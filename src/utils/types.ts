@@ -3,7 +3,7 @@ import { Type } from '@sinclair/typebox';
 
 
 import type {
-    SchemaOptions, TProperties, TPartial,
+    SchemaOptions, TProperties,
     TObject, StringOptions, DateOptions, NumberOptions, IntegerOptions,
 } from '@sinclair/typebox';
 

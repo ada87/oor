@@ -3,10 +3,11 @@ import _ from 'lodash'
 // import { existsSync } from 'fs'
 // import { isAbsolute, resolve } from 'path';
 // import { initFromSQL } from './lib-sqlite/initDB'
-import { SQLITE } from './sqlite'
+import { SQLITE, setSQLLogger } from './sqlite'
 
 import { UserSchema, } from './core/Schema.test';
-import { RESERVED_WORDS } from './lib-pg/RESERVED_WORDS';
+
+setSQLLogger(console.log);
 
 const USER = SQLITE.Table('user', UserSchema, { rowKey: 'id' });
 

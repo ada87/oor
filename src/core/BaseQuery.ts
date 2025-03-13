@@ -5,7 +5,7 @@ import { parseOptions, } from './_providers';
 
 import type { TableOptions, DatabaseOptions, QueryBuilder } from './types';
 import type { TObject, TSchema } from '@sinclair/typebox';
-import type { WhereParam, OrderBy, SQLStatement, QuerySchema, WhereCondition, WhereDefine, WhereItem, QueryParam, RowKeyType, DeleteMark } from '../utils/types';
+import type { WhereParam, OrderBy, SQLStatement, QuerySchema, WhereCondition, WhereDefine, WhereItem, QueryParam, RowKeyType, DeleteMark, ColumnOptions } from '../utils/types';
 
 
 export abstract class BaseQuery implements QueryBuilder {
@@ -75,6 +75,13 @@ export abstract class BaseQuery implements QueryBuilder {
         this.F2S = CONFIG.F2S;
         this.GLOBAL_CONDITION = CONFIG.globalCondition;
 
+    }
+
+    protected placeholder(i: number): string {
+        return '?'
+    }
+    protected convertValue(value: any,define:ColumnOptions): any {
+        return value;
     }
 
 

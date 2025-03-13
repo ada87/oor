@@ -1,6 +1,6 @@
 {
   "name": "oor",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "author": "ada87",
   "description": "An extreme simple ORM Lib for NodeJs.",
   "license": "MIT",
@@ -25,7 +25,7 @@
   "scripts": {
     "build": "node -r ts-node/register script.mjs --build",
     "test": "node --env-file=.env -r ts-node/register node_modules/tsest/run",
-    "watch": "node --env-file=.env -r ts-node/register node_modules/tsest/run --test-file-name=executor-node-pg.test.ts --watch"
+    "watch": "node --env-file=.env -r ts-node/register node_modules/tsest/run --test-file-name=sqlite-action --watch"
   },
   "devDependencies": {
     "@elastic/elasticsearch": "^8.17.1",

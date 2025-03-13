@@ -18,8 +18,6 @@ import type {
  *  */
 
 
-
-
 export type QueryProvider<B extends QueryBuilder> = {
     new(tableName: string, schema: TObject, tbOptions?: TableOptions, dbOptions?: DatabaseOptions): B
 };

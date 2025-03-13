@@ -8,6 +8,9 @@ import type { SQLStatement, WhereParam } from '../utils/types';
 export class PgQuery extends BaseAction {
 
 
+    protected placeholder(i: number): string {
+        return '$' + i;
+    }
     protected initReservedWord() {
         return RESERVED_WORDS;
     }
@@ -16,7 +19,7 @@ export class PgQuery extends BaseAction {
     byField(field: string, value: string | number | boolean, startIdx: number = 1): SQLStatement {
         if (!this.F2W.has(field)) throw new Error(`Field ${field} not found in Table ${this.tableName}`);
         let column = this.F2W.get(field);
-        let sql = `${column} = $${startIdx}`;
+        let sql = `${column} = ${this.placeholder(startIdx)}`;
         return [sql, [value]];
     }
 
@@ -34,13 +37,13 @@ export class PgQuery extends BaseAction {
         if (statement == null) return this.where(this.GLOBAL_CONDITION);
         const [WHERE, PARAM] = this.where(this.GLOBAL_CONDITION, statement ? statement[1].length + 1 : 1);
         if (WHERE.length) {
-            if(statement[0].length){
-                return [`(${WHERE}) AND (${statement[0]})`, [...statement[1], ...PARAM]]        
+            if (statement[0].length) {
+                return [`(${WHERE}) AND (${statement[0]})`, [...statement[1], ...PARAM]]
             }
-            return [WHERE,PARAM];
+            return [WHERE, PARAM];
         }
         return statement == null ? ['', []] : statement;
-        
+
     }
 
 }

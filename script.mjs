@@ -28,6 +28,19 @@ const buildExport = () => {
             } else if (file.isFile() && file.name.endsWith('.d.ts')) {
                 const fileName = file.name.substring(0, file.name.length - 5);
                 const path = (relativePath + fileName);
+                // console.log(fileName)
+                if (fileName == 'index') {
+                    exports['.' + path.substring(0, path.length - 6)] = {
+                        import: {
+                            types: './esm' + path + '.d.ts',
+                            default: './esm' + path + '.js'
+                        },
+                        require: {
+                            types: './cjs' + path + '.d.ts',
+                            default: './cjs' + path + '.js'
+                        },
+                    }
+                }
                 exports['.' + path] = {
                     import: {
                         types: './esm' + path + '.d.ts',

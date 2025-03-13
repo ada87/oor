@@ -10,7 +10,7 @@ import { DatabaseOptions, TableOptions, } from './core'
 import type { DatabaseSyncOptions, } from 'node:sqlite';
 import type { TObject } from '@sinclair/typebox'
 import { SqliteTable, SqliteView } from './lib-sqlite/SqliteTable'
-export { setSQLLogger, setSQLTimer } from './lib-pg/Global';
+export { setSQLLogger, setSQLTimer } from './lib-sqlite/Global';
 export { initFromFile, initFromSQL } from './lib-sqlite/initDB'
 
 

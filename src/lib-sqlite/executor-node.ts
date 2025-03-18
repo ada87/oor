@@ -1,13 +1,11 @@
 import { ReturnType } from '../utils/types'
 import { GLOBAL } from './Global';
 import type { DatabaseSync, StatementResultingChanges } from 'node:sqlite'
-// import type { Pool, QueryResult } from 'pg';
 
 import type { QueryExecutor, ActionExecutor, } from '../core';
 
-type Result = any;
+export type Result = StatementResultingChanges | Array<any>;
 
-// null | number | bigint | string | Uint8Array;
 class SqilteQuery implements QueryExecutor<DatabaseSync, object> {
 
     async query(conn: DatabaseSync, sql: string, params?: Array<string | number>): Promise<Array<object>> {
@@ -27,8 +25,6 @@ class SqilteQuery implements QueryExecutor<DatabaseSync, object> {
         let start = Date.now();
         const stmt = conn.prepare(sql);
         const result = stmt.get(...params);
-        // const stmt = conn.prepare('SELECT id FROM user where id = 991119');
-        // const result = stmt.get();
         if (GLOBAL.logTime) {
             let now = Date.now();
             GLOBAL.logTime(sql, params, now - start);
@@ -38,62 +34,52 @@ class SqilteQuery implements QueryExecutor<DatabaseSync, object> {
 }
 
 
-// type RESULT = StatementResultingChanges
-
-// const stmt: StatementSync = null;
-// stmt.sourceSQL
-
-// stmt.get()
-// stmt.iterate()
-// stmt.bind() 
 
 
 class SqliteExecutor extends SqilteQuery implements ActionExecutor<DatabaseSync, any, Result> {
-    convert(result: Result, returning: ReturnType = 'COUNT') {
-        switch (returning) {
-            // case RETURN.ORIGIN:
-            //     return result;
-            // case RETURN.COUNT:
-            //     return result.rowCount;
-            // case RETURN.SUCCESS:
-            //     return result.rowCount > 0;
-            // case RETURN.KEY:
-
-            // case RETURN.INFO:
-            //     if (result.rows.length > 0) {
-            //         return result.rows[0];
-            //     }
-            //     return null;;
-            default:
-                return result.rowCount;
-        }
-    }
-
-    convertBatch(result: Result, returning: ReturnType = 'COUNT') {
-        switch (returning) {
+    convert(result: Result, returnType: ReturnType = 'COUNT') {
+        switch (returnType) {
             case 'ORIGIN':
                 return result;
             case 'COUNT':
-                return result.rowCount;
+                return (result as StatementResultingChanges).changes;
             case 'SUCCESS':
-                return result.rowCount > 0;
+                return (result as StatementResultingChanges).changes > 0;
             case 'KEY':
             case 'INFO':
-                return result.rows as any;
+                if ((result as Array<any>).length > 0) {
+                    return result[0]
+                }
+                return null;;
             default:
-                return result.rowCount;
+                return (result as StatementResultingChanges).changes;
+        }
+    }
+
+    convertBatch(result: Result, returnType: ReturnType = 'COUNT') {
+        switch (returnType) {
+            case 'ORIGIN':
+                return result as any;
+            case 'COUNT':
+                return (result as StatementResultingChanges).changes;
+            case 'SUCCESS':
+                return (result as StatementResultingChanges).changes > 0;
+            case 'KEY':
+            case 'INFO':
+                return result as Array<any>;
+            default:
+                return (result as StatementResultingChanges).changes;
         }
     }
 
 
-    async execute(conn: DatabaseSync, sql: string, params?: Array<any>) {
-        if (GLOBAL.logSQL) GLOBAL.logSQL(sql, params);;
+    async execute(conn: DatabaseSync, sql: string, params?: Array<any>): Promise<Result> {
+        if (GLOBAL.logSQL) GLOBAL.logSQL(sql, params);
         let start = Date.now();
         const stmt = conn.prepare(sql);
         let result = null;
         if (sql.indexOf('RETURNING') > 0) {
             result = stmt.all(...params);
-            console.log(result)
         } else {
             result = stmt.run(...params);
         }

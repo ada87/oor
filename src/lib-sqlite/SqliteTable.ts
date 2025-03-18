@@ -3,7 +3,7 @@ import { BaseView, BaseTable } from '../core'
 import { SqliteQuery } from './SqliteQuery';
 import { SQLITE_QUERY, SQLITE_EXECUTOR } from './executor-node'
 
-import type { QueryResult } from 'pg';
+import type { Result } from './executor-node';
 import type { Database, TableOptions, QueryExecutor, ActionExecutor } from '../core'
 import type { TObject } from '@sinclair/typebox';
 
@@ -32,7 +32,7 @@ export class SqliteView<C, S extends TObject> extends BaseView<C, S, SqliteQuery
 export class SqliteTable<C, S extends TObject> extends BaseTable<C, S, SqliteQuery> {
 
 
-    protected EXECUTOR = SQLITE_EXECUTOR as ActionExecutor<C, any, QueryResult>;
+    protected EXECUTOR = SQLITE_EXECUTOR as ActionExecutor<C, any, Result>;
 
     constructor(db: Database<C>, tableName: string, tableSchema: S, tableOptions?: TableOptions) {
         super(SqliteQuery, db, tableName, tableSchema, tableOptions);

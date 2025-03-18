@@ -9,7 +9,7 @@ import { PgView, PgTable, } from './lib-pg/PgTable';
 import type { PoolConfig } from 'pg';
 import type { TableOptions, DatabaseOptions, Database } from './core';
 import type { TObject, } from '@sinclair/typebox';          // export useful types from typebox
-export type { Static, TSchema } from '@sinclair/typebox';
+export type { Static, TSchema, TObject } from '@sinclair/typebox';
 
 export { setSQLLogger, setSQLTimer } from './lib-pg/Global';
 export * from './utils/types';

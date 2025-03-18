@@ -9,9 +9,9 @@ export class BaseTable<C, S extends TObject, B extends ActionBuilder, R = any> e
 
     protected EXECUTOR: ActionExecutor<C, Static<S>>;
 
-    protected async _execute(ACTION: SQLStatement, returning: ReturnType, WHERE?: SQLStatement | false): Promise<any> {
+    protected async _execute(ACTION: SQLStatement, returnType: ReturnType, WHERE?: SQLStatement | false): Promise<any> {
         const { EXECUTOR, BUILDER } = this;
-        const RETURNING = BUILDER.returning(returning);
+        const RETURNING = BUILDER.returning(returnType);
         let SQL: string, PARAM: any[];
         if (WHERE === false) {  // INSERT
             SQL = `${ACTION[0]}  ${RETURNING}`
@@ -23,13 +23,13 @@ export class BaseTable<C, S extends TObject, B extends ActionBuilder, R = any> e
         }
         const conn = await this.getConn();
         const result = await EXECUTOR.execute(conn, SQL, PARAM);
-        const rtn = EXECUTOR.convert(result, returning);
+        const rtn = EXECUTOR.convert(result, returnType);
         return rtn;
     }
 
-    protected async _executeBatch(ACTION: SQLStatement, returning: ReturnType, WHERE?: SQLStatement | false) {
+    protected async _executeBatch(ACTION: SQLStatement, returnType: ReturnType, WHERE?: SQLStatement | false) {
         const { EXECUTOR, BUILDER } = this;
-        const RETURNING = BUILDER.returning(returning);
+        const RETURNING = BUILDER.returning(returnType);
         let SQL: string, PARAM: any[];
         if (WHERE && WHERE[0]) {
             SQL = `${ACTION[0]} WHERE ${WHERE[0]} ${RETURNING}`
@@ -40,7 +40,7 @@ export class BaseTable<C, S extends TObject, B extends ActionBuilder, R = any> e
         }
         const conn = await this.getConn();
         const result = await EXECUTOR.execute(conn, SQL, PARAM);
-        const rtn = EXECUTOR.convertBatch(result, returning);
+        const rtn = EXECUTOR.convertBatch(result, returnType);
         return rtn;
     }
 

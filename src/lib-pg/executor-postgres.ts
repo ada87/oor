@@ -34,8 +34,8 @@ class PgQuery implements QueryExecutor<Sql, object> {
 }
 
 class PgExecutor extends PgQuery implements ActionExecutor<Sql, any, RowList<any>> {
-    convert(result: RowList<any>, returning: ReturnType = 'COUNT') {
-        switch (returning) {
+    convert(result: RowList<any>, returnType: ReturnType = 'COUNT') {
+        switch (returnType) {
             case 'ORIGIN':
                 return result;
             case 'COUNT':
@@ -53,8 +53,8 @@ class PgExecutor extends PgQuery implements ActionExecutor<Sql, any, RowList<any
         }
     }
 
-    convertBatch(result: RowList<any>, returning: ReturnType = 'COUNT') {
-        switch (returning) {
+    convertBatch(result: RowList<any>, returnType: ReturnType = 'COUNT') {
+        switch (returnType) {
             case 'ORIGIN':
                 return result;
             case 'COUNT':

@@ -171,9 +171,8 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
 
 
 
-    returning(returning: ReturnType) {
-
-        switch (returning) {
+    returning(returnType: ReturnType) {
+        switch (returnType) {
             case 'SUCCESS':
             case 'COUNT':
                 return ''

@@ -2,7 +2,7 @@ import { where } from './sqliteWhere';
 import { BaseAction } from '../core';
 import { RESERVED_WORDS } from './RESERVED_WORDS';;
 
-import type { ColumnOptions, SQLStatement, WhereParam } from '../utils/types';
+import type { SQLStatement, WhereParam } from '../utils/types';
 
 import { Kind } from '@sinclair/typebox'
 
@@ -38,7 +38,9 @@ export class SqliteQuery extends BaseAction {
     }
 
     fixWhere(statement?: SQLStatement): SQLStatement {
+        console.log(statement)
         if (this.GLOBAL_CONDITION == null || this.GLOBAL_CONDITION.length == 0) return statement == null ? ['', []] : statement;
+
         if (statement == null) return this.where(this.GLOBAL_CONDITION);
         const [WHERE, PARAM] = this.where(this.GLOBAL_CONDITION);
         if (WHERE.length) {

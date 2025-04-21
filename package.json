@@ -25,7 +25,7 @@
   "scripts": {
     "build": "node -r ts-node/register script.mjs --build",
     "test": "node --env-file=.env -r ts-node/register node_modules/tsest/run",
-    "watch": "node --env-file=.env -r ts-node/register node_modules/tsest/run --test-file-name=sqlite-action --watch"
+    "watch": "node --env-file=.env -r ts-node/register node_modules/tsest/run --test-file-name=sqlite- --watch"
   },
   "devDependencies": {
     "@elastic/elasticsearch": "^8.17.1",

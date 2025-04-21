@@ -38,14 +38,12 @@ export class SqliteQuery extends BaseAction {
     }
 
     fixWhere(statement?: SQLStatement): SQLStatement {
-        console.log(statement)
         if (this.GLOBAL_CONDITION == null || this.GLOBAL_CONDITION.length == 0) return statement == null ? ['', []] : statement;
-
         if (statement == null) return this.where(this.GLOBAL_CONDITION);
         const [WHERE, PARAM] = this.where(this.GLOBAL_CONDITION);
         if (WHERE.length) {
             if (statement[0].length) {
-                return [`(${WHERE}) AND (${statement[0]})`, [...PARAM, ...statement[1]]]
+                return [`(${statement[0]}) AND (${WHERE})`, [...statement[1], ...PARAM]]
             }
             return [WHERE, PARAM];
         }

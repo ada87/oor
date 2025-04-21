@@ -2,15 +2,15 @@ import { test, assert } from 'tsest'
 import _ from 'lodash'
 // import { existsSync } from 'fs'
 // import { isAbsolute, resolve } from 'path';
-// import { initFromSQL } from './lib-sqlite/initDB'
-import { SQLITE, setSQLLogger } from './sqlite'
+// import { initFromSQL } from './lib-mysql/initDB'
+// import { SQLITE, setSQLLogger } from './mysql'
 
 import { UserSchema, } from './core/Schema.test';
 setSQLLogger(console.log);
 
 const USER = SQLITE.View('user', UserSchema, { rowKey: 'id' });
 
-test('sqlite getter', {
+test('mysql getter', {
     skip: true
 }, async () => {
     var result;
@@ -31,7 +31,7 @@ test('sqlite getter', {
 })
 
 
-test('sqlite query',
+test('mysql query',
     { skip: true, },
     async () => {
         var result;

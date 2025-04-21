@@ -3,7 +3,9 @@ import { isAbsolute, resolve, } from 'path';
 import { DatabaseSync, } from 'node:sqlite';
 import { bgYellow, colorGreen, colorMagenta, colorRed } from '../utils/color'
 
-
+/**
+ * 自带版本管理
+*/
 
 export const initFromSQL = (targetDBPath: string, sql: string) => {
     const dbFile = isAbsolute(targetDBPath) ? targetDBPath : resolve(process.cwd(), targetDBPath);
@@ -53,12 +55,8 @@ export const autoInit = (targetDBPath: string, sqlDir: string) => {
     }
     const db = initDB(targetDBPath);
     // const 
-
-
-
-
     // try {
-    // db.exec(`
+    //     db.exec(`
     //     CREATE TABLE IF NOT EXISTS migration_history (
     //         id INTEGER PRIMARY KEY AUTOINCREMENT,
     //         filename TEXT NOT NULL,
@@ -66,18 +64,18 @@ export const autoInit = (targetDBPath: string, sqlDir: string) => {
     //     );
     // `);
 
-    // const files = readdirSync(sqlDir).filter(file => file.endsWith('.sql')).sort();
-    // for (const file of files) {
-    //     const sqlContent = readFileSync(resolve(sqlDir, file), 'utf-8');
-    //     const alreadyExecuted = db.prepare('SELECT COUNT(*) AS count FROM migration_history WHERE filename = ?').get(file).count > 0;
-    //     if (!alreadyExecuted) {
-    //         db.exec(sqlContent);
-    //         db.prepare('INSERT INTO migration_history (filename) VALUES (?)').run(file);
-    //         console.log(`✅ Executed ${file}`);
-    //     } else {
-    //         console.log(`⚠️ Skipped ${file}, already executed`);
+    //     const files = readdirSync(sqlDir).filter(file => file.endsWith('.sql')).sort();
+    //     for (const file of files) {
+    //         const sqlContent = readFileSync(resolve(sqlDir, file), 'utf-8');
+    //         const alreadyExecuted = db.prepare('SELECT COUNT(*) AS count FROM migration_history WHERE filename = ?').get(file).count > 0;
+    //         if (!alreadyExecuted) {
+    //             db.exec(sqlContent);
+    //             db.prepare('INSERT INTO migration_history (filename) VALUES (?)').run(file);
+    //             console.log(`✅ Executed ${file}`);
+    //         } else {
+    //             console.log(`⚠️ Skipped ${file}, already executed`);
+    //         }
     //     }
-    // }
     // } catch (err) {
     //     console.error('❌ ' + bgYellow(colorRed(' DateBase init error ')));
     //     console.log(err);

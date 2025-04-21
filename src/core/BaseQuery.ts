@@ -9,7 +9,6 @@ import type { WhereParam, OrderBy, SQLStatement, QuerySchema, WhereCondition, Wh
 
 
 export abstract class BaseQuery implements QueryBuilder {
-    private readonly RESERVED_WORD: Set<string>;
     protected readonly SCHEMA: TObject;
 
     protected readonly tableName: string;
@@ -55,9 +54,8 @@ export abstract class BaseQuery implements QueryBuilder {
 
     constructor(tbName: string, tbSchema: TObject, tbOptions: TableOptions, dbOptions: DatabaseOptions) {
         this.SCHEMA = tbSchema
-        this.RESERVED_WORD = this.initReservedWord();
 
-        const CONFIG = parseOptions(this.RESERVED_WORD, tbName, tbSchema, tbOptions || {}, dbOptions || {}, this.wrapField);
+        const CONFIG = parseOptions(this.initReservedWord(), tbName, tbSchema, tbOptions || {}, dbOptions || {}, this.wrapField);
         this.tableName = CONFIG.tableName;
         if (CONFIG.rowKey) this.ROW_KEY = CONFIG.rowKey;
         this.PAGE_SIZE = CONFIG.pageSize;
@@ -76,11 +74,17 @@ export abstract class BaseQuery implements QueryBuilder {
         this.GLOBAL_CONDITION = CONFIG.globalCondition;
 
     }
-
+    /**
+     * 占位符，i 为占位顺序，从 1开始计数 
+    */
     protected placeholder(i: number): string {
         return '?'
     }
-    protected convertValue(value: any,define:ColumnOptions): any {
+
+    /**
+     * 值转换
+    */
+    protected convertValue(value: any, define: ColumnOptions): any {
         return value;
     }
 
@@ -98,7 +102,9 @@ export abstract class BaseQuery implements QueryBuilder {
         return queryToCondition(this.STRICT_QUERY, query, this.COLUMN_MAP, this.QUERY_CACHE);
     }
 
-
+    /**
+     * Select 子句
+    */
     select(fields?: boolean | string | Array<string>): string {
         if (fields == null || fields == undefined) return `SELECT ${this.QUERY_FIELDS} FROM ${this.tableName} `;
 

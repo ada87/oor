@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
+    "moduleResolution": "nodenext",
+    "module": "nodenext",
+    "target": "ESNext",
     "lib": [
       "ESNext",
       "DOM"
@@ -9,9 +11,7 @@
     "noImplicitAny": false,
     "removeComments": true,
     "esModuleInterop": true,
-    "moduleResolution": "Node",
     "declaration": true,
-    "target": "ESNext",
     "downlevelIteration": true,
     "rootDir": "./src/",
     "outDir": "./dist/",
@@ -19,5 +19,5 @@
   "exclude": [
     "./src/**/*.test.ts",
     "./dist"
-]
+  ]
 }

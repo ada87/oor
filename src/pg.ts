@@ -2,7 +2,9 @@
 // https://github.com/brianc/node-postgres
 // https://www.postgresql.org/docs/17/sql-select.html
 import { Pool } from 'pg'
+import { parsePort } from './utils/ValidateUtil'
 import { BaseDB } from './core/BaseDB';
+import { BaseError, ERROR_CODE } from './core/BaseError';
 import { PgView, PgTable, } from './lib-pg/PgTable';
 
 
@@ -74,32 +76,32 @@ export const PG = new PostgreSQL(() => {
     if (process.env.PG_URL) return new Pool({ connectionString: process.env.PG_URL });
 
     let config: PoolConfig = {};
-    try {
 
-        if (process.env.PG_HOST) {
-            config.host = process.env.PG_HOST;
-        } else {
-            throw new Error('PG_HOST is required')
-        }
-
-        if (process.env.PG_PORT) {
-            config.port = parseInt(process.env.PG_PORT);
-        } else {
-            config.port = 5432;
-        }
-        if (process.env.PG_DB) {
-            config.database = process.env.PG_DB;
-        } else {
-            throw new Error('PG_DB is required')
-        }
-        if (process.env.PG_USER) {
-            config.user = process.env.PG_USER;
-            if (process.env.PG_PASS) config.password = process.env.PG_PASS;
-        }
-
-    } catch (error) {
-        throw (error)
+    if (process.env.PG_HOST) {
+        config.host = process.env.PG_HOST;
+    } else {
+        throw new BaseError(ERROR_CODE.ENV_NOT_PROVIDED, { message: 'PG_HOST is required' })
     }
+
+    if (process.env.PG_PORT) {
+        let port = parsePort(process.env.PG_PORT);
+        if (port == false) {
+            throw new BaseError(ERROR_CODE.ENV_NOT_PROVIDED, { message: 'PG_PORT is not a valid port' })
+        }
+        config.port = port;
+    } else {
+        config.port = 5432;
+    }
+    if (process.env.PG_DB) {
+        config.database = process.env.PG_DB;
+    } else {
+        throw new BaseError(ERROR_CODE.ENV_NOT_PROVIDED, { message: 'PG_DB is required' })
+    }
+    if (process.env.PG_USER) {
+        config.user = process.env.PG_USER;
+        if (process.env.PG_PASS) config.password = process.env.PG_PASS;
+    }
+
 
     return new Pool(config);
 })

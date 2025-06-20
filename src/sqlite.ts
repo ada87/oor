@@ -4,7 +4,7 @@
  * */
 
 import { DatabaseSync } from 'node:sqlite'
-import { BaseDB } from './core'
+import { BaseDB, BaseError, ERROR_CODE } from './core'
 import { DatabaseOptions, TableOptions, } from './core'
 
 import type { DatabaseSyncOptions, } from 'node:sqlite';
@@ -48,5 +48,5 @@ export class Sqlite extends BaseDB<SqliteOptions, DatabaseSync> {
 }
 export const SQLITE = new Sqlite(() => {
     if (process.env.SQLITE_PATH) return new DatabaseSync(process.env.SQLITE_PATH);
-    throw new Error(`SQLITE_PATH not set`);
+    throw new BaseError(ERROR_CODE.ENV_NOT_PROVIDED, { message: 'SQLITE_PATH not set' });
 });

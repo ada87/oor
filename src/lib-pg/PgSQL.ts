@@ -1,5 +1,5 @@
 import { where } from './pgWhere';
-import { BaseAction } from '../core';
+import { BaseAction, BaseError, ERROR_CODE } from '../core';
 import { RESERVED_WORDS } from './RESERVED_WORDS';;
 
 import type { SQLStatement, WhereParam } from '../utils/types';
@@ -17,7 +17,7 @@ export class PgQuery extends BaseAction {
 
 
     byField(field: string, value: string | number | boolean, startIdx: number = 1): SQLStatement {
-        if (!this.F2W.has(field)) throw new Error(`Field ${field} not found in Table ${this.tableName}`);
+        if (!this.F2W.has(field)) throw new BaseError(ERROR_CODE.COLUMN_NOT_FOUND, { message: `Field ${field} not found in Table ${this.tableName}` });
         let column = this.F2W.get(field);
         let sql = `${column} = ${this.placeholder(startIdx)}`;
         return [sql, [value]];

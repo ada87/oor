@@ -18,7 +18,6 @@ export class BaseTable<C, S extends TObject, B extends ActionBuilder, R = any> e
             PARAM = ACTION[1];
         } else {        // UPDATE/DELETE
             const RE_WHERE = BUILDER.fixWhere([WHERE ? WHERE[0] : '', WHERE ? [...ACTION[1], ...WHERE[1]] : []]);
-            console.log(RE_WHERE)
             SQL = `${ACTION[0]} ${RE_WHERE[0] ? `WHERE ${RE_WHERE[0]}` : ''} ${RETURNING}`
             PARAM = RE_WHERE[1];
         }

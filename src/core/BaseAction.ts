@@ -1,4 +1,5 @@
 import _ from './dash';
+import { BaseError, ERROR_CODE } from './BaseError';
 import { BaseQuery } from './BaseQuery';
 import { buildCheckEntity } from './_providers'
 import { ReturnType } from '../utils/types';
@@ -37,7 +38,7 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
 
 
     whereId(value: RowKeyType | Array<RowKeyType> | object | Array<RowKeyType>, startIdx: number = 1): SQLStatement {
-        if (this.ROW_KEY == null) throw ('Row Key is not defined');
+        if (this.ROW_KEY == null) throw new BaseError(ERROR_CODE.ROW_KEY_NOT_DEFINED, { message: 'Row Key is not defined' });
         let type = typeof value;
         if (_.isArray(value)) {
             const ids = [];
@@ -49,10 +50,10 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
                 if (_.has(obj, this.ROW_KEY)) {
                     ids.push(obj[this.ROW_KEY])
                 } else {
-                    if (this.STRICT_ENTITY) throw new Error('Could not load a row key in entity ');
+                    if (this.STRICT_ENTITY) throw new BaseError(ERROR_CODE.ROW_KEY_NOT_DEFINED, { message: 'Could not load a row key in entity ' });
                 }
             }
-            if (ids.length == 0) throw new Error('No row key in entity');
+            if (ids.length == 0) throw new BaseError(ERROR_CODE.ROW_KEY_NOT_DEFINED, { message: 'No row key in entity' });
             if (ids.length == 1) return [`${this.F2W.get(this.ROW_KEY)} = ${this.placeholder(startIdx)}`, [ids[0]]];
             return [`${this.F2W.get(this.ROW_KEY)} = ANY(${this.placeholder(startIdx)})`, [ids]];
 
@@ -111,7 +112,7 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
     insert(obj: object, options?: InsertOptions): SQLStatement {
         if (_.isArray(obj)) return this.insertArray(obj, options);
         const fields = _.keys(obj);
-        if (fields.length == 0) throw new Error('No field to insert');
+        if (fields.length == 0) throw new BaseError(ERROR_CODE.PARAM_ERROR, { message: 'No field to insert' });
         let query = [];
         let idx = [];
         let param = [];
@@ -139,11 +140,11 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
     };
 
     update(obj: object, options?: UpdateOptions): SQLStatement {
-        if (this.ROW_KEY == null) throw new Error('Could not load a row key in table : ' + this.tableName);
+        if (this.ROW_KEY == null) throw new BaseError(ERROR_CODE.ROW_KEY_NOT_DEFINED, { message: 'Could not load a row key in table : ' + this.tableName });
         const data = this.checkEntity(obj, false)
-        if (!_.has(data, this.ROW_KEY)) throw new Error('Could not load a row key in entity ');
+        if (!_.has(data, this.ROW_KEY)) throw new BaseError(ERROR_CODE.ROW_KEY_NOT_DEFINED, { message: 'Could not load a row key in entity ' });
         const fields = _.keys(data);
-        if (fields.length <= 1) throw new Error('No Columns to update');
+        if (fields.length <= 1) throw new BaseError(ERROR_CODE.PARAM_ERROR, { message: 'No Columns to update' });
         let query = [];
         let param = [];
         let pos = 1;
@@ -179,7 +180,7 @@ export abstract class BaseAction extends BaseQuery implements ActionBuilder {
             case 'INFO':
                 return 'RETURNING ' + this.DETAIL_FIELDS;
             case 'KEY':
-                if (this.ROW_KEY == null) throw (`This table has no primary key`);
+                if (this.ROW_KEY == null) throw new BaseError(ERROR_CODE.PARAM_ERROR, { message: 'This table has no primary key' });
                 return 'RETURNING ' + this.wrapField(this.ROW_KEY);
             default:
                 return '';

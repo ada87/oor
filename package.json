@@ -28,32 +28,33 @@
     "watch": "node --env-file=.env -r ts-node/register node_modules/tsest/run --test-file-name=sqlite- --watch"
   },
   "devDependencies": {
-    "@elastic/elasticsearch": "^8.17.1",
-    "@types/node": "^22.13.10",
-    "@types/pg": "^8.11.11",
-    "idb": "^8.0.2",
+    "@elastic/elasticsearch": "^9.0.2",
+    "@types/node": "^24.0.3",
+    "@types/pg": "^8.15.4",
+    "idb": "^8.0.3",
     "lodash": "^4.17.21",
-    "mysql2": "^3.13.0",
-    "pg": "^8.14.0",
-    "pg-native": "^3.3.0",
-    "postgres": "^3.4.5",
+    "mysql2": "^3.14.1",
+    "pg": "^8.16.1",
+    "pg-native": "^3.5.1",
+    "postgres": "^3.4.7",
     "sqlite3": "^5.1.7",
     "ts-node": "^10.9.2",
-    "tsest": "^0.1.2",
-    "xda": "^0.0.5",
-    "typescript": "^5.8.2"
+    "tsest": "^0.1.4",
+    "typescript": "^5.8.3",
+    "xda": "^0.0.6"
   },
   "dependencies": {
-    "@sinclair/typebox": "^0.34.30",
+    "@sinclair/typebox": "^0.34.35",
+    "@types/react": "^19.1.8",
     "dayjs": "^1.11.13"
   },
   "optionalDependencies": {
-    "@elastic/elasticsearch": "^8.17.0",
-    "idb": "^8.0.2",
-    "mysql2": "^3.12.0",
-    "pg": "^8.13.3",
-    "pg-native": "^3.2.2",
-    "postgres": "^3.4.5",
+    "@elastic/elasticsearch": "^9.0.2",
+    "idb": "^8.0.3",
+    "mysql2": "^3.14.1",
+    "pg": "^8.16.1",
+    "pg-native": "^3.5.1",
+    "postgres": "^3.4.7",
     "sqlite3": "^5.1.7"
   },
   "pnpm": {

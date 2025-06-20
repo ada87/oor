@@ -1,6 +1,7 @@
 import _ from './dash';
 import { queryToCondition } from '../utils/ConditionUtil';
 import { validateSort } from '../utils/ValidateUtil'
+import { BaseError, ERROR_CODE } from './BaseError';
 import { parseOptions, } from './_providers';
 
 import type { TableOptions, DatabaseOptions, QueryBuilder } from './types';
@@ -164,7 +165,7 @@ export abstract class BaseQuery implements QueryBuilder {
 
 
     byId(value: RowKeyType): SQLStatement {
-        if (this.ROW_KEY == null) throw ('Row Key is not defined');
+        if (this.ROW_KEY == null) throw new BaseError(ERROR_CODE.ROW_KEY_NOT_DEFINED, { message: 'Row Key is not defined' });
         return this.byField(this.ROW_KEY, value);
     }
 

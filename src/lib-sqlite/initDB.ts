@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync, rmSync } from 'fs'
 import { isAbsolute, resolve, } from 'path';
 import { DatabaseSync, } from 'node:sqlite';
 import { bgYellow, colorGreen, colorMagenta, colorRed } from '../utils/color'
+import { BaseError, ERROR_CODE } from '../core';
 
 /**
  * 自带版本管理
@@ -9,7 +10,7 @@ import { bgYellow, colorGreen, colorMagenta, colorRed } from '../utils/color'
 
 export const initFromSQL = (targetDBPath: string, sql: string) => {
     const dbFile = isAbsolute(targetDBPath) ? targetDBPath : resolve(process.cwd(), targetDBPath);
-    if (existsSync(dbFile)) throw new Error(`DateBase File ${colorMagenta(dbFile)} already exists`);
+    if (existsSync(dbFile)) throw new BaseError(ERROR_CODE.DATEBASE_FILE_EXISTS, { message: `DateBase File ${colorMagenta(dbFile)} already exists` });
     const db = new DatabaseSync(dbFile);
     try {
         console.log(colorGreen(sql))
@@ -26,7 +27,7 @@ export const initFromSQL = (targetDBPath: string, sql: string) => {
 
 export const initFromFile = (targetDBPath: string, sqlFile: string) => {
     const dbFile = isAbsolute(targetDBPath) ? targetDBPath : resolve(process.cwd(), targetDBPath);
-    if (existsSync(dbFile)) throw new Error(`DateBase File ${colorMagenta(dbFile)} already exists`);
+    if (existsSync(dbFile)) throw new BaseError(ERROR_CODE.DATEBASE_FILE_EXISTS, { message: `DateBase File ${colorMagenta(dbFile)} already exists` });
     const sqlContent = existsSync(sqlFile) ? readFileSync(sqlFile, 'utf-8') : '';
     initFromSQL(dbFile, sqlContent);
 }
@@ -47,11 +48,11 @@ const initDB = (targetDBPath: string): DatabaseSync => {
 
 export const autoInit = (targetDBPath: string, sqlDir: string) => {
     if (!existsSync(sqlDir)) {
-        throw (`Directory ${colorMagenta(sqlDir)} not exists`)
+        throw new BaseError(ERROR_CODE.FILE_NOT_FOUND, { message: `Directory ${colorMagenta(sqlDir)} not exists` })
     }
     let sqlFiles = readdirSync(sqlDir).filter(file => file.endsWith('.sql')).sort();
     if (sqlFiles.length == 0) {
-        throw (`Directory ${colorMagenta(sqlDir)} is empty`)
+        throw new BaseError(ERROR_CODE.FILE_NOT_FOUND, { message: `Directory ${colorMagenta(sqlDir)} is empty` })
     }
     const db = initDB(targetDBPath);
     // const 

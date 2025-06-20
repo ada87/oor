@@ -4,6 +4,7 @@ import { getFieldType } from '../utils/SQLUtil';
 import { newDate } from '../utils/TimeUtil'
 import { queryToCondition } from '../utils/ConditionUtil';
 import { Value } from '@sinclair/typebox/value';
+import { BaseError, ERROR_CODE } from './BaseError';
 
 
 import type { DatabaseOptions, TableOptions } from './types'
@@ -160,7 +161,7 @@ export const buildCheckEntity = (SCHEMA: TObject, COLUMN_MAP: Map<string, TSchem
         const result = Value.Errors(SCHEMA, clone);
         let err = result.First();
         if (err) {
-            throw new Error('Entity Has Some Error')
+            throw new BaseError(ERROR_CODE.PARAM_ERROR, { message: 'Entity Has Some Error' })
         }
     } : () => { }
 
@@ -170,7 +171,7 @@ export const buildCheckEntity = (SCHEMA: TObject, COLUMN_MAP: Map<string, TSchem
         if (strict) {
             for (let key of keys) {
                 if (!C2F.has(key)) {
-                    throw new Error(`Field ${key} is not in the Schema`)
+                    throw new BaseError(ERROR_CODE.PARAM_ERROR, { message: `Field ${key} is not in the Schema` })
                 }
             }
         }

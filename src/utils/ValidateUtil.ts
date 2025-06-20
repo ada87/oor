@@ -1,8 +1,7 @@
 import _ from '../core/dash';
+import { BaseError, ERROR_CODE } from '../core/BaseError';
 
-// import type { View, QueryBuilder } from '../core'
 import type { OrderBy } from "./types";
-// import type { TObject } from '@sinclair/typebox';
 
 
 
@@ -28,6 +27,15 @@ export const throwErr = (strict: boolean, err: Array<string>, message?: string) 
         console.warn(message + '\n      ' + err.join('\n      '));
         return;
     }
-    throw new Error(message ? message : err[0], { cause: err.join('\n') as any })
+    throw new BaseError(ERROR_CODE.STRICT_CONDITION_ERROR, { message, cause: err.join('\n') as any })
 }
 
+
+
+export const parsePort = (value: string | number): number | false => {
+    if (value == null) return false;
+    let result = typeof value === 'number' ? value : parseInt(value);
+    if (isNaN(result)) return false;
+    if (result < 0 || result > 65535) return false;
+    return result;
+}

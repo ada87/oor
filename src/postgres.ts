@@ -2,8 +2,10 @@
 // https://github.com/porsager/postgres
 // https://www.postgresql.org/docs/17/sql-select.html
 import postgres from 'postgres'
-import { BaseDB } from './core/BaseDB';
+import { BaseDB, BaseError, ERROR_CODE } from './core';
 import { PgView, PgTable, } from './lib-pg/PgTable';
+import { parsePort } from './utils/ValidateUtil';
+
 import type { Options, Sql, PostgresType } from 'postgres';
 import type { TableOptions, DatabaseOptions, Database } from './core';
 import type { TObject, } from '@sinclair/typebox';          // export useful types from typebox
@@ -72,32 +74,31 @@ export const PG = new PgPool(() => {
     // if (process.env.PG_URL) return new PgPool({ connectionString: process.env.PG_URL });
 
     let config: Options<any> = {};
-    try {
 
-        if (process.env.PG_HOST) {
-            config.host = process.env.PG_HOST;
-        } else {
-            throw new Error('PG_HOST is required')
-        }
-
-        if (process.env.PG_PORT) {
-            config.port = parseInt(process.env.PG_PORT);
-        } else {
-            config.port = 5432;
-        }
-        if (process.env.PG_DB) {
-            config.database = process.env.PG_DB;
-        } else {
-            throw new Error('PG_DB is required')
-        }
-        if (process.env.PG_USER) {
-            config.user = process.env.PG_USER;
-            if (process.env.PG_PASS) config.password = process.env.PG_PASS;
-        }
-
-    } catch (error) {
-        throw (error)
+    if (process.env.PG_HOST) {
+        config.host = process.env.PG_HOST;
+    } else {
+        throw new BaseError(ERROR_CODE.ENV_NOT_PROVIDED, { message: 'PG_HOST is required' })
     }
+    if (process.env.PG_PORT) {
+        let port = parsePort(process.env.PG_PORT);
+        if (port == false) {
+            throw new BaseError(ERROR_CODE.ENV_NOT_PROVIDED, { message: 'PG_PORT is not a valid port' })
+        }
+        config.port = port;
+    } else {
+        config.port = 5432;
+    }
+    if (process.env.PG_DB) {
+        config.database = process.env.PG_DB;
+    } else {
+        throw new BaseError(ERROR_CODE.ENV_NOT_PROVIDED, { message: 'PG_DB is required' })
+    }
+    if (process.env.PG_USER) {
+        config.user = process.env.PG_USER;
+        if (process.env.PG_PASS) config.password = process.env.PG_PASS;
+    }
+
 
     return postgres(config);
 })

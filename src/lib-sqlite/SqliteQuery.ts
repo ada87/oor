@@ -1,10 +1,10 @@
 import { where } from './sqliteWhere';
-import { BaseAction } from '../core';
+import { BaseAction, BaseError, ERROR_CODE } from '../core';
 import { RESERVED_WORDS } from './RESERVED_WORDS';;
+import { Kind } from '@sinclair/typebox'
 
 import type { SQLStatement, WhereParam } from '../utils/types';
 
-import { Kind } from '@sinclair/typebox'
 
 
 export class SqliteQuery extends BaseAction {
@@ -31,7 +31,7 @@ export class SqliteQuery extends BaseAction {
 
 
     byField(field: string, value: string | number | boolean): SQLStatement {
-        if (!this.F2W.has(field)) throw new Error(`Field ${field} not found in Table ${this.tableName}`);
+        if (!this.F2W.has(field)) throw new BaseError(ERROR_CODE.PARAM_ERROR, { message: `Field ${field} not found in Table ${this.tableName}` });
         let column = this.F2W.get(field);
         let sql = `${column} = ?`;
         return [sql, [value]];
